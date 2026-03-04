@@ -14,6 +14,9 @@ export async function Nav() {
               Organisatie
             </Link>
           )}
+          <Link href="/briefings" className="text-sm text-blue-600 hover:underline">
+            Briefings
+          </Link>
           <Link href="/settings" className="text-sm text-blue-600 hover:underline">
             Instellingen
           </Link>
