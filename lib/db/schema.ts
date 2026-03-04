@@ -131,3 +131,31 @@ export const chatSessions = pgTable("chat_session", {
   createdAt: timestamp("createdAt", { mode: "date" }).notNull().defaultNow(),
   updatedAt: timestamp("updatedAt", { mode: "date" }).notNull().defaultNow(),
 })
+
+export const userApiKeys = pgTable("user_api_key", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: text("userId")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  provider: text("provider").notNull(), // "anthropic" | "openai" | "google"
+  encryptedKey: text("encryptedKey").notNull(),
+  iv: text("iv").notNull(),
+  model: text("model").notNull(), // e.g. "claude-sonnet-4-5", "gpt-4o"
+  label: text("label"),
+  isActive: boolean("isActive").notNull().default(true),
+  createdAt: timestamp("createdAt", { mode: "date" }).notNull().defaultNow(),
+  updatedAt: timestamp("updatedAt", { mode: "date" }).notNull().defaultNow(),
+})
+
+export const usageLog = pgTable("usage_log", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: text("userId").references(() => users.id),
+  sessionId: text("sessionId"),
+  date: text("date").notNull(), // "YYYY-MM-DD" for easy daily grouping
+  messageCount: integer("messageCount").notNull().default(0),
+  provider: text("provider"),
+})
