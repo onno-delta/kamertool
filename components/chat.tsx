@@ -5,12 +5,14 @@ import { DefaultChatTransport } from "ai"
 import { useState, useMemo, type FormEvent } from "react"
 import { PartySelector } from "./party-selector"
 import { Message } from "./message"
+import { BriefingDialog } from "./briefing-dialog"
 
 type Party = { id: string; name: string; shortName: string }
 
 export function Chat() {
   const [party, setParty] = useState<Party | null>(null)
   const [input, setInput] = useState("")
+  const [showBriefing, setShowBriefing] = useState(false)
 
   const transport = useMemo(
     () =>
@@ -28,6 +30,14 @@ export function Chat() {
 
   const isLoading = status === "submitted" || status === "streaming"
 
+  const firstUserMessage = messages.find((m) => m.role === "user")
+  const briefingTopic = firstUserMessage
+    ? firstUserMessage.parts
+        .filter((p): p is { type: "text"; text: string } => p.type === "text")
+        .map((p) => p.text)
+        .join(" ")
+    : ""
+
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
     const text = input.trim()
@@ -41,7 +51,16 @@ export function Chat() {
       {/* Header */}
       <header className="flex items-center justify-between border-b px-6 py-4">
         <h1 className="text-xl font-semibold text-gray-900">Kamertool</h1>
-        <PartySelector value={party} onChange={setParty} />
+        <div className="flex items-center gap-3">
+          <PartySelector value={party} onChange={setParty} />
+          <button
+            onClick={() => setShowBriefing(true)}
+            disabled={!briefingTopic}
+            className="rounded-xl border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+          >
+            Genereer briefing
+          </button>
+        </div>
       </header>
 
       {/* Messages */}
@@ -83,6 +102,16 @@ export function Chat() {
           </button>
         </div>
       </form>
+
+      {/* Briefing dialog */}
+      {showBriefing && briefingTopic && (
+        <BriefingDialog
+          topic={briefingTopic}
+          partyId={party?.id ?? null}
+          partyName={party?.shortName ?? null}
+          onClose={() => setShowBriefing(false)}
+        />
+      )}
     </div>
   )
 }
