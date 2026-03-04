@@ -1,7 +1,7 @@
 import { createAnthropic } from "@ai-sdk/anthropic"
 import { createOpenAI } from "@ai-sdk/openai"
 import { createGoogleGenerativeAI } from "@ai-sdk/google"
-import type { LanguageModelV1 } from "ai"
+import type { LanguageModel } from "ai"
 
 const MODELS: Record<string, { provider: string; modelId: string }> = {
   "claude-sonnet-4-5": { provider: "anthropic", modelId: "claude-sonnet-4-5-20250514" },
@@ -24,7 +24,7 @@ function createProviderModel(
   provider: string,
   modelId: string,
   apiKey?: string
-): LanguageModelV1 {
+): LanguageModel {
   switch (provider) {
     case "anthropic": {
       const client = createAnthropic(apiKey ? { apiKey } : undefined)
@@ -50,7 +50,7 @@ function createProviderModel(
 export function getModel(opts?: {
   model?: string
   apiKey?: string
-}): LanguageModelV1 {
+}): LanguageModel {
   const modelKey = opts?.model || DEFAULT_MODEL
   const entry = MODELS[modelKey]
   if (!entry) throw new Error(`Unknown model: ${modelKey}`)

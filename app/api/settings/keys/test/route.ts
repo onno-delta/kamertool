@@ -23,7 +23,7 @@ export async function POST(req: Request) {
     await generateText({
       model: llm,
       prompt: "Say 'ok' and nothing else.",
-      maxTokens: 5,
+      maxOutputTokens: 5,
     })
     return NextResponse.json({ valid: true })
   } catch (e: unknown) {
