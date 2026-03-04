@@ -1,5 +1,9 @@
 import { generateText, stepCountIs } from "ai"
 import { getModel } from "@/lib/ai"
+import { auth } from "@/auth"
+import { getActiveKey } from "@/lib/user-keys"
+import { checkAndIncrementUsage } from "@/lib/rate-limit"
+import { cookies } from "next/headers"
 import {
   searchKamerstukken,
   searchHandelingen,
@@ -17,6 +21,37 @@ export async function POST(req: Request) {
 
   if (!topic) {
     return NextResponse.json({ error: "Topic is required" }, { status: 400 })
+  }
+
+  const session = await auth()
+  const userId = session?.user?.id ?? null
+
+  let modelOpts: { model?: string; apiKey?: string } | undefined
+  let usingOwnKey = false
+
+  if (userId) {
+    const userKey = await getActiveKey(userId)
+    if (userKey) {
+      modelOpts = { model: userKey.model, apiKey: userKey.apiKey }
+      usingOwnKey = true
+    }
+  }
+
+  if (!usingOwnKey) {
+    const cookieStore = await cookies()
+    const sessionId = cookieStore.get("session-id")?.value ?? null
+    const { allowed, used, limit } = await checkAndIncrementUsage(userId, sessionId)
+    if (!allowed) {
+      return NextResponse.json(
+        {
+          error: "rate_limit",
+          message: `Dagelijkse limiet bereikt (${limit} berichten).`,
+          used,
+          limit,
+        },
+        { status: 429 }
+      )
+    }
   }
 
   const prompt = `Genereer een uitgebreide debriefing over het onderwerp: "${topic}"
@@ -42,7 +77,7 @@ ${partyName ? `Frame alles vanuit het perspectief van ${partyName}.` : "Geef een
 Gebruik je tools om actuele informatie op te zoeken. Verwijs altijd naar bronnen.`
 
   const { text } = await generateText({
-    model: getModel(),
+    model: getModel(modelOpts),
     system: `Je bent een parlementair onderzoeksassistent die debatbriefings schrijft voor Kamerleden. Gebruik altijd je tools om informatie op te zoeken. Schrijf in het Nederlands. Verwijs naar specifieke Kamerstuknummers.`,
     prompt,
     stopWhen: stepCountIs(15),
