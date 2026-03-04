@@ -2,7 +2,8 @@
 
 import { useChat } from "@ai-sdk/react"
 import { DefaultChatTransport } from "ai"
-import { useState, useMemo, type FormEvent } from "react"
+import { useState, useEffect, useMemo, type FormEvent } from "react"
+import Link from "next/link"
 import { PartySelector } from "./party-selector"
 import { Message } from "./message"
 import { BriefingDialog } from "./briefing-dialog"
@@ -13,6 +14,17 @@ export function Chat() {
   const [party, setParty] = useState<Party | null>(null)
   const [input, setInput] = useState("")
   const [showBriefing, setShowBriefing] = useState(false)
+  const [usage, setUsage] = useState<{ used: number; limit: number } | null>(null)
+  const [activeKey, setActiveKey] = useState<{ provider: string; model: string } | null>(null)
+  const [rateLimitError, setRateLimitError] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetch("/api/settings/usage").then(r => r.json()).then(setUsage).catch(() => {})
+    fetch("/api/settings/keys").then(r => r.ok ? r.json() : []).then((keys: Array<{ isActive: boolean; provider: string; model: string }>) => {
+      const active = keys.find((k: { isActive: boolean }) => k.isActive)
+      if (active) setActiveKey({ provider: active.provider, model: active.model })
+    }).catch(() => {})
+  }, [])
 
   const transport = useMemo(
     () =>
@@ -26,7 +38,16 @@ export function Chat() {
     [party],
   )
 
-  const { messages, sendMessage, status } = useChat({ transport })
+  const { messages, sendMessage, status } = useChat({
+    transport,
+    onError(error) {
+      if (error.message.includes("rate_limit") || error.message.includes("429")) {
+        setRateLimitError(
+          "Dagelijkse limiet bereikt. Voeg je eigen API key toe in Instellingen voor onbeperkt gebruik."
+        )
+      }
+    },
+  })
 
   const isLoading = status === "submitted" || status === "streaming"
 
@@ -50,7 +71,18 @@ export function Chat() {
     <div className="flex h-screen flex-col">
       {/* Header */}
       <header className="flex items-center justify-between border-b px-6 py-4">
-        <h1 className="text-xl font-semibold text-gray-900">Kamertool</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-xl font-semibold text-gray-900">Kamertool</h1>
+          {activeKey ? (
+            <span className="rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-700">
+              {activeKey.model} (je eigen key)
+            </span>
+          ) : usage ? (
+            <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">
+              gratis — {usage.used}/{usage.limit} berichten
+            </span>
+          ) : null}
+        </div>
         <div className="flex items-center gap-3">
           <PartySelector value={party} onChange={setParty} />
           <button
@@ -82,6 +114,16 @@ export function Chat() {
           <Message key={m.id} message={m} />
         ))}
       </div>
+
+      {/* Rate limit warning */}
+      {rateLimitError && (
+        <div className="mx-6 mb-2 flex items-center justify-between rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800">
+          <span>{rateLimitError}</span>
+          <Link href="/settings" className="ml-3 font-medium text-amber-900 underline">
+            Instellingen →
+          </Link>
+        </div>
+      )}
 
       {/* Input */}
       <form onSubmit={handleSubmit} className="border-t px-6 py-4">
