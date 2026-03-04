@@ -1,6 +1,8 @@
 import { generateText, stepCountIs } from "ai"
 import { getModel } from "@/lib/ai"
 import { auth } from "@/auth"
+import { db } from "@/lib/db"
+import { briefings } from "@/lib/db/schema"
 import { getActiveKey } from "@/lib/user-keys"
 import { checkAndIncrementUsage } from "@/lib/rate-limit"
 import { cookies } from "next/headers"
@@ -93,6 +95,16 @@ Gebruik je tools om actuele informatie op te zoeken. Verwijs altijd naar bronnen
       ),
     },
   })
+
+  // Save briefing to database
+  if (userId) {
+    await db.insert(briefings).values({
+      userId,
+      organisationId: organisationId ?? null,
+      topic,
+      content: text,
+    })
+  }
 
   return NextResponse.json({ topic, content: text })
 }
