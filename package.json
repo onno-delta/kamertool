@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.55",
+    "@ai-sdk/google": "^3.0.40",
     "@ai-sdk/openai": "^3.0.39",
     "@ai-sdk/react": "^3.0.115",
     "@auth/drizzle-adapter": "^1.11.1",
