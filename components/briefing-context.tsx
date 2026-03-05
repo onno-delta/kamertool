@@ -2,6 +2,8 @@
 
 import { createContext, useContext, useState, useCallback, type ReactNode } from "react"
 import { Document, Page, Text, View, StyleSheet, pdf } from "@react-pdf/renderer"
+import type { ToolStep } from "./progress-sidebar"
+import { getStepLabel } from "./progress-sidebar"
 
 const pdfStyles = StyleSheet.create({
   page: { padding: 40, fontFamily: "Helvetica", fontSize: 11, lineHeight: 1.6 },
@@ -26,12 +28,13 @@ function BriefingPDF({ topic, content }: { topic: string; content: string }) {
   )
 }
 
-type BriefingState = {
+export type BriefingState = {
   topic: string
   loading: boolean
   content: string | null
   error: string | null
   partyName: string | null
+  steps: ToolStep[]
 }
 
 type BriefingContextType = {
@@ -67,7 +70,7 @@ export function BriefingProvider({ children }: { children: ReactNode }) {
 
   const startBriefing = useCallback(
     (topic: string) => {
-      setState({ topic, loading: true, content: null, error: null, partyName: null })
+      setState({ topic, loading: true, content: null, error: null, partyName: null, steps: [] })
 
       // Load preferences then generate
       fetch("/api/settings/preferences")
@@ -93,19 +96,88 @@ export function BriefingProvider({ children }: { children: ReactNode }) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ topic, partyId: pId, partyName: pName }),
           })
-          const data = await res.json()
 
-          if (data.content) {
-            setState((s) =>
-              s?.topic === topic ? { ...s, loading: false, content: data.content } : s
-            )
-            triggerDownload(data.content, topic)
-          } else {
+          if (!res.ok) {
+            const data = await res.json()
             setState((s) =>
               s?.topic === topic
                 ? { ...s, loading: false, error: data.error ?? "Kon briefing niet genereren" }
                 : s
             )
+            return
+          }
+
+          // Parse NDJSON stream
+          const reader = res.body!.getReader()
+          const decoder = new TextDecoder()
+          let buffer = ""
+
+          while (true) {
+            const { done, value } = await reader.read()
+            if (done) break
+            buffer += decoder.decode(value, { stream: true })
+
+            const lines = buffer.split("\n")
+            buffer = lines.pop()! // keep incomplete line
+
+            for (const line of lines) {
+              if (!line.trim()) continue
+              try {
+                const event = JSON.parse(line)
+
+                if (event.type === "tool-start") {
+                  setState((s) => {
+                    if (!s || s.topic !== topic) return s
+                    return {
+                      ...s,
+                      steps: [
+                        ...s.steps,
+                        {
+                          id: event.id,
+                          tool: event.tool,
+                          label: getStepLabel(event.tool, event.args ?? {}),
+                          status: "running",
+                        },
+                      ],
+                    }
+                  })
+                } else if (event.type === "tool-done") {
+                  setState((s) => {
+                    if (!s || s.topic !== topic) return s
+                    const steps = s.steps.map((step) =>
+                      step.id === event.id
+                        ? {
+                            ...step,
+                            status: "done" as const,
+                            detail:
+                              event.tool === "fetchWebPage"
+                                ? "opgehaald"
+                                : `${event.count ?? 0} resultaten`,
+                          }
+                        : step
+                    )
+                    return { ...s, steps }
+                  })
+                } else if (event.type === "done") {
+                  setState((s) =>
+                    s?.topic === topic
+                      ? { ...s, loading: false, content: event.content }
+                      : s
+                  )
+                  if (event.content) {
+                    triggerDownload(event.content, topic)
+                  }
+                } else if (event.type === "error") {
+                  setState((s) =>
+                    s?.topic === topic
+                      ? { ...s, loading: false, error: event.message ?? "Kon briefing niet genereren" }
+                      : s
+                  )
+                }
+              } catch {
+                // skip malformed lines
+              }
+            }
           }
         })
         .catch(() => {

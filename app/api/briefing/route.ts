@@ -1,4 +1,4 @@
-import { generateText, stepCountIs } from "ai"
+import { streamText, stepCountIs } from "ai"
 import { getModel } from "@/lib/ai"
 import { auth } from "@/auth"
 import { db } from "@/lib/db"
@@ -96,8 +96,8 @@ ${partyName ? `Frame alles vanuit het perspectief van ${partyName}.` : "Geef een
 
 BELANGRIJK: Zoek de daadwerkelijke inhoud van de relevante stukken op en vat samen wat erin staat. Noem altijd het documentnummer en de datum. Gebruik je tools om actuele informatie op te zoeken.`
 
-    console.log("[briefing] generating text...")
-    const { text } = await generateText({
+    console.log("[briefing] starting stream...")
+    const result = streamText({
       model: getModel(modelOpts),
       system: `Je bent een parlementair onderzoeksassistent die debatbriefings schrijft voor Kamerleden. Gebruik altijd je tools om informatie op te zoeken. Schrijf in het Nederlands. Verwijs naar specifieke documentnummers en Kamerstuknummers.
 
@@ -124,20 +124,87 @@ Werkwijze:
         ),
       },
     })
-    console.log("[briefing] done, length:", text.length)
 
-    // Save briefing to database
-    if (userId) {
-      await db.insert(briefings).values({
-        userId,
-        organisationId: organisationId ?? null,
-        topic,
-        content: text,
-      })
-      console.log("[briefing] saved to db")
-    }
+    const encoder = new TextEncoder()
+    const stream = new ReadableStream({
+      async start(controller) {
+        try {
+          let fullText = ""
 
-    return NextResponse.json({ topic, content: text })
+          for await (const part of result.fullStream) {
+            if (part.type === "tool-call") {
+              controller.enqueue(
+                encoder.encode(
+                  JSON.stringify({
+                    type: "tool-start",
+                    id: part.toolCallId,
+                    tool: part.toolName,
+                    args: part.input,
+                  }) + "\n"
+                )
+              )
+            } else if (part.type === "tool-result") {
+              const output = part.output as Record<string, unknown> | undefined
+              controller.enqueue(
+                encoder.encode(
+                  JSON.stringify({
+                    type: "tool-done",
+                    id: part.toolCallId,
+                    tool: part.toolName,
+                    count:
+                      (output?.count as number) ??
+                      (output?.results as unknown[] | undefined)?.length ??
+                      0,
+                  }) + "\n"
+                )
+              )
+            } else if (part.type === "text-delta") {
+              fullText += part.text
+            }
+          }
+
+          console.log("[briefing] stream done, length:", fullText.length)
+
+          // Save to DB
+          if (userId && fullText) {
+            await db.insert(briefings).values({
+              userId,
+              organisationId: organisationId ?? null,
+              topic,
+              content: fullText,
+            })
+            console.log("[briefing] saved to db")
+          }
+
+          controller.enqueue(
+            encoder.encode(
+              JSON.stringify({ type: "done", content: fullText }) + "\n"
+            )
+          )
+          controller.close()
+        } catch (err) {
+          console.error("[briefing] stream error:", err)
+          controller.enqueue(
+            encoder.encode(
+              JSON.stringify({
+                type: "error",
+                message: String(
+                  err instanceof Error ? err.message : err
+                ),
+              }) + "\n"
+            )
+          )
+          controller.close()
+        }
+      },
+    })
+
+    return new Response(stream, {
+      headers: {
+        "Content-Type": "application/x-ndjson",
+        "Cache-Control": "no-cache",
+      },
+    })
   } catch (error) {
     console.error("[briefing] ERROR:", error)
     return NextResponse.json(

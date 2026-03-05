@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import ReactMarkdown from "react-markdown"
 import { useBriefing } from "@/components/briefing-context"
+import { ProgressSidebar } from "@/components/progress-sidebar"
 
 function VoorbereidenContent() {
   const searchParams = useSearchParams()
@@ -14,7 +15,7 @@ function VoorbereidenContent() {
   // Start briefing if topic is set and no matching briefing is running/done
   useEffect(() => {
     if (!topic) return
-    if (state?.topic === topic) return // already running or done for this topic
+    if (state?.topic === topic) return
     startBriefing(topic)
   }, [topic, state?.topic, startBriefing])
 
@@ -35,9 +36,11 @@ function VoorbereidenContent() {
   const content = state?.topic === topic ? state.content : null
   const error = state?.topic === topic ? state.error : null
   const partyName = state?.topic === topic ? state.partyName : null
+  const steps = state?.topic === topic ? state.steps : []
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
+    <div className="flex min-h-0 flex-1">
+      {/* Main content */}
       <div className="flex-1 overflow-y-auto">
         <div className="mx-auto max-w-3xl px-6 py-8">
           <Link href="/agenda" className="mb-4 inline-block text-sm text-gray-400 hover:text-gray-600">
@@ -53,7 +56,7 @@ function VoorbereidenContent() {
                 <div className="text-center">
                   <p className="font-medium text-gray-700">Briefing wordt gegenereerd...</p>
                   <p className="mt-1 text-sm text-gray-400">
-                    Dit kan tot 2 minuten duren. De PDF wordt automatisch gedownload.
+                    De PDF wordt automatisch gedownload.
                   </p>
                 </div>
               </div>
@@ -76,6 +79,13 @@ function VoorbereidenContent() {
           )}
         </div>
       </div>
+
+      {/* Progress sidebar - desktop only */}
+      {steps.length > 0 && (
+        <div className="hidden w-72 shrink-0 overflow-y-auto border-l border-gray-200 p-4 lg:block">
+          <ProgressSidebar steps={steps} />
+        </div>
+      )}
     </div>
   )
 }

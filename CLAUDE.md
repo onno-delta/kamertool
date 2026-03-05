@@ -16,15 +16,9 @@ npm run lint     # ESLint
 
 **Database migrations:** `npx drizzle-kit push` (uses Supabase PostgreSQL). If the pooler connection fails, use the Supabase MCP `apply_migration` tool directly.
 
-**Deployment:** Always deploy manually — no auto-deploy from git. Use rsync-to-tmp workaround because the Vercel Hobby plan rejects deploys when the git author email doesn't match the team owner:
+**Deployment:** Auto-deploys from `main` via Vercel Git integration. Push to `main` triggers production deploy.
 
-```bash
-rm -rf /tmp/kamertool-deploy
-rsync -a --exclude='.git' --exclude='node_modules' . /tmp/kamertool-deploy/
-cd /tmp/kamertool-deploy && npx vercel --prod --yes
-```
-
-Live at https://kamertool.vercel.app — GitHub repo: `onno-delta/kamertool`
+Live at https://kamer.deltainstituut.nl (also https://kamertool.vercel.app) — GitHub repo: `onno-delta/kamertool`
 
 ## Architecture
 
@@ -32,7 +26,7 @@ Live at https://kamertool.vercel.app — GitHub repo: `onno-delta/kamertool`
 
 ### AI Layer (`lib/ai.ts`)
 
-Multi-provider model factory supporting Anthropic, OpenAI, and Google. `getModel({ model?, apiKey? })` creates a `LanguageModel` — if `apiKey` is provided, creates a fresh provider instance (BYOK); otherwise falls back to env var keys.
+Multi-provider model factory supporting Anthropic, OpenAI, and Google. `getModel({ model?, apiKey? })` creates a `LanguageModel` — if `apiKey` is provided, creates a fresh provider instance (BYOK); otherwise falls back to env var keys. Default model is `claude-haiku-4-5`. Free-tier users can switch models via the chat toolbar; the selected model key is sent in the request body.
 
 **AI SDK v6 specifics:** Use `maxOutputTokens` (not `maxTokens`), import `LanguageModel` (not `LanguageModelV1`).
 
@@ -62,9 +56,11 @@ NextAuth v5 with Resend (magic link email). Database-backed sessions. Session ca
 
 Key tables: `party`, `organisation`, `user`, `briefing`, `chat_session`, `user_api_key`, `usage_log`, `org_document`, plus NextAuth tables (`account`, `session`, `verificationToken`). All IDs are UUIDs. Chat messages stored as JSON text in `chat_session.messages`.
 
+**Database connection (`lib/db/index.ts`):** Uses `postgres.js` with `prepare: false` — required because Supabase's transaction pooler (port 6543) runs PgBouncer which doesn't support prepared statements.
+
 ### API Routes
 
-- `/api/chat` — POST, streaming (`streamText`), BYOK + rate limit, uses `stepCountIs(10)` max tool calls
+- `/api/chat` — POST, streaming (`streamText`), BYOK + rate limit, accepts `model` from body for free-tier, uses `stepCountIs(10)` max tool calls. Allows unauthenticated access (uses session cookie for rate limiting)
 - `/api/briefing` — POST, non-streaming (`generateText`), saves to `briefings` table, `stepCountIs(15)`
 - `/api/briefings` — GET, list user's saved briefings with optional `?q=` search
 - `/api/settings/keys` — CRUD for encrypted API keys
@@ -72,7 +68,7 @@ Key tables: `party`, `organisation`, `user`, `briefing`, `chat_session`, `user_a
 - `/api/settings/usage` — Current rate limit usage
 - `/api/organisations/[id]/members` + `/documents` — Organisation management
 
-All API routes check auth via `await auth()` and return 401 if missing.
+Most API routes check auth via `await auth()` and return 401 if missing. Exception: `/api/chat` allows unauthenticated users (free tier with session-based rate limiting).
 
 ### Key Components
 
