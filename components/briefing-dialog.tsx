@@ -46,9 +46,19 @@ export function BriefingDialog({ topic, partyId, partyName, organisationId, onCl
       body: JSON.stringify({ topic, partyId, partyName, organisationId }),
     })
       .then((r) => r.json())
-      .then((data) => {
+      .then(async (data) => {
         setContent(data.content)
         setLoading(false)
+        // Auto-download PDF
+        if (data.content) {
+          const blob = await pdf(<BriefingPDF topic={topic} content={data.content} />).toBlob()
+          const url = URL.createObjectURL(blob)
+          const a = document.createElement("a")
+          a.href = url
+          a.download = `briefing-${topic.slice(0, 30).replace(/\s+/g, "-")}.pdf`
+          a.click()
+          URL.revokeObjectURL(url)
+        }
       })
       .catch(() => {
         setError("Kon briefing niet genereren")
