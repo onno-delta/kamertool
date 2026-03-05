@@ -2,7 +2,7 @@
 
 import { useChat } from "@ai-sdk/react"
 import { DefaultChatTransport } from "ai"
-import { useState, useEffect, useMemo, useRef, type FormEvent } from "react"
+import { useState, useEffect, useRef, type FormEvent } from "react"
 import Link from "next/link"
 import { PartySelector } from "./party-selector"
 import { Message } from "./message"
@@ -33,17 +33,23 @@ export function Chat() {
     }).catch(() => {})
   }, [])
 
-  const transport = useMemo(
+  const partyRef = useRef(party)
+  const modelRef = useRef(model)
+  const activeKeyRef = useRef(activeKey)
+  partyRef.current = party
+  modelRef.current = model
+  activeKeyRef.current = activeKey
+
+  const [transport] = useState(
     () =>
       new DefaultChatTransport({
         api: "/api/chat",
-        body: {
-          partyId: party?.id ?? null,
-          partyName: party?.shortName ?? null,
-          model: activeKey ? undefined : model,
-        },
+        body: () => ({
+          partyId: partyRef.current?.id ?? null,
+          partyName: partyRef.current?.shortName ?? null,
+          model: activeKeyRef.current ? undefined : modelRef.current,
+        }),
       }),
-    [party, model, activeKey],
   )
 
   const { messages, sendMessage, status } = useChat({

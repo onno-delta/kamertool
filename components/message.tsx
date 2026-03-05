@@ -21,10 +21,19 @@ const TOOL_ICONS: Record<string, string> = {
   searchPartyDocs: "📋",
 }
 
+function getToolName(part: any): string {
+  if (part.toolName) return part.toolName
+  if (typeof part.type === "string" && part.type.startsWith("tool-")) {
+    return part.type.slice(5) // "tool-searchKamerstukken" → "searchKamerstukken"
+  }
+  return "unknown"
+}
+
 function ToolCard({ part }: { part: any }) {
   const [expanded, setExpanded] = useState(false)
-  const label = TOOL_LABELS[part.toolName] ?? part.toolName
-  const icon = TOOL_ICONS[part.toolName] ?? "🔧"
+  const toolName = getToolName(part)
+  const label = TOOL_LABELS[toolName] ?? toolName
+  const icon = TOOL_ICONS[toolName] ?? "🔧"
 
   const isStreaming =
     part.state === "input-streaming" || part.state === "input-available"
@@ -33,7 +42,7 @@ function ToolCard({ part }: { part: any }) {
 
   if (!isStreaming && !isDone && !isError) return null
 
-  const query = part.args?.query ?? ""
+  const query = part.input?.query ?? part.args?.query ?? ""
   const resultCount = isDone ? part.output?.count : null
 
   return (
@@ -116,7 +125,8 @@ export function Message({ message }: { message: UIMessage }) {
   const isUser = role === "user"
 
   // Collect tool parts to show as a grouped task list
-  const toolParts = parts.filter((p) => p.type === "dynamic-tool")
+  // AI SDK v6: static tools have type "tool-{name}", dynamic tools have "dynamic-tool"
+  const toolParts = parts.filter((p: any) => p.type === "dynamic-tool" || (typeof p.type === "string" && p.type.startsWith("tool-")))
   const textParts = parts.filter((p) => p.type === "text" || p.type === "reasoning")
   const hasTools = toolParts.some(
     (p: any) =>
@@ -160,6 +170,7 @@ export function Message({ message }: { message: UIMessage }) {
             )}
             {textParts.map((part, i) => {
               if (part.type === "reasoning") {
+                if (!part.text) return null
                 return (
                   <div key={i} className="rounded-2xl bg-gray-100 px-4 py-2 text-xs italic text-gray-400">
                     {part.text}
@@ -167,6 +178,9 @@ export function Message({ message }: { message: UIMessage }) {
                 )
               }
               if (part.type === "text") {
+                const isStreaming = (part as any).state === "streaming"
+                // Don't render empty text parts unless they're currently streaming
+                if (!part.text && !isStreaming) return null
                 return (
                   <div key={i} className="rounded-2xl bg-gray-100 px-4 py-3 text-gray-900 whitespace-pre-wrap leading-relaxed">
                     {part.text || "\u00A0"}
