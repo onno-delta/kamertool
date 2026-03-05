@@ -73,10 +73,11 @@ export function Chat() {
   }
 
   return (
-    <div className="flex flex-1 flex-col">
-      {/* Toolbar */}
-      <div className="border-b border-gray-200 bg-white px-6 py-2.5 shadow-sm">
-        <div className="mx-auto flex max-w-3xl items-center justify-between">
+    <div className="flex flex-1 flex-col p-4 pb-0">
+      {/* Main chat card */}
+      <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+        {/* Toolbar */}
+        <div className="flex items-center justify-between border-b border-gray-100 px-5 py-2.5">
           <div className="flex items-center gap-3">
             <PartySelector value={party} onChange={setParty} />
             {activeKey ? (
@@ -92,82 +93,82 @@ export function Chat() {
           <button
             onClick={() => setShowBriefing(true)}
             disabled={!briefingTopic}
-            className="rounded-lg border border-gray-200 bg-white px-3.5 py-1.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 disabled:opacity-40 disabled:shadow-none"
+            className="rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-40"
           >
             Genereer briefing
           </button>
         </div>
-      </div>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="mx-auto max-w-3xl px-6 py-4">
-          {messages.length === 0 && (
-            <div className="flex min-h-[60vh] items-center justify-center">
-              <div className="max-w-md rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-sm">
-                <h2 className="text-2xl font-semibold text-gray-800">
-                  Bereid je voor op een debat
-                </h2>
-                <p className="mt-3 text-gray-500 leading-relaxed">
-                  Stel een vraag over een onderwerp en ik zoek de relevante
-                  Kamerstukken, debatten en toezeggingen voor je op.
-                </p>
+        {/* Messages */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="mx-auto max-w-3xl px-6 py-4">
+            {messages.length === 0 && (
+              <div className="flex min-h-[50vh] items-center justify-center">
+                <div className="max-w-md rounded-2xl bg-gray-50 p-8 text-center">
+                  <h2 className="text-2xl font-semibold text-gray-800">
+                    Bereid je voor op een debat
+                  </h2>
+                  <p className="mt-3 text-gray-500 leading-relaxed">
+                    Stel een vraag over een onderwerp en ik zoek de relevante
+                    Kamerstukken, debatten en toezeggingen voor je op.
+                  </p>
+                </div>
               </div>
-            </div>
-          )}
-          {messages.map((m) => (
-            <Message key={m.id} message={m} />
-          ))}
-          {status === "submitted" && (
-            <div className="flex justify-start mb-4">
-              <div className="rounded-2xl bg-gray-100 px-4 py-3 text-sm text-gray-500">
-                <span className="inline-flex items-center gap-1.5">
-                  <span className="flex gap-0.5">
-                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-gray-400 [animation-delay:0ms]" />
-                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-gray-400 [animation-delay:150ms]" />
-                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-gray-400 [animation-delay:300ms]" />
+            )}
+            {messages.map((m) => (
+              <Message key={m.id} message={m} />
+            ))}
+            {status === "submitted" && (
+              <div className="flex justify-start mb-4">
+                <div className="rounded-2xl bg-gray-100 px-4 py-3 text-sm text-gray-500">
+                  <span className="inline-flex items-center gap-1.5">
+                    <span className="flex gap-0.5">
+                      <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-gray-400 [animation-delay:0ms]" />
+                      <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-gray-400 [animation-delay:150ms]" />
+                      <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-gray-400 [animation-delay:300ms]" />
+                    </span>
+                    Aan het nadenken...
                   </span>
-                  Aan het nadenken...
-                </span>
+                </div>
               </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+        </div>
+
+        {/* Rate limit warning */}
+        {rateLimitError && (
+          <div className="mx-auto w-full max-w-3xl px-6 pb-2">
+            <div className="flex items-center justify-between rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800">
+              <span>{rateLimitError}</span>
+              <Link href="/settings" className="ml-3 font-medium text-amber-900 underline">
+                Instellingen
+              </Link>
             </div>
-          )}
-          <div ref={messagesEndRef} />
-        </div>
-      </div>
-
-      {/* Rate limit warning */}
-      {rateLimitError && (
-        <div className="mx-auto w-full max-w-3xl px-6 pb-2">
-          <div className="flex items-center justify-between rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800">
-            <span>{rateLimitError}</span>
-            <Link href="/settings" className="ml-3 font-medium text-amber-900 underline">
-              Instellingen
-            </Link>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Input */}
-      <div className="border-t border-gray-200 bg-white shadow-[0_-1px_3px_rgba(0,0,0,0.05)]">
-        <form onSubmit={handleSubmit} className="mx-auto max-w-3xl px-6 py-4">
-          <div className="flex gap-3">
-            <input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Bijv. 'Bereid me voor op het stikstofdebat' of 'Welke toezeggingen staan open over woningbouw?'"
-              className="flex-1 rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
-              disabled={isLoading}
-            />
-            <button
-              type="submit"
-              disabled={isLoading || !input.trim()}
-              className="rounded-2xl bg-blue-600 px-6 py-3 font-medium text-white shadow-sm hover:bg-blue-700 disabled:opacity-40 disabled:shadow-none"
-            >
-              {isLoading ? "Bezig..." : "Verstuur"}
-            </button>
-          </div>
-        </form>
+        {/* Input */}
+        <div className="border-t border-gray-100 px-5 py-3">
+          <form onSubmit={handleSubmit} className="mx-auto max-w-3xl">
+            <div className="flex gap-3">
+              <input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Bijv. 'Bereid me voor op het stikstofdebat' of 'Welke toezeggingen staan open over woningbouw?'"
+                className="flex-1 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                disabled={isLoading}
+              />
+              <button
+                type="submit"
+                disabled={isLoading || !input.trim()}
+                className="rounded-xl bg-blue-600 px-6 py-3 font-medium text-white shadow-sm hover:bg-blue-700 disabled:opacity-40 disabled:shadow-none"
+              >
+                {isLoading ? "Bezig..." : "Verstuur"}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
 
       {/* Briefing dialog */}
