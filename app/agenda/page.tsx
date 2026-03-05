@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import Link from "next/link"
 
 type Activiteit = {
@@ -16,12 +16,17 @@ type Activiteit = {
   Voortouwafkorting: string
 }
 
-const TYPE_FILTERS = [
-  { id: "", label: "Alles" },
-  { id: "plenair", label: "Plenair" },
-  { id: "commissie", label: "Commissie" },
-  { id: "overig", label: "Overig" },
-]
+// Types that have commissies
+const TYPES_WITH_COMMISSIE = new Set([
+  "Commissiedebat",
+  "Wetgevingsoverleg",
+  "Notaoverleg",
+  "Begrotingsoverleg",
+  "Rondetafelgesprek",
+  "Procedurevergadering",
+  "Gesprek",
+  "Technische briefing",
+])
 
 const DAYS_OPTIONS = [
   { value: 7, label: "7 dagen" },
@@ -41,6 +46,8 @@ const TYPE_COLORS: Record<string, string> = {
   "Rondetafelgesprek": "bg-green-100 text-green-800",
   "Procedurevergadering": "bg-gray-100 text-gray-700",
   "Regeling van werkzaamheden": "bg-amber-100 text-amber-800",
+  "Technische briefing": "bg-teal-100 text-teal-800",
+  "Gesprek": "bg-orange-100 text-orange-800",
 }
 
 function formatTime(dateStr: string) {
@@ -69,82 +76,178 @@ function groupByDate(items: Activiteit[]): Record<string, Activiteit[]> {
 }
 
 export default function AgendaPage() {
-  const [items, setItems] = useState<Activiteit[]>([])
+  const [allItems, setAllItems] = useState<Activiteit[]>([])
   const [loading, setLoading] = useState(true)
-  const [type, setType] = useState("")
   const [days, setDays] = useState(14)
+  const [selectedType, setSelectedType] = useState("")
+  const [selectedCommissie, setSelectedCommissie] = useState("")
   const [search, setSearch] = useState("")
 
   useEffect(() => {
     setLoading(true)
-    const params = new URLSearchParams({ days: String(days) })
-    if (type) params.set("type", type)
-    if (search) params.set("q", search)
-
-    fetch(`/api/agenda?${params}`)
+    fetch(`/api/agenda?days=${days}`)
       .then((r) => r.json())
       .then((data) => {
-        setItems(Array.isArray(data) ? data : [])
+        setAllItems(Array.isArray(data) ? data : [])
         setLoading(false)
       })
       .catch(() => setLoading(false))
-  }, [type, days, search])
+  }, [days])
 
-  const grouped = groupByDate(items)
+  // Extract available types from data, sorted by count
+  const availableTypes = useMemo(() => {
+    const counts: Record<string, number> = {}
+    for (const item of allItems) {
+      counts[item.Soort] = (counts[item.Soort] ?? 0) + 1
+    }
+    return Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
+      .map(([type, count]) => ({ type, count }))
+  }, [allItems])
+
+  // Extract available commissies for the selected type
+  const availableCommissies = useMemo(() => {
+    if (!selectedType || !TYPES_WITH_COMMISSIE.has(selectedType)) return []
+    const counts: Record<string, number> = {}
+    for (const item of allItems) {
+      if (item.Soort === selectedType && item.Voortouwnaam) {
+        counts[item.Voortouwnaam] = (counts[item.Voortouwnaam] ?? 0) + 1
+      }
+    }
+    return Object.entries(counts)
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([name, count]) => ({ name, count }))
+  }, [allItems, selectedType])
+
+  // Reset commissie when type changes
+  useEffect(() => {
+    setSelectedCommissie("")
+  }, [selectedType])
+
+  // Filter items
+  const filtered = useMemo(() => {
+    let items = allItems
+    if (selectedType) {
+      items = items.filter((i) => i.Soort === selectedType)
+    }
+    if (selectedCommissie) {
+      items = items.filter((i) => i.Voortouwnaam === selectedCommissie)
+    }
+    if (search) {
+      const q = search.toLowerCase()
+      items = items.filter(
+        (i) =>
+          i.Onderwerp.toLowerCase().includes(q) ||
+          i.Voortouwnaam?.toLowerCase().includes(q)
+      )
+    }
+    return items
+  }, [allItems, selectedType, selectedCommissie, search])
+
+  const grouped = groupByDate(filtered)
   const dates = Object.keys(grouped).sort()
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       {/* Filters */}
       <div className="shrink-0 border-b border-gray-200 bg-white px-4 py-3 sm:px-6">
-        <div className="mx-auto flex max-w-4xl flex-wrap items-center gap-2 sm:gap-3">
-          {/* Type filter */}
-          <div className="flex rounded-lg border border-gray-200 bg-gray-50 p-0.5">
-            {TYPE_FILTERS.map((f) => (
+        <div className="mx-auto max-w-4xl space-y-2">
+          {/* Row 1: type pills + days + search */}
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Type filter */}
+            <div className="flex flex-wrap gap-1">
               <button
-                key={f.id}
-                onClick={() => setType(f.id)}
-                className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors sm:text-sm ${
-                  type === f.id
-                    ? "bg-white text-gray-900 shadow-sm"
-                    : "text-gray-500 hover:text-gray-700"
+                onClick={() => setSelectedType("")}
+                className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                  !selectedType
+                    ? "bg-gray-900 text-white"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                 }`}
               >
-                {f.label}
+                Alles ({allItems.length})
               </button>
-            ))}
+              {availableTypes.map(({ type, count }) => (
+                <button
+                  key={type}
+                  onClick={() => setSelectedType(selectedType === type ? "" : type)}
+                  className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                    selectedType === type
+                      ? "bg-gray-900 text-white"
+                      : `${TYPE_COLORS[type] ?? "bg-gray-100 text-gray-600"} hover:opacity-80`
+                  }`}
+                >
+                  {type} ({count})
+                </button>
+              ))}
+            </div>
+
+            <div className="ml-auto flex items-center gap-2">
+              <select
+                value={days}
+                onChange={(e) => setDays(Number(e.target.value))}
+                className="rounded-lg border border-gray-200 bg-white px-2 py-1.5 text-xs text-gray-700"
+              >
+                {DAYS_OPTIONS.map((d) => (
+                  <option key={d.value} value={d.value}>
+                    {d.label}
+                  </option>
+                ))}
+              </select>
+
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Zoeken..."
+                className="w-40 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs text-gray-900 placeholder:text-gray-400"
+              />
+            </div>
           </div>
 
-          {/* Days selector */}
-          <select
-            value={days}
-            onChange={(e) => setDays(Number(e.target.value))}
-            className="rounded-lg border border-gray-200 bg-white px-2 py-1.5 text-xs text-gray-700 sm:text-sm"
-          >
-            {DAYS_OPTIONS.map((d) => (
-              <option key={d.value} value={d.value}>
-                {d.label}
-              </option>
-            ))}
-          </select>
-
-          {/* Search */}
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Zoek op onderwerp of commissie..."
-            className="min-w-0 flex-1 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs text-gray-900 placeholder:text-gray-400 sm:text-sm"
-          />
-
-          {/* Count */}
-          {!loading && (
-            <span className="shrink-0 text-xs text-gray-400">
-              {items.length} vergaderingen
-            </span>
+          {/* Row 2: commissie filter (only when a type with commissies is selected) */}
+          {selectedType && availableCommissies.length > 0 && (
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="text-[10px] font-medium uppercase tracking-wider text-gray-400 mr-1">
+                Commissie:
+              </span>
+              <button
+                onClick={() => setSelectedCommissie("")}
+                className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium transition-colors ${
+                  !selectedCommissie
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                Alle
+              </button>
+              {availableCommissies.map(({ name, count }) => (
+                <button
+                  key={name}
+                  onClick={() => setSelectedCommissie(selectedCommissie === name ? "" : name)}
+                  className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium transition-colors ${
+                    selectedCommissie === name
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                  }`}
+                >
+                  {name.replace(/^vaste commissie voor /, "").replace(/^tijdelijke commissie /, "")} ({count})
+                </button>
+              ))}
+            </div>
           )}
         </div>
       </div>
+
+      {/* Count */}
+      {!loading && (
+        <div className="shrink-0 bg-gray-50 px-4 py-1.5 sm:px-6">
+          <div className="mx-auto max-w-4xl">
+            <span className="text-xs text-gray-400">
+              {filtered.length} vergaderingen
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Agenda list */}
       <div className="flex-1 overflow-y-auto">
@@ -156,9 +259,9 @@ export default function AgendaPage() {
             </div>
           )}
 
-          {!loading && items.length === 0 && (
+          {!loading && filtered.length === 0 && (
             <div className="py-20 text-center text-sm text-gray-400">
-              Geen vergaderingen gevonden voor deze periode.
+              Geen vergaderingen gevonden.
             </div>
           )}
 
@@ -173,15 +276,11 @@ export default function AgendaPage() {
                     key={item.Id}
                     className="flex items-start gap-3 rounded-xl bg-white px-4 py-3 shadow-sm ring-1 ring-gray-100"
                   >
-                    {/* Time */}
                     <div className="shrink-0 pt-0.5 text-xs text-gray-400" style={{ minWidth: "5rem" }}>
                       {formatTime(item.Aanvangstijd)}
-                      {item.Eindtijd && (
-                        <> – {formatTime(item.Eindtijd)}</>
-                      )}
+                      {item.Eindtijd && <> – {formatTime(item.Eindtijd)}</>}
                     </div>
 
-                    {/* Content */}
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-1.5 mb-0.5">
                         <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-medium ${
@@ -205,7 +304,6 @@ export default function AgendaPage() {
                       )}
                     </div>
 
-                    {/* Action */}
                     <Link
                       href={`/voorbereiden?topic=${encodeURIComponent(item.Onderwerp)}`}
                       className="shrink-0 rounded-lg bg-blue-600 px-2.5 py-1.5 text-xs font-medium text-white hover:bg-blue-700"
