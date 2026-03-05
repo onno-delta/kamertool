@@ -15,6 +15,9 @@ import {
   fetchWebPage,
   searchAgenda,
   searchDocumenten,
+  searchOpenTK,
+  getOpenTKDocument,
+  getRecenteKamervragen,
 } from "@/lib/tools"
 import { NextResponse } from "next/server"
 
@@ -82,6 +85,9 @@ export async function POST(req: Request) {
       fetchWebPage,
       searchAgenda,
       searchDocumenten,
+      searchOpenTK,
+      getOpenTKDocument,
+      getRecenteKamervragen,
       searchPartyDocs: createSearchPartyDocs(
         partyId ?? null,
         organisationId ?? null

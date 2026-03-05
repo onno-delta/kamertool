@@ -16,6 +16,9 @@ import {
   fetchWebPage,
   searchAgenda,
   searchDocumenten,
+  searchOpenTK,
+  getOpenTKDocument,
+  getRecenteKamervragen,
 } from "@/lib/tools"
 import { NextResponse } from "next/server"
 
@@ -66,9 +69,10 @@ export async function POST(req: Request) {
     const prompt = `Genereer een uitgebreide debriefing over het onderwerp: "${topic}"
 
 Aanpak:
-1. Zoek eerst relevante Kamerstukken (searchKamerstukken) en documenten (searchDocumenten) — met name Kamerbrieven, nota's en verslagen.
-2. Haal voor de belangrijkste documenten de inhoud op via fetchWebPage (gebruik de URL uit searchDocumenten) en vat samen wat erin staat.
-3. Zoek toezeggingen, stemmingen, handelingen en nieuws.
+1. Zoek eerst via searchOpenTK (full-text search over alle parlementaire documenten) naar relevante stukken.
+2. Haal voor de belangrijkste documenten de volledige tekst op via getOpenTKDocument en vat samen wat erin staat.
+3. Zoek aanvullend via searchKamerstukken en searchDocumenten voor gestructureerde resultaten.
+4. Zoek toezeggingen, stemmingen, handelingen en nieuws.
 
 Structuur:
 ## Samenvatting
@@ -103,10 +107,11 @@ BELANGRIJK: Zoek de daadwerkelijke inhoud van de relevante stukken op en vat sam
       system: `Je bent een parlementair onderzoeksassistent die debatbriefings schrijft voor Kamerleden. Gebruik altijd je tools om informatie op te zoeken. Schrijf in het Nederlands. Verwijs naar specifieke documentnummers en Kamerstuknummers.
 
 Werkwijze:
-- Gebruik searchDocumenten om relevante Kamerbrieven, nota's en verslagen te vinden
-- Gebruik fetchWebPage om de inhoud van gevonden documenten op te halen en samen te vatten
-- Gebruik searchKamerstukken voor moties, amendementen en wetsvoorstellen
+- Gebruik searchOpenTK als primaire zoekmachine — dit doorzoekt alle parlementaire documenten via full-text search (opentk.nl)
+- Gebruik getOpenTKDocument om de volledige tekst van gevonden documenten op te halen via hun documentnummer
+- Gebruik searchDocumenten en searchKamerstukken voor aanvullende gestructureerde zoekopdrachten via de TK API
 - Gebruik searchToezeggingen, searchStemmingen en searchHandelingen voor context
+- Gebruik getRecenteKamervragen om recente schriftelijke vragen te bekijken
 - Vat de inhoud van elk relevant stuk bondig maar volledig samen`,
       prompt,
       stopWhen: stepCountIs(25),
@@ -119,6 +124,9 @@ Werkwijze:
         fetchWebPage,
         searchAgenda,
         searchDocumenten,
+        searchOpenTK,
+        getOpenTKDocument,
+        getRecenteKamervragen,
         searchPartyDocs: createSearchPartyDocs(
           partyId ?? null,
           organisationId ?? null

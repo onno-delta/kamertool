@@ -18,6 +18,9 @@ const TOOL_LABELS: Record<string, string> = {
   searchAgenda: "Kameragenda",
   searchDocumenten: "Documenten",
   searchPartyDocs: "Partijdocumenten",
+  searchOpenTK: "OpenTK",
+  getOpenTKDocument: "Document (OpenTK)",
+  getRecenteKamervragen: "Recente Kamervragen",
 }
 
 export function getStepLabel(tool: string, args: Record<string, unknown>): string {
