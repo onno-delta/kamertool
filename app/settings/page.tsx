@@ -28,7 +28,7 @@ const PROVIDERS = [
 ] as const
 
 const MODEL_OPTIONS: ModelOption[] = [
-  { key: "claude-opus-4", provider: "anthropic", label: "Claude Opus 4" },
+  { key: "claude-opus-4-6", provider: "anthropic", label: "Claude Opus 4.6" },
   { key: "claude-sonnet-4-5", provider: "anthropic", label: "Claude Sonnet 4.5" },
   { key: "claude-haiku-4-5", provider: "anthropic", label: "Claude Haiku 4.5" },
   { key: "gpt-4o", provider: "openai", label: "GPT-4o" },

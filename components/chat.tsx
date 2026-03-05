@@ -15,7 +15,7 @@ type Party = { id: string; name: string; shortName: string }
 const FREE_MODELS = [
   { key: "claude-haiku-4-5", label: "Haiku 4.5" },
   { key: "claude-sonnet-4-5", label: "Sonnet 4.5" },
-  { key: "claude-opus-4", label: "Opus 4" },
+  { key: "claude-opus-4-6", label: "Opus 4.6" },
 ]
 
 export function Chat() {
