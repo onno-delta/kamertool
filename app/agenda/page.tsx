@@ -151,90 +151,54 @@ export default function AgendaPage() {
     <div className="flex min-h-0 flex-1 flex-col">
       {/* Filters */}
       <div className="shrink-0 border-b border-gray-200 bg-white px-4 py-3 sm:px-6">
-        <div className="mx-auto max-w-4xl space-y-2">
-          {/* Row 1: type pills + days + search */}
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Type filter */}
-            <div className="flex flex-wrap gap-1">
-              <button
-                onClick={() => setSelectedType("")}
-                className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-                  !selectedType
-                    ? "bg-gray-900 text-white"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                }`}
-              >
-                Alles ({allItems.length})
-              </button>
-              {availableTypes.map(({ type, count }) => (
-                <button
-                  key={type}
-                  onClick={() => setSelectedType(selectedType === type ? "" : type)}
-                  className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-                    selectedType === type
-                      ? "bg-gray-900 text-white"
-                      : `${TYPE_COLORS[type] ?? "bg-gray-100 text-gray-600"} hover:opacity-80`
-                  }`}
-                >
-                  {type} ({count})
-                </button>
-              ))}
-            </div>
+        <div className="mx-auto flex max-w-4xl flex-wrap items-center gap-2">
+          <select
+            value={selectedType}
+            onChange={(e) => setSelectedType(e.target.value)}
+            className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-700"
+          >
+            <option value="">Alle types ({allItems.length})</option>
+            {availableTypes.map(({ type, count }) => (
+              <option key={type} value={type}>
+                {type} ({count})
+              </option>
+            ))}
+          </select>
 
-            <div className="ml-auto flex items-center gap-2">
-              <select
-                value={days}
-                onChange={(e) => setDays(Number(e.target.value))}
-                className="rounded-lg border border-gray-200 bg-white px-2 py-1.5 text-xs text-gray-700"
-              >
-                {DAYS_OPTIONS.map((d) => (
-                  <option key={d.value} value={d.value}>
-                    {d.label}
-                  </option>
-                ))}
-              </select>
-
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Zoeken..."
-                className="w-40 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs text-gray-900 placeholder:text-gray-400"
-              />
-            </div>
-          </div>
-
-          {/* Row 2: commissie filter (only when a type with commissies is selected) */}
           {selectedType && availableCommissies.length > 0 && (
-            <div className="flex flex-wrap items-center gap-1.5">
-              <span className="text-[10px] font-medium uppercase tracking-wider text-gray-400 mr-1">
-                Commissie:
-              </span>
-              <button
-                onClick={() => setSelectedCommissie("")}
-                className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium transition-colors ${
-                  !selectedCommissie
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                }`}
-              >
-                Alle
-              </button>
+            <select
+              value={selectedCommissie}
+              onChange={(e) => setSelectedCommissie(e.target.value)}
+              className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-700"
+            >
+              <option value="">Alle commissies</option>
               {availableCommissies.map(({ name, count }) => (
-                <button
-                  key={name}
-                  onClick={() => setSelectedCommissie(selectedCommissie === name ? "" : name)}
-                  className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium transition-colors ${
-                    selectedCommissie === name
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                  }`}
-                >
+                <option key={name} value={name}>
                   {name.replace(/^vaste commissie voor /, "").replace(/^tijdelijke commissie /, "")} ({count})
-                </button>
+                </option>
               ))}
-            </div>
+            </select>
           )}
+
+          <select
+            value={days}
+            onChange={(e) => setDays(Number(e.target.value))}
+            className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-700"
+          >
+            {DAYS_OPTIONS.map((d) => (
+              <option key={d.value} value={d.value}>
+                {d.label}
+              </option>
+            ))}
+          </select>
+
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Zoeken..."
+            className="w-40 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-900 placeholder:text-gray-400"
+          />
         </div>
       </div>
 
