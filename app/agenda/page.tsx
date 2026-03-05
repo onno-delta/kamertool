@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useMemo } from "react"
 import Link from "next/link"
+import { MultiSelect } from "@/components/multi-select"
+import { DOSSIERS } from "@/lib/dossiers"
 
 type Activiteit = {
   Id: string
@@ -15,18 +17,6 @@ type Activiteit = {
   Voortouwnaam: string
   Voortouwafkorting: string
 }
-
-// Types that have commissies
-const TYPES_WITH_COMMISSIE = new Set([
-  "Commissiedebat",
-  "Wetgevingsoverleg",
-  "Notaoverleg",
-  "Begrotingsoverleg",
-  "Rondetafelgesprek",
-  "Procedurevergadering",
-  "Gesprek",
-  "Technische briefing",
-])
 
 const DAYS_OPTIONS = [
   { value: 7, label: "7 dagen" },
@@ -75,14 +65,26 @@ function groupByDate(items: Activiteit[]): Record<string, Activiteit[]> {
   return groups
 }
 
+/** Normalize for accent-insensitive matching */
+function normalize(s: string): string {
+  return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
+}
+
+/** Check if a Voortouwnaam matches a dossier label */
+function commissieMatchesDossier(voortouwnaam: string, dossierLabel: string): boolean {
+  return normalize(voortouwnaam).includes(normalize(dossierLabel))
+}
+
 export default function AgendaPage() {
   const [allItems, setAllItems] = useState<Activiteit[]>([])
   const [loading, setLoading] = useState(true)
   const [days, setDays] = useState(14)
-  const [selectedType, setSelectedType] = useState("")
-  const [selectedCommissie, setSelectedCommissie] = useState("")
+  const [selectedTypes, setSelectedTypes] = useState<Set<string>>(new Set())
+  const [selectedCommissies, setSelectedCommissies] = useState<Set<string>>(new Set())
   const [search, setSearch] = useState("")
+  const [prefsLoaded, setPrefsLoaded] = useState(false)
 
+  // Load agenda data
   useEffect(() => {
     setLoading(true)
     fetch(`/api/agenda?days=${days}`)
@@ -94,7 +96,47 @@ export default function AgendaPage() {
       .catch(() => setLoading(false))
   }, [days])
 
-  // Extract available types from data, sorted by count
+  // Load user dossier preferences and pre-select matching commissies
+  useEffect(() => {
+    if (prefsLoaded || allItems.length === 0) return
+
+    fetch("/api/settings/preferences")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((prefs) => {
+        setPrefsLoaded(true)
+        if (!prefs?.dossiers?.length) return
+
+        // Map dossier IDs to labels
+        const dossierLabels = (prefs.dossiers as string[])
+          .map((id: string) => DOSSIERS.find((d) => d.id === id)?.label)
+          .filter(Boolean) as string[]
+
+        if (dossierLabels.length === 0) return
+
+        // Find matching commissie names from the agenda data
+        const allCommissies = new Set<string>()
+        for (const item of allItems) {
+          if (item.Voortouwnaam) allCommissies.add(item.Voortouwnaam)
+        }
+
+        const matched = new Set<string>()
+        for (const commissie of allCommissies) {
+          for (const label of dossierLabels) {
+            if (commissieMatchesDossier(commissie, label)) {
+              matched.add(commissie)
+              break
+            }
+          }
+        }
+
+        if (matched.size > 0) {
+          setSelectedCommissies(matched)
+        }
+      })
+      .catch(() => setPrefsLoaded(true))
+  }, [allItems, prefsLoaded])
+
+  // Available types from data
   const availableTypes = useMemo(() => {
     const counts: Record<string, number> = {}
     for (const item of allItems) {
@@ -102,36 +144,36 @@ export default function AgendaPage() {
     }
     return Object.entries(counts)
       .sort((a, b) => b[1] - a[1])
-      .map(([type, count]) => ({ type, count }))
+      .map(([type, count]) => ({ value: type, label: type, count }))
   }, [allItems])
 
-  // Extract available commissies for the selected type
+  // Available commissies from (type-filtered) data
   const availableCommissies = useMemo(() => {
-    if (!selectedType || !TYPES_WITH_COMMISSIE.has(selectedType)) return []
     const counts: Record<string, number> = {}
     for (const item of allItems) {
-      if (item.Soort === selectedType && item.Voortouwnaam) {
-        counts[item.Voortouwnaam] = (counts[item.Voortouwnaam] ?? 0) + 1
-      }
+      if (!item.Voortouwnaam) continue
+      if (selectedTypes.size > 0 && !selectedTypes.has(item.Soort)) continue
+      counts[item.Voortouwnaam] = (counts[item.Voortouwnaam] ?? 0) + 1
     }
     return Object.entries(counts)
       .sort((a, b) => a[0].localeCompare(b[0]))
-      .map(([name, count]) => ({ name, count }))
-  }, [allItems, selectedType])
-
-  // Reset commissie when type changes
-  useEffect(() => {
-    setSelectedCommissie("")
-  }, [selectedType])
+      .map(([name, count]) => ({
+        value: name,
+        label: name
+          .replace(/^vaste commissie voor /, "")
+          .replace(/^tijdelijke commissie /, ""),
+        count,
+      }))
+  }, [allItems, selectedTypes])
 
   // Filter items
   const filtered = useMemo(() => {
     let items = allItems
-    if (selectedType) {
-      items = items.filter((i) => i.Soort === selectedType)
+    if (selectedTypes.size > 0) {
+      items = items.filter((i) => selectedTypes.has(i.Soort))
     }
-    if (selectedCommissie) {
-      items = items.filter((i) => i.Voortouwnaam === selectedCommissie)
+    if (selectedCommissies.size > 0) {
+      items = items.filter((i) => selectedCommissies.has(i.Voortouwnaam))
     }
     if (search) {
       const q = search.toLowerCase()
@@ -142,7 +184,7 @@ export default function AgendaPage() {
       )
     }
     return items
-  }, [allItems, selectedType, selectedCommissie, search])
+  }, [allItems, selectedTypes, selectedCommissies, search])
 
   const grouped = groupByDate(filtered)
   const dates = Object.keys(grouped).sort()
@@ -152,33 +194,19 @@ export default function AgendaPage() {
       {/* Filters */}
       <div className="shrink-0 border-b border-gray-200 bg-white px-4 py-3 sm:px-6">
         <div className="mx-auto flex max-w-4xl flex-wrap items-center gap-2">
-          <select
-            value={selectedType}
-            onChange={(e) => setSelectedType(e.target.value)}
-            className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-700"
-          >
-            <option value="">Alle types ({allItems.length})</option>
-            {availableTypes.map(({ type, count }) => (
-              <option key={type} value={type}>
-                {type} ({count})
-              </option>
-            ))}
-          </select>
+          <MultiSelect
+            label="Type"
+            options={availableTypes}
+            selected={selectedTypes}
+            onChange={setSelectedTypes}
+          />
 
-          {selectedType && availableCommissies.length > 0 && (
-            <select
-              value={selectedCommissie}
-              onChange={(e) => setSelectedCommissie(e.target.value)}
-              className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-700"
-            >
-              <option value="">Alle commissies</option>
-              {availableCommissies.map(({ name, count }) => (
-                <option key={name} value={name}>
-                  {name.replace(/^vaste commissie voor /, "").replace(/^tijdelijke commissie /, "")} ({count})
-                </option>
-              ))}
-            </select>
-          )}
+          <MultiSelect
+            label="Commissie"
+            options={availableCommissies}
+            selected={selectedCommissies}
+            onChange={setSelectedCommissies}
+          />
 
           <select
             value={days}
@@ -229,61 +257,67 @@ export default function AgendaPage() {
             </div>
           )}
 
-          {!loading && dates.map((date) => (
-            <div key={date} className="mb-6">
-              <h2 className="mb-2 text-sm font-semibold text-gray-900 capitalize">
-                {formatDate(grouped[date][0].Datum)}
-              </h2>
-              <div className="space-y-1.5">
-                {grouped[date].map((item) => (
-                  <div
-                    key={item.Id}
-                    className="flex items-start gap-3 rounded-xl bg-white px-4 py-3 shadow-sm ring-1 ring-gray-100"
-                  >
-                    <div className="shrink-0 pt-0.5 text-xs text-gray-400" style={{ minWidth: "5rem" }}>
-                      {formatTime(item.Aanvangstijd)}
-                      {item.Eindtijd && <> – {formatTime(item.Eindtijd)}</>}
-                    </div>
+          {!loading &&
+            dates.map((date) => (
+              <div key={date} className="mb-6">
+                <h2 className="mb-2 text-sm font-semibold text-gray-900 capitalize">
+                  {formatDate(grouped[date][0].Datum)}
+                </h2>
+                <div className="space-y-1.5">
+                  {grouped[date].map((item) => (
+                    <div
+                      key={item.Id}
+                      className="flex items-start gap-3 rounded-xl bg-white px-4 py-3 shadow-sm ring-1 ring-gray-100"
+                    >
+                      <div
+                        className="shrink-0 pt-0.5 text-xs text-gray-400"
+                        style={{ minWidth: "5rem" }}
+                      >
+                        {formatTime(item.Aanvangstijd)}
+                        {item.Eindtijd && <> – {formatTime(item.Eindtijd)}</>}
+                      </div>
 
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-1.5 mb-0.5">
-                        <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-medium ${
-                          TYPE_COLORS[item.Soort] ?? "bg-gray-100 text-gray-600"
-                        }`}>
-                          {item.Soort}
-                        </span>
-                        {item.Voortouwafkorting && (
-                          <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-500">
-                            {item.Voortouwafkorting}
+                      <div className="min-w-0 flex-1">
+                        <div className="mb-0.5 flex flex-wrap items-center gap-1.5">
+                          <span
+                            className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                              TYPE_COLORS[item.Soort] ?? "bg-gray-100 text-gray-600"
+                            }`}
+                          >
+                            {item.Soort}
                           </span>
+                          {item.Voortouwafkorting && (
+                            <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-500">
+                              {item.Voortouwafkorting}
+                            </span>
+                          )}
+                        </div>
+                        <a
+                          href={`https://www.tweedekamer.nl/vergaderingen/commissievergaderingen/details?id=${item.Nummer}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm font-medium text-gray-800 hover:text-blue-600 hover:underline"
+                        >
+                          {item.Onderwerp}
+                        </a>
+                        {item.Voortouwnaam && (
+                          <p className="mt-0.5 text-xs text-gray-400">
+                            {item.Voortouwnaam}
+                          </p>
                         )}
                       </div>
-                      <a
-                        href={`https://www.tweedekamer.nl/vergaderingen/commissievergaderingen/details?id=${item.Nummer}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm font-medium text-gray-800 hover:text-blue-600 hover:underline"
-                      >
-                        {item.Onderwerp}
-                      </a>
-                      {item.Voortouwnaam && (
-                        <p className="mt-0.5 text-xs text-gray-400">
-                          {item.Voortouwnaam}
-                        </p>
-                      )}
-                    </div>
 
-                    <Link
-                      href={`/voorbereiden?topic=${encodeURIComponent(item.Onderwerp)}`}
-                      className="shrink-0 rounded-lg bg-blue-600 px-2.5 py-1.5 text-xs font-medium text-white hover:bg-blue-700"
-                    >
-                      Voorbereiden
-                    </Link>
-                  </div>
-                ))}
+                      <Link
+                        href={`/voorbereiden?topic=${encodeURIComponent(item.Onderwerp)}`}
+                        className="shrink-0 rounded-lg bg-blue-600 px-2.5 py-1.5 text-xs font-medium text-white hover:bg-blue-700"
+                      >
+                        Voorbereiden
+                      </Link>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
         </div>
       </div>
     </div>
