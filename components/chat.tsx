@@ -87,9 +87,9 @@ export function Chat() {
   }
 
   return (
-    <div className="flex flex-1 flex-col p-2 sm:p-4">
+    <div className="flex min-h-0 flex-1 flex-col p-2 sm:p-4">
       {/* Main chat card */}
-      <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+      <div className="mx-auto flex min-h-0 w-full max-w-4xl flex-1 flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
         {/* Toolbar */}
         <div className="flex flex-wrap items-center gap-2 border-b border-gray-100 px-3 py-2 sm:px-5 sm:py-2.5">
           <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
