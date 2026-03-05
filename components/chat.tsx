@@ -31,6 +31,16 @@ export function Chat() {
       const active = keys.find((k: { isActive: boolean }) => k.isActive)
       if (active) setActiveKey({ provider: active.provider, model: active.model })
     }).catch(() => {})
+    // Load default party from preferences
+    Promise.all([
+      fetch("/api/settings/preferences").then(r => r.ok ? r.json() : null),
+      fetch("/api/parties").then(r => r.json()),
+    ]).then(([prefs, allParties]) => {
+      if (prefs?.defaultPartyId && allParties) {
+        const defaultParty = allParties.find((p: Party) => p.id === prefs.defaultPartyId)
+        if (defaultParty) setParty(defaultParty)
+      }
+    }).catch(() => {})
   }, [])
 
   const partyRef = useRef(party)

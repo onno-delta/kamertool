@@ -149,6 +149,17 @@ export const userApiKeys = pgTable("user_api_key", {
   updatedAt: timestamp("updatedAt", { mode: "date" }).notNull().defaultNow(),
 })
 
+export const userDossiers = pgTable("user_dossier", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: text("userId")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  dossier: text("dossier").notNull(),
+  createdAt: timestamp("createdAt", { mode: "date" }).notNull().defaultNow(),
+})
+
 export const usageLog = pgTable("usage_log", {
   id: text("id")
     .primaryKey()

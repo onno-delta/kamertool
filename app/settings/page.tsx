@@ -1,6 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { DOSSIERS } from "@/lib/dossiers"
+
 type StoredKey = {
   id: string
   provider: string
@@ -16,13 +18,14 @@ type ModelOption = {
   label: string
 }
 
+type Party = { id: string; name: string; shortName: string }
+
 const PROVIDERS = [
   { id: "anthropic", name: "Anthropic", placeholder: "sk-ant-..." },
   { id: "openai", name: "OpenAI", placeholder: "sk-..." },
   { id: "google", name: "Google", placeholder: "AIza..." },
 ] as const
 
-// Hardcode model options to avoid importing server-only module
 const MODEL_OPTIONS: ModelOption[] = [
   { key: "claude-sonnet-4-5", provider: "anthropic", label: "Claude Sonnet 4.5" },
   { key: "claude-haiku-4-5", provider: "anthropic", label: "Claude Haiku 4.5" },
@@ -42,10 +45,17 @@ export default function SettingsPage() {
     error?: string
   } | null>(null)
 
-  // Form state
+  // Form state for API keys
   const [provider, setProvider] = useState<string>("anthropic")
   const [apiKey, setApiKey] = useState("")
   const [model, setModel] = useState("")
+
+  // Preferences state
+  const [parties, setParties] = useState<Party[]>([])
+  const [selectedPartyId, setSelectedPartyId] = useState<string>("")
+  const [selectedDossiers, setSelectedDossiers] = useState<string[]>([])
+  const [prefsSaving, setPrefsSaving] = useState(false)
+  const [prefsSaved, setPrefsSaved] = useState(false)
 
   const modelsForProvider = MODEL_OPTIONS.filter((m) => m.provider === provider)
 
@@ -61,6 +71,21 @@ export default function SettingsPage() {
 
   useEffect(() => {
     loadKeys()
+    // Load parties
+    fetch("/api/parties")
+      .then((r) => r.json())
+      .then(setParties)
+      .catch(() => {})
+    // Load preferences
+    fetch("/api/settings/preferences")
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => {
+        if (data) {
+          setSelectedPartyId(data.defaultPartyId ?? "")
+          setSelectedDossiers(data.dossiers ?? [])
+        }
+      })
+      .catch(() => {})
   }, [])
 
   async function handleTest() {
@@ -98,9 +123,105 @@ export default function SettingsPage() {
     await loadKeys()
   }
 
+  function toggleDossier(dossierId: string) {
+    setSelectedDossiers((prev) =>
+      prev.includes(dossierId)
+        ? prev.filter((d) => d !== dossierId)
+        : [...prev, dossierId]
+    )
+    setPrefsSaved(false)
+  }
+
+  async function handleSavePrefs() {
+    setPrefsSaving(true)
+    await fetch("/api/settings/preferences", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        defaultPartyId: selectedPartyId || null,
+        dossiers: selectedDossiers,
+      }),
+    })
+    setPrefsSaving(false)
+    setPrefsSaved(true)
+    setTimeout(() => setPrefsSaved(false), 2000)
+  }
+
   return (
-    <div className="mx-auto max-w-2xl px-6 py-10">
+    <div className="mx-auto max-w-2xl overflow-y-auto px-6 py-10">
       <h1 className="mb-8 text-2xl font-semibold text-gray-900">Instellingen</h1>
+
+      {/* Party & Dossiers */}
+      <div className="mb-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+        <h2 className="mb-4 text-lg font-medium text-gray-800">
+          Partij en dossiers
+        </h2>
+
+        <div className="space-y-5">
+          {/* Party selector */}
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              Partij
+            </label>
+            <select
+              value={selectedPartyId}
+              onChange={(e) => {
+                setSelectedPartyId(e.target.value)
+                setPrefsSaved(false)
+              }}
+              className="w-full rounded-xl border border-gray-300 px-3 py-2 text-gray-900"
+            >
+              <option value="">Geen partij (neutraal)</option>
+              {parties.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.shortName} — {p.name}
+                </option>
+              ))}
+            </select>
+            <p className="mt-1 text-xs text-gray-400">
+              De standaardpartij wordt automatisch geselecteerd in de chat.
+            </p>
+          </div>
+
+          {/* Dossier checkboxes */}
+          <div>
+            <label className="mb-2 block text-sm font-medium text-gray-700">
+              Dossiers
+            </label>
+            <p className="mb-3 text-xs text-gray-400">
+              Selecteer de beleidsterreinen die je volgt. Deze worden meegenomen in briefings.
+            </p>
+            <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+              {DOSSIERS.map((d) => (
+                <label
+                  key={d.id}
+                  className={`flex cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors ${
+                    selectedDossiers.includes(d.id)
+                      ? "bg-blue-50 text-blue-900"
+                      : "bg-gray-50 text-gray-700 hover:bg-gray-100"
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedDossiers.includes(d.id)}
+                    onChange={() => toggleDossier(d.id)}
+                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  {d.label}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <button
+            onClick={handleSavePrefs}
+            disabled={prefsSaving}
+            className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+          >
+            {prefsSaving ? "Opslaan..." : prefsSaved ? "Opgeslagen" : "Voorkeuren opslaan"}
+          </button>
+        </div>
+      </div>
 
       {/* Existing keys */}
       {!loading && keys.length > 0 && (
@@ -163,7 +284,6 @@ export default function SettingsPage() {
         </h2>
 
         <div className="space-y-4">
-          {/* Provider select */}
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">
               Provider
@@ -181,7 +301,6 @@ export default function SettingsPage() {
             </select>
           </div>
 
-          {/* Model select */}
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">
               Model
@@ -199,7 +318,6 @@ export default function SettingsPage() {
             </select>
           </div>
 
-          {/* API key input */}
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">
               API Key
@@ -215,7 +333,6 @@ export default function SettingsPage() {
             />
           </div>
 
-          {/* Test result */}
           {testResult && (
             <div
               className={`rounded-xl p-3 text-sm ${
@@ -230,7 +347,6 @@ export default function SettingsPage() {
             </div>
           )}
 
-          {/* Actions */}
           <div className="flex gap-3">
             <button
               onClick={handleTest}
