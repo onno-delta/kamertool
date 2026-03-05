@@ -4,10 +4,19 @@ import { cookies } from "next/headers"
 import { NextResponse } from "next/server"
 
 export async function GET() {
-  const session = await auth()
-  const cookieStore = await cookies()
-  const sessionId = cookieStore.get("session-id")?.value ?? null
+  try {
+    const session = await auth()
+    const cookieStore = await cookies()
+    const sessionId = cookieStore.get("session-id")?.value ?? null
+    console.log("[settings/usage] GET", { userId: session?.user?.id ?? null, sessionId })
 
-  const usage = await getUsage(session?.user?.id ?? null, sessionId)
-  return NextResponse.json(usage)
+    const usage = await getUsage(session?.user?.id ?? null, sessionId)
+    return NextResponse.json(usage)
+  } catch (error) {
+    console.error("[settings/usage] ERROR:", error)
+    return NextResponse.json(
+      { error: String(error instanceof Error ? error.message : error) },
+      { status: 500 }
+    )
+  }
 }

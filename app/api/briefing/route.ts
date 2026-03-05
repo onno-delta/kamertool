@@ -19,44 +19,48 @@ import { NextResponse } from "next/server"
 export const maxDuration = 120
 
 export async function POST(req: Request) {
-  const { topic, partyId, partyName, organisationId } = await req.json()
+  try {
+    const { topic, partyId, partyName, organisationId } = await req.json()
+    console.log("[briefing] POST", { topic, partyId, partyName })
 
-  if (!topic) {
-    return NextResponse.json({ error: "Topic is required" }, { status: 400 })
-  }
-
-  const session = await auth()
-  const userId = session?.user?.id ?? null
-
-  let modelOpts: { model?: string; apiKey?: string } | undefined
-  let usingOwnKey = false
-
-  if (userId) {
-    const userKey = await getActiveKey(userId)
-    if (userKey) {
-      modelOpts = { model: userKey.model, apiKey: userKey.apiKey }
-      usingOwnKey = true
+    if (!topic) {
+      return NextResponse.json({ error: "Topic is required" }, { status: 400 })
     }
-  }
 
-  if (!usingOwnKey) {
-    const cookieStore = await cookies()
-    const sessionId = cookieStore.get("session-id")?.value ?? null
-    const { allowed, used, limit } = await checkAndIncrementUsage(userId, sessionId)
-    if (!allowed) {
-      return NextResponse.json(
-        {
-          error: "rate_limit",
-          message: `Dagelijkse limiet bereikt (${limit} berichten).`,
-          used,
-          limit,
-        },
-        { status: 429 }
-      )
+    const session = await auth()
+    const userId = session?.user?.id ?? null
+    console.log("[briefing] auth", { userId })
+
+    let modelOpts: { model?: string; apiKey?: string } | undefined
+    let usingOwnKey = false
+
+    if (userId) {
+      const userKey = await getActiveKey(userId)
+      if (userKey) {
+        modelOpts = { model: userKey.model, apiKey: userKey.apiKey }
+        usingOwnKey = true
+      }
     }
-  }
 
-  const prompt = `Genereer een uitgebreide debriefing over het onderwerp: "${topic}"
+    if (!usingOwnKey) {
+      const cookieStore = await cookies()
+      const sessionId = cookieStore.get("session-id")?.value ?? null
+      const { allowed, used, limit } = await checkAndIncrementUsage(userId, sessionId)
+      console.log("[briefing] rate limit", { allowed, used, limit })
+      if (!allowed) {
+        return NextResponse.json(
+          {
+            error: "rate_limit",
+            message: `Dagelijkse limiet bereikt (${limit} berichten).`,
+            used,
+            limit,
+          },
+          { status: 429 }
+        )
+      }
+    }
+
+    const prompt = `Genereer een uitgebreide debriefing over het onderwerp: "${topic}"
 
 Structuur:
 ## Samenvatting
@@ -78,33 +82,43 @@ ${partyName ? `Frame alles vanuit het perspectief van ${partyName}.` : "Geef een
 
 Gebruik je tools om actuele informatie op te zoeken. Verwijs altijd naar bronnen.`
 
-  const { text } = await generateText({
-    model: getModel(modelOpts),
-    system: `Je bent een parlementair onderzoeksassistent die debatbriefings schrijft voor Kamerleden. Gebruik altijd je tools om informatie op te zoeken. Schrijf in het Nederlands. Verwijs naar specifieke Kamerstuknummers.`,
-    prompt,
-    stopWhen: stepCountIs(15),
-    tools: {
-      searchKamerstukken,
-      searchHandelingen,
-      searchToezeggingen,
-      searchStemmingen,
-      searchNews,
-      searchPartyDocs: createSearchPartyDocs(
-        partyId ?? null,
-        organisationId ?? null
-      ),
-    },
-  })
-
-  // Save briefing to database
-  if (userId) {
-    await db.insert(briefings).values({
-      userId,
-      organisationId: organisationId ?? null,
-      topic,
-      content: text,
+    console.log("[briefing] generating text...")
+    const { text } = await generateText({
+      model: getModel(modelOpts),
+      system: `Je bent een parlementair onderzoeksassistent die debatbriefings schrijft voor Kamerleden. Gebruik altijd je tools om informatie op te zoeken. Schrijf in het Nederlands. Verwijs naar specifieke Kamerstuknummers.`,
+      prompt,
+      stopWhen: stepCountIs(15),
+      tools: {
+        searchKamerstukken,
+        searchHandelingen,
+        searchToezeggingen,
+        searchStemmingen,
+        searchNews,
+        searchPartyDocs: createSearchPartyDocs(
+          partyId ?? null,
+          organisationId ?? null
+        ),
+      },
     })
-  }
+    console.log("[briefing] done, length:", text.length)
 
-  return NextResponse.json({ topic, content: text })
+    // Save briefing to database
+    if (userId) {
+      await db.insert(briefings).values({
+        userId,
+        organisationId: organisationId ?? null,
+        topic,
+        content: text,
+      })
+      console.log("[briefing] saved to db")
+    }
+
+    return NextResponse.json({ topic, content: text })
+  } catch (error) {
+    console.error("[briefing] ERROR:", error)
+    return NextResponse.json(
+      { error: String(error instanceof Error ? error.message : error) },
+      { status: 500 }
+    )
+  }
 }

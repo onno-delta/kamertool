@@ -18,67 +18,82 @@ import { NextResponse } from "next/server"
 export const maxDuration = 60
 
 export async function POST(req: Request) {
-  const { messages, partyId, partyName, organisationId, model: requestedModel } = await req.json()
+  try {
+    const { messages, partyId, partyName, organisationId, model: requestedModel } = await req.json()
+    console.log("[chat] POST", { userId: null, partyId, partyName, model: requestedModel, messageCount: messages?.length })
 
-  const session = await auth()
-  const userId = session?.user?.id ?? null
+    const session = await auth()
+    const userId = session?.user?.id ?? null
+    console.log("[chat] auth", { userId, email: session?.user?.email })
 
-  // Check for user's own API key
-  let modelOpts: { model?: string; apiKey?: string } | undefined
-  let usingOwnKey = false
+    // Check for user's own API key
+    let modelOpts: { model?: string; apiKey?: string } | undefined
+    let usingOwnKey = false
 
-  if (userId) {
-    const userKey = await getActiveKey(userId)
-    if (userKey) {
-      modelOpts = { model: userKey.model, apiKey: userKey.apiKey }
-      usingOwnKey = true
-    }
-  }
-
-  // Free tier rate limiting (only when not using own key)
-  if (!usingOwnKey) {
-    const cookieStore = await cookies()
-    let sessionId = cookieStore.get("session-id")?.value ?? null
-    if (!sessionId && !userId) {
-      sessionId = crypto.randomUUID()
+    if (userId) {
+      const userKey = await getActiveKey(userId)
+      if (userKey) {
+        modelOpts = { model: userKey.model, apiKey: userKey.apiKey }
+        usingOwnKey = true
+        console.log("[chat] using BYOK", { model: userKey.model })
+      }
     }
 
-    const { allowed, used, limit } = await checkAndIncrementUsage(userId, sessionId)
-    if (!allowed) {
-      return NextResponse.json(
-        {
-          error: "rate_limit",
-          message: `Dagelijkse limiet bereikt (${limit} berichten). Voeg je eigen API key toe in Instellingen voor onbeperkt gebruik.`,
-          used,
-          limit,
-        },
-        { status: 429 }
-      )
+    // Free tier rate limiting (only when not using own key)
+    if (!usingOwnKey) {
+      const cookieStore = await cookies()
+      let sessionId = cookieStore.get("session-id")?.value ?? null
+      if (!sessionId && !userId) {
+        sessionId = crypto.randomUUID()
+      }
+
+      const { allowed, used, limit } = await checkAndIncrementUsage(userId, sessionId)
+      console.log("[chat] rate limit", { allowed, used, limit })
+      if (!allowed) {
+        return NextResponse.json(
+          {
+            error: "rate_limit",
+            message: `Dagelijkse limiet bereikt (${limit} berichten). Voeg je eigen API key toe in Instellingen voor onbeperkt gebruik.`,
+            used,
+            limit,
+          },
+          { status: 429 }
+        )
+      }
     }
+
+    // Use BYOK model if set, otherwise use requested model from toolbar
+    if (!modelOpts && requestedModel) {
+      modelOpts = { model: requestedModel }
+    }
+
+    const finalModel = modelOpts?.model ?? "default"
+    console.log("[chat] streaming with model:", finalModel)
+
+    const result = streamText({
+      model: getModel(modelOpts),
+      system: buildSystemPrompt(partyName),
+      messages,
+      stopWhen: stepCountIs(10),
+      tools: {
+        searchKamerstukken,
+        searchHandelingen,
+        searchToezeggingen,
+        searchStemmingen,
+        searchNews,
+        searchPartyDocs: createSearchPartyDocs(
+          partyId ?? null,
+          organisationId ?? null
+        ),
+      },
+    })
+
+    return result.toUIMessageStreamResponse()
+  } catch (error) {
+    console.error("[chat] ERROR:", error)
+    return NextResponse.json(
+      { error: String(error instanceof Error ? error.message : error) },
+      { status: 500 }
+    )
   }
-
-  // Use BYOK model if set, otherwise use requested model from toolbar
-  if (!modelOpts && requestedModel) {
-    modelOpts = { model: requestedModel }
-  }
-
-  const result = streamText({
-    model: getModel(modelOpts),
-    system: buildSystemPrompt(partyName),
-    messages,
-    stopWhen: stepCountIs(10),
-    tools: {
-      searchKamerstukken,
-      searchHandelingen,
-      searchToezeggingen,
-      searchStemmingen,
-      searchNews,
-      searchPartyDocs: createSearchPartyDocs(
-        partyId ?? null,
-        organisationId ?? null
-      ),
-    },
-  })
-
-  return result.toUIMessageStreamResponse()
 }
