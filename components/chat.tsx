@@ -52,10 +52,11 @@ export function Chat() {
       }),
   )
 
-  const { messages, sendMessage, status } = useChat({
+  const { messages, sendMessage, status, error: chatError } = useChat({
     transport,
     onError(error) {
-      if (error.message.includes("rate_limit") || error.message.includes("429")) {
+      console.error("[chat] error:", error)
+      if (error.message?.includes("rate_limit") || error.message?.includes("429")) {
         setRateLimitError(
           "Dagelijkse limiet bereikt. Voeg je eigen API key toe in Instellingen voor onbeperkt gebruik."
         )
@@ -144,7 +145,7 @@ export function Chat() {
             {messages.map((m) => (
               <Message key={m.id} message={m} />
             ))}
-            {status === "submitted" && (
+            {(status === "submitted" || status === "streaming") && messages.length > 0 && messages[messages.length - 1].role === "user" && (
               <div className="flex justify-start mb-4">
                 <div className="rounded-2xl bg-gray-100 px-4 py-3 text-sm text-gray-500">
                   <span className="inline-flex items-center gap-1.5">
@@ -155,6 +156,18 @@ export function Chat() {
                     </span>
                     Aan het nadenken...
                   </span>
+                </div>
+              </div>
+            )}
+            {status === "error" && (
+              <div className="flex justify-start mb-4">
+                <div className="rounded-2xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+                  Er ging iets mis. Probeer het opnieuw.
+                  {chatError && (
+                    <span className="block mt-1 text-xs text-red-500">
+                      {chatError.message || String(chatError)}
+                    </span>
+                  )}
                 </div>
               </div>
             )}
