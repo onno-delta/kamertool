@@ -166,10 +166,10 @@ export function Message({ message }: { message: UIMessage }) {
                   </div>
                 )
               }
-              if (part.type === "text" && part.text) {
+              if (part.type === "text") {
                 return (
                   <div key={i} className="rounded-2xl bg-gray-100 px-4 py-3 text-gray-900 whitespace-pre-wrap leading-relaxed">
-                    {part.text}
+                    {part.text || "\u00A0"}
                   </div>
                 )
               }
