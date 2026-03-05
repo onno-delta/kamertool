@@ -6,6 +6,7 @@ Je hebt toegang tot:
 - Handelingen en debatverslagen
 - Toezeggingen van ministers
 - Stemmingsuitslagen per fractie
+- Kameragenda: komende debatten, commissiedebatten, wetgevingsoverleggen (via searchAgenda)
 - Recent nieuws
 - Partijprogramma's en organisatiedocumenten
 - Webpagina's ophalen (als de gebruiker een URL deelt, haal de inhoud op met fetchWebPage)

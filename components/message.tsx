@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import type { UIMessage } from "ai"
+import ReactMarkdown from "react-markdown"
 
 const TOOL_LABELS: Record<string, string> = {
   searchKamerstukken: "Kamerstukken",
@@ -10,6 +11,7 @@ const TOOL_LABELS: Record<string, string> = {
   searchStemmingen: "Stemmingen",
   searchNews: "Nieuws",
   fetchWebPage: "Webpagina ophalen",
+  searchAgenda: "Kameragenda",
   searchPartyDocs: "Partijdocumenten",
 }
 
@@ -20,6 +22,7 @@ const TOOL_ICONS: Record<string, string> = {
   searchStemmingen: "🗳",
   searchNews: "📰",
   fetchWebPage: "🌐",
+  searchAgenda: "📅",
   searchPartyDocs: "📋",
 }
 
@@ -184,8 +187,8 @@ export function Message({ message }: { message: UIMessage }) {
                 // Don't render empty text parts unless they're currently streaming
                 if (!part.text && !isStreaming) return null
                 return (
-                  <div key={i} className="rounded-2xl bg-gray-100 px-4 py-3 text-gray-900 whitespace-pre-wrap leading-relaxed">
-                    {part.text || "\u00A0"}
+                  <div key={i} className="rounded-2xl bg-gray-100 px-4 py-3 text-gray-900 leading-relaxed prose prose-sm max-w-none prose-headings:mt-4 prose-headings:mb-2 prose-p:my-1.5 prose-li:my-0.5 prose-ul:my-1.5 prose-ol:my-1.5">
+                    <ReactMarkdown>{part.text || "\u00A0"}</ReactMarkdown>
                   </div>
                 )
               }
