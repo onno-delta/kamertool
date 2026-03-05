@@ -21,7 +21,7 @@ export function Nav() {
     ? [
         { href: "/", label: "Chat" },
         { href: "/agenda", label: "Agenda" },
-        { href: "/briefings", label: "Briefings" },
+        { href: "/briefings", label: "Eerdere briefings" },
         ...(session.user.organisationId
           ? [{ href: "/dashboard", label: "Organisatie" }]
           : []),
