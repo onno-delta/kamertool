@@ -4,16 +4,16 @@ import { NextResponse } from "next/server"
 export async function GET(req: Request) {
   try {
     const url = new URL(req.url)
-    const days = Math.min(Number(url.searchParams.get("days") ?? 14), 90)
-
     const now = new Date()
-    const until = new Date(now.getTime() + days * 24 * 60 * 60 * 1000)
-    const fromStr = now.toISOString().split("T")[0] + "T00:00:00Z"
-    const untilStr = until.toISOString().split("T")[0] + "T23:59:59Z"
+    const fromParam = url.searchParams.get("from")
+    const toParam = url.searchParams.get("to")
 
-    const filter = `Datum ge ${fromStr} and Datum le ${untilStr} and Verwijderd eq false and Status ne 'Geannuleerd' and Status ne 'Verplaatst'`
+    const fromStr = (fromParam || now.toISOString().split("T")[0]) + "T00:00:00Z"
+    const toStr = (toParam || new Date(now.getTime() + 7 * 86400000).toISOString().split("T")[0]) + "T23:59:59Z"
 
-    console.log("[agenda] GET", { days })
+    const filter = `Datum ge ${fromStr} and Datum le ${toStr} and Verwijderd eq false and Status ne 'Geannuleerd' and Status ne 'Verplaatst'`
+
+    console.log("[agenda] GET", { from: fromStr, to: toStr })
 
     const results = await queryTK("Activiteit", {
       $filter: filter,

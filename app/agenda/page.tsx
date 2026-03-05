@@ -18,12 +18,13 @@ type Activiteit = {
   Voortouwafkorting: string
 }
 
-const DAYS_OPTIONS = [
-  { value: 7, label: "7 dagen" },
-  { value: 14, label: "14 dagen" },
-  { value: 30, label: "30 dagen" },
-  { value: 60, label: "60 dagen" },
-]
+function toDateStr(d: Date): string {
+  return d.toISOString().split("T")[0]
+}
+
+const today = new Date()
+const defaultFrom = toDateStr(today)
+const defaultTo = toDateStr(new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000))
 
 const TYPE_COLORS: Record<string, string> = {
   "Plenair debat": "bg-red-100 text-red-800",
@@ -78,7 +79,8 @@ function commissieMatchesDossier(voortouwnaam: string, dossierLabel: string): bo
 export default function AgendaPage() {
   const [allItems, setAllItems] = useState<Activiteit[]>([])
   const [loading, setLoading] = useState(true)
-  const [days, setDays] = useState(14)
+  const [fromDate, setFromDate] = useState(defaultFrom)
+  const [toDate, setToDate] = useState(defaultTo)
   const [selectedTypes, setSelectedTypes] = useState<Set<string>>(new Set())
   const [selectedCommissies, setSelectedCommissies] = useState<Set<string>>(new Set())
   const [search, setSearch] = useState("")
@@ -87,14 +89,14 @@ export default function AgendaPage() {
   // Load agenda data
   useEffect(() => {
     setLoading(true)
-    fetch(`/api/agenda?days=${days}`)
+    fetch(`/api/agenda?from=${fromDate}&to=${toDate}`)
       .then((r) => r.json())
       .then((data) => {
         setAllItems(Array.isArray(data) ? data : [])
         setLoading(false)
       })
       .catch(() => setLoading(false))
-  }, [days])
+  }, [fromDate, toDate])
 
   // Load user dossier preferences and pre-select matching commissies
   useEffect(() => {
@@ -208,17 +210,21 @@ export default function AgendaPage() {
             onChange={setSelectedCommissies}
           />
 
-          <select
-            value={days}
-            onChange={(e) => setDays(Number(e.target.value))}
-            className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-700"
-          >
-            {DAYS_OPTIONS.map((d) => (
-              <option key={d.value} value={d.value}>
-                {d.label}
-              </option>
-            ))}
-          </select>
+          <div className="flex items-center gap-1.5">
+            <input
+              type="date"
+              value={fromDate}
+              onChange={(e) => setFromDate(e.target.value)}
+              className="rounded-lg border border-gray-200 bg-white px-2 py-1.5 text-sm text-gray-700"
+            />
+            <span className="text-xs text-gray-400">t/m</span>
+            <input
+              type="date"
+              value={toDate}
+              onChange={(e) => setToDate(e.target.value)}
+              className="rounded-lg border border-gray-200 bg-white px-2 py-1.5 text-sm text-gray-700"
+            />
+          </div>
 
           <input
             type="text"
