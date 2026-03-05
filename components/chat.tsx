@@ -86,15 +86,15 @@ export function Chat() {
   }
 
   return (
-    <div className="flex flex-1 flex-col p-4">
+    <div className="flex flex-1 flex-col p-2 sm:p-4">
       {/* Main chat card */}
       <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
         {/* Toolbar */}
-        <div className="flex items-center justify-between border-b border-gray-100 px-5 py-2.5">
-          <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 border-b border-gray-100 px-3 py-2 sm:px-5 sm:py-2.5">
+          <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
             <PartySelector value={party} onChange={setParty} />
             {activeKey ? (
-              <span className="rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700 ring-1 ring-green-200">
+              <span className="shrink-0 rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700 ring-1 ring-green-200">
                 {activeKey.model} — eigen key
               </span>
             ) : (
@@ -102,14 +102,14 @@ export function Chat() {
                 <select
                   value={model}
                   onChange={(e) => setModel(e.target.value)}
-                  className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-blue-500 focus:outline-none"
+                  className="shrink-0 rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm text-gray-700 focus:border-blue-500 focus:outline-none sm:px-3 sm:py-2"
                 >
                   {FREE_MODELS.map((m) => (
                     <option key={m.key} value={m.key}>{m.label}</option>
                   ))}
                 </select>
                 {usage && (
-                  <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-500">
+                  <span className="shrink-0 rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-500">
                     {usage.used}/{usage.limit}
                   </span>
                 )}
@@ -119,7 +119,7 @@ export function Chat() {
           <button
             onClick={() => setShowBriefing(true)}
             disabled={!briefingTopic}
-            className="rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-40"
+            className="shrink-0 rounded-xl border border-gray-200 bg-gray-50 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-40"
           >
             Genereer briefing
           </button>
@@ -175,7 +175,7 @@ export function Chat() {
         )}
 
         {/* Input */}
-        <div className="border-t border-gray-100 px-5 py-3">
+        <div className="border-t border-gray-100 px-3 py-2 sm:px-5 sm:py-3">
           <form onSubmit={handleSubmit} className="mx-auto max-w-3xl">
             <div className="flex gap-3">
               <input
