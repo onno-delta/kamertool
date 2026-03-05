@@ -1,4 +1,4 @@
-import { streamText, stepCountIs } from "ai"
+import { streamText, stepCountIs, convertToModelMessages } from "ai"
 import { getModel } from "@/lib/ai"
 import { buildSystemPrompt } from "@/lib/system-prompt"
 import { auth } from "@/auth"
@@ -70,22 +70,27 @@ export async function POST(req: Request) {
     const finalModel = modelOpts?.model ?? "default"
     console.log("[chat] streaming with model:", finalModel)
 
+    const tools = {
+      searchKamerstukken,
+      searchHandelingen,
+      searchToezeggingen,
+      searchStemmingen,
+      searchNews,
+      searchPartyDocs: createSearchPartyDocs(
+        partyId ?? null,
+        organisationId ?? null
+      ),
+    }
+
+    const modelMessages = await convertToModelMessages(messages, { tools })
+    console.log("[chat] converted", messages.length, "UI messages to", modelMessages.length, "model messages")
+
     const result = streamText({
       model: getModel(modelOpts),
       system: buildSystemPrompt(partyName),
-      messages,
+      messages: modelMessages,
       stopWhen: stepCountIs(10),
-      tools: {
-        searchKamerstukken,
-        searchHandelingen,
-        searchToezeggingen,
-        searchStemmingen,
-        searchNews,
-        searchPartyDocs: createSearchPartyDocs(
-          partyId ?? null,
-          organisationId ?? null
-        ),
-      },
+      tools,
     })
 
     return result.toUIMessageStreamResponse()
