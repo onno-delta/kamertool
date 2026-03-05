@@ -28,6 +28,7 @@ const PROVIDERS = [
 ] as const
 
 const MODEL_OPTIONS: ModelOption[] = [
+  { key: "claude-opus-4", provider: "anthropic", label: "Claude Opus 4" },
   { key: "claude-sonnet-4-5", provider: "anthropic", label: "Claude Sonnet 4.5" },
   { key: "claude-haiku-4-5", provider: "anthropic", label: "Claude Haiku 4.5" },
   { key: "gpt-4o", provider: "openai", label: "GPT-4o" },
@@ -58,7 +59,7 @@ export default function SettingsPage() {
   const [selectedKamerleden, setSelectedKamerleden] = useState<Kamerlid[]>([])
   const [kamerleidSearch, setKamerleidSearch] = useState("")
   const [kamerleidResults, setKamerleidResults] = useState<Kamerlid[]>([])
-  const [kamerleidSearching, setKamerleidSearching] = useState(false)
+  const [kamerleidFocused, setKamerleidFocused] = useState(false)
   const [prefsSaving, setPrefsSaving] = useState(false)
   const [prefsSaved, setPrefsSaved] = useState(false)
 
@@ -138,27 +139,27 @@ export default function SettingsPage() {
     setPrefsSaved(false)
   }
 
-  // Kamerlid search with debounce
+  // All current TK members (fetched once)
+  const [allKamerleden, setAllKamerleden] = useState<Kamerlid[]>([])
+
   useEffect(() => {
-    if (kamerleidSearch.length < 2) {
-      setKamerleidResults([])
-      return
+    fetch("/api/kamerleden")
+      .then((r) => r.ok ? r.json() : [])
+      .then(setAllKamerleden)
+      .catch(() => {})
+  }, [])
+
+  // Filter kamerleden by search input
+  useEffect(() => {
+    const selectedIds = new Set(selectedKamerleden.map((k) => k.id))
+    const available = allKamerleden.filter((k) => !selectedIds.has(k.id))
+    if (!kamerleidSearch.trim()) {
+      setKamerleidResults(available)
+    } else {
+      const q = kamerleidSearch.toLowerCase()
+      setKamerleidResults(available.filter((k) => k.naam.toLowerCase().includes(q)))
     }
-    const timeout = setTimeout(async () => {
-      setKamerleidSearching(true)
-      try {
-        const res = await fetch(`/api/kamerleden?q=${encodeURIComponent(kamerleidSearch)}`)
-        if (res.ok) {
-          const data = await res.json()
-          // Filter out already selected
-          const selectedIds = new Set(selectedKamerleden.map((k) => k.id))
-          setKamerleidResults(data.filter((k: Kamerlid) => !selectedIds.has(k.id)))
-        }
-      } catch {}
-      setKamerleidSearching(false)
-    }, 300)
-    return () => clearTimeout(timeout)
-  }, [kamerleidSearch, selectedKamerleden])
+  }, [kamerleidSearch, selectedKamerleden, allKamerleden])
 
   function addKamerlid(k: Kamerlid) {
     setSelectedKamerleden((prev) => [...prev, k])
@@ -293,17 +294,14 @@ export default function SettingsPage() {
                 type="text"
                 value={kamerleidSearch}
                 onChange={(e) => setKamerleidSearch(e.target.value)}
+                onFocus={() => setKamerleidFocused(true)}
+                onBlur={() => setTimeout(() => setKamerleidFocused(false), 200)}
                 placeholder="Zoek op naam..."
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400"
               />
-              {kamerleidSearching && (
-                <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">
-                  <span className="block h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-blue-500" />
-                </div>
-              )}
 
               {/* Dropdown results */}
-              {kamerleidResults.length > 0 && (
+              {kamerleidFocused && kamerleidResults.length > 0 && (
                 <div className="absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg">
                   {kamerleidResults.map((k) => (
                     <button
