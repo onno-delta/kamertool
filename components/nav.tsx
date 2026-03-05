@@ -11,7 +11,7 @@ export function Nav() {
   // Don't render anything while loading to avoid flash
   if (status === "loading") {
     return (
-      <header className="flex shrink-0 items-center border-b border-gray-200 bg-white px-3 py-2 sm:px-6">
+      <header className="sticky top-0 z-50 flex shrink-0 items-center border-b border-gray-200 bg-white px-3 py-2 sm:px-6">
         <span className="text-lg font-semibold text-gray-900">Kamertool</span>
       </header>
     )
@@ -29,7 +29,7 @@ export function Nav() {
     : []
 
   return (
-    <header className="flex shrink-0 items-center justify-between border-b border-gray-200 bg-white px-3 py-2 shadow-sm sm:px-6">
+    <header className="sticky top-0 z-50 flex shrink-0 items-center justify-between border-b border-gray-200 bg-white px-3 py-2 shadow-sm sm:px-6">
       <div className="flex min-w-0 items-center gap-3 sm:gap-6">
         <Link href="/" className="shrink-0 text-lg font-semibold text-gray-900">
           Kamertool
