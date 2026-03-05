@@ -1,7 +1,7 @@
 import { auth } from "@/auth"
 import { db } from "@/lib/db"
 import { briefings } from "@/lib/db/schema"
-import { eq, desc, like } from "drizzle-orm"
+import { eq, desc, like, and } from "drizzle-orm"
 import { NextResponse } from "next/server"
 
 export async function GET(req: Request) {
@@ -26,7 +26,7 @@ export async function GET(req: Request) {
     .$dynamic()
 
   if (search) {
-    query = query.where(like(briefings.topic, `%${search}%`))
+    query = query.where(and(eq(briefings.userId, session.user.id), like(briefings.topic, `%${search}%`)))
   }
 
   const results = await query.limit(50)
