@@ -18,7 +18,7 @@ export const MODEL_OPTIONS = Object.entries(MODELS).map(([key, val]) => ({
   label: key,
 }))
 
-export const DEFAULT_MODEL = "claude-sonnet-4-5"
+export const DEFAULT_MODEL = "claude-haiku-4-5"
 
 function createProviderModel(
   provider: string,

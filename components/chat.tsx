@@ -10,8 +10,14 @@ import { BriefingDialog } from "./briefing-dialog"
 
 type Party = { id: string; name: string; shortName: string }
 
+const FREE_MODELS = [
+  { key: "claude-haiku-4-5", label: "Haiku 4.5" },
+  { key: "claude-sonnet-4-5", label: "Sonnet 4.5" },
+]
+
 export function Chat() {
   const [party, setParty] = useState<Party | null>(null)
+  const [model, setModel] = useState("claude-haiku-4-5")
   const [input, setInput] = useState("")
   const [showBriefing, setShowBriefing] = useState(false)
   const [usage, setUsage] = useState<{ used: number; limit: number } | null>(null)
@@ -34,9 +40,10 @@ export function Chat() {
         body: {
           partyId: party?.id ?? null,
           partyName: party?.shortName ?? null,
+          model: activeKey ? undefined : model,
         },
       }),
-    [party],
+    [party, model, activeKey],
   )
 
   const { messages, sendMessage, status } = useChat({
@@ -84,11 +91,24 @@ export function Chat() {
               <span className="rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700 ring-1 ring-green-200">
                 {activeKey.model} — eigen key
               </span>
-            ) : usage ? (
-              <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-500">
-                gratis — {usage.used}/{usage.limit} berichten
-              </span>
-            ) : null}
+            ) : (
+              <>
+                <select
+                  value={model}
+                  onChange={(e) => setModel(e.target.value)}
+                  className="rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1.5 text-xs font-medium text-gray-700 focus:border-blue-500 focus:outline-none"
+                >
+                  {FREE_MODELS.map((m) => (
+                    <option key={m.key} value={m.key}>{m.label}</option>
+                  ))}
+                </select>
+                {usage && (
+                  <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-500">
+                    {usage.used}/{usage.limit}
+                  </span>
+                )}
+              </>
+            )}
           </div>
           <button
             onClick={() => setShowBriefing(true)}

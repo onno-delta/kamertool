@@ -18,7 +18,7 @@ import { NextResponse } from "next/server"
 export const maxDuration = 60
 
 export async function POST(req: Request) {
-  const { messages, partyId, partyName, organisationId } = await req.json()
+  const { messages, partyId, partyName, organisationId, model: requestedModel } = await req.json()
 
   const session = await auth()
   const userId = session?.user?.id ?? null
@@ -55,6 +55,11 @@ export async function POST(req: Request) {
         { status: 429 }
       )
     }
+  }
+
+  // Use BYOK model if set, otherwise use requested model from toolbar
+  if (!modelOpts && requestedModel) {
+    modelOpts = { model: requestedModel }
   }
 
   const result = streamText({
