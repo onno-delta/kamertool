@@ -40,25 +40,29 @@ export default function BriefingsPage() {
       <h1 className="mb-8 text-2xl font-semibold text-gray-900">Briefing Geschiedenis</h1>
 
       {/* Search */}
-      <form onSubmit={handleSearch} className="mb-6 flex gap-3">
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Zoek op onderwerp..."
-          className="flex-1 rounded-lg border border-gray-300 px-4 py-2 text-gray-900 placeholder:text-gray-400"
-        />
-        <button
-          type="submit"
-          className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-        >
-          Zoeken
-        </button>
-      </form>
+      <div className="mb-6 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+        <form onSubmit={handleSearch} className="flex gap-3">
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Zoek op onderwerp..."
+            className="flex-1 rounded-xl border border-gray-300 px-4 py-2 text-gray-900 placeholder:text-gray-400"
+          />
+          <button
+            type="submit"
+            className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          >
+            Zoeken
+          </button>
+        </form>
+      </div>
 
       {loading && <p className="text-gray-500">Laden...</p>}
 
       {!loading && briefings.length === 0 && (
-        <p className="text-gray-500">Geen briefings gevonden. Genereer een briefing vanuit de chat.</p>
+        <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm text-center">
+          <p className="text-gray-500">Geen briefings gevonden. Genereer een briefing vanuit de chat.</p>
+        </div>
       )}
 
       {/* Briefing list */}
@@ -68,7 +72,7 @@ export default function BriefingsPage() {
             <button
               key={b.id}
               onClick={() => setSelected(b)}
-              className="w-full rounded-xl border border-gray-200 p-4 text-left hover:bg-gray-50"
+              className="w-full rounded-2xl border border-gray-200 bg-white p-5 text-left shadow-sm transition-shadow hover:shadow-md"
             >
               <div className="flex items-center justify-between">
                 <h3 className="font-medium text-gray-900">{b.topic}</h3>
@@ -76,7 +80,7 @@ export default function BriefingsPage() {
                   {new Date(b.createdAt).toLocaleDateString("nl-NL")}
                 </span>
               </div>
-              <p className="mt-1 text-sm text-gray-500 line-clamp-2">
+              <p className="mt-1.5 text-sm text-gray-500 line-clamp-2">
                 {b.content.slice(0, 200)}...
               </p>
             </button>
@@ -96,12 +100,12 @@ export default function BriefingsPage() {
             </button>
             <button
               onClick={handleCopyMarkdown}
-              className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50"
+              className="rounded-xl border border-gray-300 bg-white px-3 py-1.5 text-sm shadow-sm hover:bg-gray-50"
             >
               Kopieer markdown
             </button>
           </div>
-          <div className="rounded-xl border border-gray-200 p-6">
+          <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
             <h2 className="mb-1 text-xl font-semibold text-gray-900">{selected.topic}</h2>
             <p className="mb-4 text-sm text-gray-500">
               {new Date(selected.createdAt).toLocaleDateString("nl-NL")}

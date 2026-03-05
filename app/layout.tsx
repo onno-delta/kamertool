@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Analytics } from "@vercel/analytics/react";
 import { Providers } from "@/components/providers";
 import { Nav } from "@/components/nav";
 import "./globals.css";
@@ -30,11 +31,12 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Providers>
-          <div className="flex h-screen flex-col">
+          <div className="flex h-screen flex-col bg-gray-50">
             <Nav />
             <main className="flex min-h-0 flex-1 flex-col">{children}</main>
           </div>
         </Providers>
+        <Analytics />
       </body>
     </html>
   );

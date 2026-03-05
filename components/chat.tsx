@@ -75,7 +75,7 @@ export function Chat() {
   return (
     <div className="flex flex-1 flex-col">
       {/* Toolbar */}
-      <div className="border-b border-gray-100 bg-gray-50/50 px-6 py-2.5">
+      <div className="border-b border-gray-200 bg-white px-6 py-2.5 shadow-sm">
         <div className="mx-auto flex max-w-3xl items-center justify-between">
           <div className="flex items-center gap-3">
             <PartySelector value={party} onChange={setParty} />
@@ -104,7 +104,7 @@ export function Chat() {
         <div className="mx-auto max-w-3xl px-6 py-4">
           {messages.length === 0 && (
             <div className="flex min-h-[60vh] items-center justify-center">
-              <div className="max-w-md text-center">
+              <div className="max-w-md rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-sm">
                 <h2 className="text-2xl font-semibold text-gray-800">
                   Bereid je voor op een debat
                 </h2>
@@ -149,20 +149,20 @@ export function Chat() {
       )}
 
       {/* Input */}
-      <div className="border-t border-gray-200 bg-white">
+      <div className="border-t border-gray-200 bg-white shadow-[0_-1px_3px_rgba(0,0,0,0.05)]">
         <form onSubmit={handleSubmit} className="mx-auto max-w-3xl px-6 py-4">
           <div className="flex gap-3">
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Bijv. 'Bereid me voor op het stikstofdebat' of 'Welke toezeggingen staan open over woningbouw?'"
-              className="flex-1 rounded-xl border border-gray-300 px-4 py-3 text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="flex-1 rounded-2xl border border-gray-300 bg-gray-50 px-4 py-3 text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
               disabled={isLoading}
             />
             <button
               type="submit"
               disabled={isLoading || !input.trim()}
-              className="rounded-xl bg-blue-600 px-6 py-3 font-medium text-white shadow-sm hover:bg-blue-700 disabled:opacity-40 disabled:shadow-none"
+              className="rounded-2xl bg-blue-600 px-6 py-3 font-medium text-white shadow-sm hover:bg-blue-700 disabled:opacity-40 disabled:shadow-none"
             >
               {isLoading ? "Bezig..." : "Verstuur"}
             </button>

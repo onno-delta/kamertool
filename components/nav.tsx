@@ -29,7 +29,7 @@ export function Nav() {
     : []
 
   return (
-    <header className="flex h-14 shrink-0 items-center justify-between border-b border-gray-200 bg-white px-6">
+    <header className="flex h-14 shrink-0 items-center justify-between border-b border-gray-200 bg-white px-6 shadow-sm">
       <div className="flex items-center gap-6">
         <Link href="/" className="text-lg font-semibold text-gray-900">
           Kamertool

@@ -104,7 +104,7 @@ export default function SettingsPage() {
 
       {/* Existing keys */}
       {!loading && keys.length > 0 && (
-        <div className="mb-10">
+        <div className="mb-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
           <h2 className="mb-4 text-lg font-medium text-gray-800">
             Je API keys
           </h2>
@@ -112,10 +112,10 @@ export default function SettingsPage() {
             {keys.map((k) => (
               <div
                 key={k.id}
-                className={`flex items-center justify-between rounded-xl border p-4 ${
+                className={`flex items-center justify-between rounded-xl p-4 ${
                   k.isActive
-                    ? "border-blue-300 bg-blue-50"
-                    : "border-gray-200"
+                    ? "bg-blue-50 ring-1 ring-blue-200"
+                    : "bg-gray-50"
                 }`}
               >
                 <div>
@@ -138,14 +138,14 @@ export default function SettingsPage() {
                   {!k.isActive && (
                     <button
                       onClick={() => handleActivate(k.id)}
-                      className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50"
+                      className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm hover:bg-gray-50"
                     >
                       Activeren
                     </button>
                   )}
                   <button
                     onClick={() => handleDelete(k.id)}
-                    className="rounded-lg border border-red-200 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50"
+                    className="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-sm text-red-600 hover:bg-red-50"
                   >
                     Verwijderen
                   </button>
@@ -157,7 +157,7 @@ export default function SettingsPage() {
       )}
 
       {/* Add new key */}
-      <div className="rounded-xl border border-gray-200 p-6">
+      <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
         <h2 className="mb-4 text-lg font-medium text-gray-800">
           API key toevoegen
         </h2>
@@ -171,7 +171,7 @@ export default function SettingsPage() {
             <select
               value={provider}
               onChange={(e) => setProvider(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900"
+              className="w-full rounded-xl border border-gray-300 px-3 py-2 text-gray-900"
             >
               {PROVIDERS.map((p) => (
                 <option key={p.id} value={p.id}>
@@ -189,7 +189,7 @@ export default function SettingsPage() {
             <select
               value={model}
               onChange={(e) => setModel(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900"
+              className="w-full rounded-xl border border-gray-300 px-3 py-2 text-gray-900"
             >
               {modelsForProvider.map((m) => (
                 <option key={m.key} value={m.key}>
@@ -211,17 +211,17 @@ export default function SettingsPage() {
               placeholder={
                 PROVIDERS.find((p) => p.id === provider)?.placeholder
               }
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder:text-gray-400"
+              className="w-full rounded-xl border border-gray-300 px-3 py-2 text-gray-900 placeholder:text-gray-400"
             />
           </div>
 
           {/* Test result */}
           {testResult && (
             <div
-              className={`rounded-lg p-3 text-sm ${
+              className={`rounded-xl p-3 text-sm ${
                 testResult.valid
-                  ? "bg-green-50 text-green-700"
-                  : "bg-red-50 text-red-700"
+                  ? "bg-green-50 text-green-700 ring-1 ring-green-200"
+                  : "bg-red-50 text-red-700 ring-1 ring-red-200"
               }`}
             >
               {testResult.valid
@@ -235,14 +235,14 @@ export default function SettingsPage() {
             <button
               onClick={handleTest}
               disabled={!apiKey || testing}
-              className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              className="rounded-xl border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
             >
               {testing ? "Testen..." : "Test key"}
             </button>
             <button
               onClick={handleSave}
               disabled={!apiKey || saving !== null}
-              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+              className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
             >
               {saving ? "Opslaan..." : "Opslaan"}
             </button>
