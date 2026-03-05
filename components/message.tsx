@@ -50,7 +50,22 @@ function ToolCard({ part }: { part: any }) {
   if (!isStreaming && !isDone && !isError) return null
 
   const query = part.input?.query ?? part.args?.query ?? ""
+  const url = part.input?.url ?? part.args?.url ?? ""
   const resultCount = isDone ? part.output?.count : null
+
+  // For fetchWebPage, show hostname as label
+  let displayLabel = label
+  let displayQuery = query
+  if (toolName === "fetchWebPage" && url) {
+    try {
+      const hostname = new URL(url).hostname.replace(/^www\./, "")
+      displayLabel = `${hostname} bekijken`
+      displayQuery = ""
+    } catch {
+      displayLabel = "Webpagina bekijken"
+      displayQuery = ""
+    }
+  }
 
   return (
     <div className="my-1.5">
@@ -65,10 +80,10 @@ function ToolCard({ part }: { part: any }) {
         <span className="text-sm">{icon}</span>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <span className="font-medium text-gray-700">{label}</span>
-            {query && (
+            <span className="font-medium text-gray-700">{displayLabel}</span>
+            {displayQuery && (
               <span className="truncate text-gray-400">
-                &ldquo;{query}&rdquo;
+                &ldquo;{displayQuery}&rdquo;
               </span>
             )}
           </div>
@@ -80,7 +95,7 @@ function ToolCard({ part }: { part: any }) {
           {isDone && (
             <>
               <span className="rounded-full bg-green-100 px-1.5 py-0.5 text-[10px] font-medium text-green-700">
-                {resultCount ?? 0} resultaten
+                {toolName === "fetchWebPage" ? "opgehaald" : `${resultCount ?? 0} resultaten`}
               </span>
               <span className="text-gray-300">{expanded ? "▲" : "▼"}</span>
             </>
