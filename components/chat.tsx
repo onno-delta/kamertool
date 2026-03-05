@@ -80,7 +80,7 @@ export function Chat() {
   }
 
   return (
-    <div className="flex flex-1 flex-col p-4 pb-0">
+    <div className="flex flex-1 flex-col p-4">
       {/* Main chat card */}
       <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
         {/* Toolbar */}
@@ -96,7 +96,7 @@ export function Chat() {
                 <select
                   value={model}
                   onChange={(e) => setModel(e.target.value)}
-                  className="rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1.5 text-xs font-medium text-gray-700 focus:border-blue-500 focus:outline-none"
+                  className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-blue-500 focus:outline-none"
                 >
                   {FREE_MODELS.map((m) => (
                     <option key={m.key} value={m.key}>{m.label}</option>
