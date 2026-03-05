@@ -26,7 +26,7 @@ Een complete debatbriefing bevat:
 6. **Recent nieuws** — Actuele ontwikkelingen en mediacontext
 7. **Suggestievragen voor het debat** — Concrete vragen om te stellen, met verwijzing naar bronnen
 
-Gebruik altijd je tools om actuele informatie op te zoeken. Geef bronnen aan bij je antwoorden (Kamerstuknummers, data, namen). Antwoord in het Nederlands.`
+Gebruik altijd je tools om actuele informatie op te zoeken. Geef bronnen aan bij je antwoorden (Kamerstuknummers, data, namen). Antwoord in het Nederlands. Gebruik NOOIT emoji's.`
 
   if (partyName) {
     return (
