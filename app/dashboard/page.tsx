@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import Link from "next/link"
 import { useSession } from "next-auth/react"
 
 type Member = { id: string; name: string | null; email: string | null; role: string }
@@ -72,21 +71,13 @@ export default function DashboardPage() {
         <p className="text-gray-500">
           Je bent nog niet gekoppeld aan een organisatie. Neem contact op met je fractiebeheerder.
         </p>
-        <Link href="/" className="mt-4 inline-block text-sm text-blue-600 hover:underline">
-          ← Terug naar chat
-        </Link>
       </div>
     )
   }
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-10">
-      <div className="mb-8 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-gray-900">Organisatie Dashboard</h1>
-        <Link href="/" className="text-sm text-blue-600 hover:underline">
-          ← Terug naar chat
-        </Link>
-      </div>
+      <h1 className="mb-8 text-2xl font-semibold text-gray-900">Organisatie Dashboard</h1>
 
       {loading && <p className="text-gray-500">Laden...</p>}
 

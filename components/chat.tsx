@@ -2,7 +2,7 @@
 
 import { useChat } from "@ai-sdk/react"
 import { DefaultChatTransport } from "ai"
-import { useState, useEffect, useMemo, type FormEvent } from "react"
+import { useState, useEffect, useMemo, useRef, type FormEvent } from "react"
 import Link from "next/link"
 import { PartySelector } from "./party-selector"
 import { Message } from "./message"
@@ -17,6 +17,7 @@ export function Chat() {
   const [usage, setUsage] = useState<{ used: number; limit: number } | null>(null)
   const [activeKey, setActiveKey] = useState<{ provider: string; model: string } | null>(null)
   const [rateLimitError, setRateLimitError] = useState<string | null>(null)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     fetch("/api/settings/usage").then(r => r.json()).then(setUsage).catch(() => {})
@@ -51,6 +52,10 @@ export function Chat() {
 
   const isLoading = status === "submitted" || status === "streaming"
 
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  }, [messages, status])
+
   const firstUserMessage = messages.find((m) => m.role === "user")
   const briefingTopic = firstUserMessage
     ? firstUserMessage.parts
@@ -68,42 +73,39 @@ export function Chat() {
   }
 
   return (
-    <div className="flex h-screen flex-col">
-      {/* Header */}
-      <header className="flex items-center justify-between border-b px-6 py-4">
-        <div className="flex items-center gap-2">
-          <h1 className="text-xl font-semibold text-gray-900">Kamertool</h1>
+    <div className="flex flex-1 flex-col">
+      {/* Toolbar */}
+      <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50/50 px-6 py-2.5">
+        <div className="flex items-center gap-3">
+          <PartySelector value={party} onChange={setParty} />
           {activeKey ? (
-            <span className="rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-700">
-              {activeKey.model} (je eigen key)
+            <span className="rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700 ring-1 ring-green-200">
+              {activeKey.model} — eigen key
             </span>
           ) : usage ? (
-            <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">
+            <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-500">
               gratis — {usage.used}/{usage.limit} berichten
             </span>
           ) : null}
         </div>
-        <div className="flex items-center gap-3">
-          <PartySelector value={party} onChange={setParty} />
-          <button
-            onClick={() => setShowBriefing(true)}
-            disabled={!briefingTopic}
-            className="rounded-xl border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-          >
-            Genereer briefing
-          </button>
-        </div>
-      </header>
+        <button
+          onClick={() => setShowBriefing(true)}
+          disabled={!briefingTopic}
+          className="rounded-lg border border-gray-200 bg-white px-3.5 py-1.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 disabled:opacity-40 disabled:shadow-none"
+        >
+          Genereer briefing
+        </button>
+      </div>
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-6 py-4">
         {messages.length === 0 && (
           <div className="flex h-full items-center justify-center">
-            <div className="text-center">
-              <h2 className="text-2xl font-semibold text-gray-700">
+            <div className="max-w-md text-center">
+              <h2 className="text-2xl font-semibold text-gray-800">
                 Bereid je voor op een debat
               </h2>
-              <p className="mt-2 text-gray-500">
+              <p className="mt-3 text-gray-500 leading-relaxed">
                 Stel een vraag over een onderwerp en ik zoek de relevante
                 Kamerstukken, debatten en toezeggingen voor je op.
               </p>
@@ -113,6 +115,21 @@ export function Chat() {
         {messages.map((m) => (
           <Message key={m.id} message={m} />
         ))}
+        {status === "submitted" && (
+          <div className="flex justify-start mb-4">
+            <div className="rounded-2xl bg-gray-100 px-4 py-3 text-sm text-gray-500">
+              <span className="inline-flex items-center gap-1.5">
+                <span className="flex gap-0.5">
+                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-gray-400 [animation-delay:0ms]" />
+                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-gray-400 [animation-delay:150ms]" />
+                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-gray-400 [animation-delay:300ms]" />
+                </span>
+                Aan het nadenken...
+              </span>
+            </div>
+          </div>
+        )}
+        <div ref={messagesEndRef} />
       </div>
 
       {/* Rate limit warning */}
@@ -120,25 +137,25 @@ export function Chat() {
         <div className="mx-6 mb-2 flex items-center justify-between rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800">
           <span>{rateLimitError}</span>
           <Link href="/settings" className="ml-3 font-medium text-amber-900 underline">
-            Instellingen →
+            Instellingen
           </Link>
         </div>
       )}
 
       {/* Input */}
-      <form onSubmit={handleSubmit} className="border-t px-6 py-4">
+      <form onSubmit={handleSubmit} className="border-t border-gray-200 bg-white px-6 py-4">
         <div className="flex gap-3">
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Bijv. 'Bereid me voor op het stikstofdebat' of 'Welke toezeggingen staan nog open over woningbouw?'"
-            className="flex-1 rounded-xl border border-gray-300 px-4 py-3 text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none"
+            placeholder="Bijv. 'Bereid me voor op het stikstofdebat' of 'Welke toezeggingen staan open over woningbouw?'"
+            className="flex-1 rounded-xl border border-gray-300 px-4 py-3 text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             disabled={isLoading}
           />
           <button
             type="submit"
             disabled={isLoading || !input.trim()}
-            className="rounded-xl bg-blue-600 px-6 py-3 font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+            className="rounded-xl bg-blue-600 px-6 py-3 font-medium text-white shadow-sm hover:bg-blue-700 disabled:opacity-40 disabled:shadow-none"
           >
             {isLoading ? "Bezig..." : "Verstuur"}
           </button>

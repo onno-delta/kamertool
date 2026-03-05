@@ -1,8 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import Link from "next/link"
-
 type StoredKey = {
   id: string
   provider: string
@@ -102,12 +100,7 @@ export default function SettingsPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-10">
-      <div className="mb-8 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-gray-900">Instellingen</h1>
-        <Link href="/" className="text-sm text-blue-600 hover:underline">
-          ← Terug naar chat
-        </Link>
-      </div>
+      <h1 className="mb-8 text-2xl font-semibold text-gray-900">Instellingen</h1>
 
       {/* Existing keys */}
       {!loading && keys.length > 0 && (

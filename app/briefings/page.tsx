@@ -1,8 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import Link from "next/link"
-
 type Briefing = {
   id: string
   topic: string
@@ -39,12 +37,7 @@ export default function BriefingsPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-10">
-      <div className="mb-8 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-gray-900">Briefing Geschiedenis</h1>
-        <Link href="/" className="text-sm text-blue-600 hover:underline">
-          ← Terug naar chat
-        </Link>
-      </div>
+      <h1 className="mb-8 text-2xl font-semibold text-gray-900">Briefing Geschiedenis</h1>
 
       {/* Search */}
       <form onSubmit={handleSearch} className="mb-6 flex gap-3">
