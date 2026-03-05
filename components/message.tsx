@@ -12,6 +12,7 @@ const TOOL_LABELS: Record<string, string> = {
   searchNews: "Nieuws",
   fetchWebPage: "Webpagina ophalen",
   searchAgenda: "Kameragenda",
+  searchDocumenten: "Documenten",
   searchPartyDocs: "Partijdocumenten",
 }
 
@@ -23,6 +24,7 @@ const TOOL_ICONS: Record<string, string> = {
   searchNews: "📰",
   fetchWebPage: "🌐",
   searchAgenda: "📅",
+  searchDocumenten: "📑",
   searchPartyDocs: "📋",
 }
 

@@ -15,6 +15,7 @@ import {
   createSearchPartyDocs,
   fetchWebPage,
   searchAgenda,
+  searchDocumenten,
 } from "@/lib/tools"
 import { NextResponse } from "next/server"
 
@@ -64,32 +65,50 @@ export async function POST(req: Request) {
 
     const prompt = `Genereer een uitgebreide debriefing over het onderwerp: "${topic}"
 
+Aanpak:
+1. Zoek eerst relevante Kamerstukken (searchKamerstukken) en documenten (searchDocumenten) — met name Kamerbrieven, nota's en verslagen.
+2. Haal voor de belangrijkste documenten de inhoud op via fetchWebPage (gebruik de URL uit searchDocumenten) en vat samen wat erin staat.
+3. Zoek toezeggingen, stemmingen, handelingen en nieuws.
+
 Structuur:
 ## Samenvatting
 Korte samenvatting van het onderwerp en de huidige stand van zaken.
 
-## Parlementaire Geschiedenis
-Tijdlijn van relevante Kamerstukken, moties en amendementen.
+## Relevante Stukken naar de Kamer
+Per relevant document (Kamerbrief, nota, verslag):
+- **Documentnummer** en titel
+- **Datum** waarop het naar de Kamer is gestuurd
+- **Samenvatting** van de inhoud: wat staat erin, wat zijn de hoofdpunten, welke maatregelen of standpunten worden beschreven
 
-## Standpunten per Fractie
-Overzicht van posities van de verschillende fracties op basis van stemmingen en uitspraken.
+## Moties en Amendementen
+Overzicht van ingediende en aangenomen moties en amendementen, met indieners en strekking.
 
 ## Openstaande Toezeggingen
 Toezeggingen van ministers die nog niet zijn nagekomen.
 
+## Standpunten per Fractie
+Overzicht van posities van de verschillende fracties op basis van stemmingen en uitspraken.
+
 ## Suggestievragen voor het Debat
-Concrete vragen om aan de minister te stellen, met verwijzing naar bronnen.
+Concrete vragen om aan de minister te stellen, met verwijzing naar specifieke documenten en bronnen.
 
 ${partyName ? `Frame alles vanuit het perspectief van ${partyName}.` : "Geef een neutraal, gebalanceerd overzicht."}
 
-Gebruik je tools om actuele informatie op te zoeken. Verwijs altijd naar bronnen.`
+BELANGRIJK: Zoek de daadwerkelijke inhoud van de relevante stukken op en vat samen wat erin staat. Noem altijd het documentnummer en de datum. Gebruik je tools om actuele informatie op te zoeken.`
 
     console.log("[briefing] generating text...")
     const { text } = await generateText({
       model: getModel(modelOpts),
-      system: `Je bent een parlementair onderzoeksassistent die debatbriefings schrijft voor Kamerleden. Gebruik altijd je tools om informatie op te zoeken. Schrijf in het Nederlands. Verwijs naar specifieke Kamerstuknummers.`,
+      system: `Je bent een parlementair onderzoeksassistent die debatbriefings schrijft voor Kamerleden. Gebruik altijd je tools om informatie op te zoeken. Schrijf in het Nederlands. Verwijs naar specifieke documentnummers en Kamerstuknummers.
+
+Werkwijze:
+- Gebruik searchDocumenten om relevante Kamerbrieven, nota's en verslagen te vinden
+- Gebruik fetchWebPage om de inhoud van gevonden documenten op te halen en samen te vatten
+- Gebruik searchKamerstukken voor moties, amendementen en wetsvoorstellen
+- Gebruik searchToezeggingen, searchStemmingen en searchHandelingen voor context
+- Vat de inhoud van elk relevant stuk bondig maar volledig samen`,
       prompt,
-      stopWhen: stepCountIs(15),
+      stopWhen: stepCountIs(25),
       tools: {
         searchKamerstukken,
         searchHandelingen,
@@ -98,6 +117,7 @@ Gebruik je tools om actuele informatie op te zoeken. Verwijs altijd naar bronnen
         searchNews,
         fetchWebPage,
         searchAgenda,
+        searchDocumenten,
         searchPartyDocs: createSearchPartyDocs(
           partyId ?? null,
           organisationId ?? null

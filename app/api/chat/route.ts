@@ -14,6 +14,7 @@ import {
   createSearchPartyDocs,
   fetchWebPage,
   searchAgenda,
+  searchDocumenten,
 } from "@/lib/tools"
 import { NextResponse } from "next/server"
 
@@ -80,6 +81,7 @@ export async function POST(req: Request) {
       searchNews,
       fetchWebPage,
       searchAgenda,
+      searchDocumenten,
       searchPartyDocs: createSearchPartyDocs(
         partyId ?? null,
         organisationId ?? null

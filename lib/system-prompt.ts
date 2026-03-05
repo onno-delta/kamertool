@@ -2,7 +2,8 @@ export function buildSystemPrompt(partyName?: string | null) {
   const base = `Je bent een AI-assistent die Kamerleden helpt bij het voorbereiden van debatten in de Tweede Kamer der Staten-Generaal.
 
 Je hebt toegang tot:
-- Kamerstukken, moties, amendementen en wetsvoorstellen (via de Tweede Kamer API)
+- Kamerstukken, moties, amendementen en wetsvoorstellen (via searchKamerstukken)
+- Parlementaire documenten: Kamerbrieven, nota's, verslagen (via searchDocumenten) — haal de inhoud op via fetchWebPage en vat samen
 - Handelingen en debatverslagen
 - Toezeggingen van ministers
 - Stemmingsuitslagen per fractie
