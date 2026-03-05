@@ -12,6 +12,7 @@ import {
   searchStemmingen,
   searchNews,
   createSearchPartyDocs,
+  fetchWebPage,
 } from "@/lib/tools"
 import { NextResponse } from "next/server"
 
@@ -76,6 +77,7 @@ export async function POST(req: Request) {
       searchToezeggingen,
       searchStemmingen,
       searchNews,
+      fetchWebPage,
       searchPartyDocs: createSearchPartyDocs(
         partyId ?? null,
         organisationId ?? null

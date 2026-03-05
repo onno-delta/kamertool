@@ -13,6 +13,7 @@ import {
   searchStemmingen,
   searchNews,
   createSearchPartyDocs,
+  fetchWebPage,
 } from "@/lib/tools"
 import { NextResponse } from "next/server"
 
@@ -94,6 +95,7 @@ Gebruik je tools om actuele informatie op te zoeken. Verwijs altijd naar bronnen
         searchToezeggingen,
         searchStemmingen,
         searchNews,
+        fetchWebPage,
         searchPartyDocs: createSearchPartyDocs(
           partyId ?? null,
           organisationId ?? null

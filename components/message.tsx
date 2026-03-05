@@ -9,6 +9,7 @@ const TOOL_LABELS: Record<string, string> = {
   searchToezeggingen: "Toezeggingen",
   searchStemmingen: "Stemmingen",
   searchNews: "Nieuws",
+  fetchWebPage: "Webpagina ophalen",
   searchPartyDocs: "Partijdocumenten",
 }
 
@@ -18,6 +19,7 @@ const TOOL_ICONS: Record<string, string> = {
   searchToezeggingen: "🤝",
   searchStemmingen: "🗳",
   searchNews: "📰",
+  fetchWebPage: "🌐",
   searchPartyDocs: "📋",
 }
 
