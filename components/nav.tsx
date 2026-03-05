@@ -20,13 +20,17 @@ export function Nav() {
   const links = session
     ? [
         { href: "/", label: "Chat" },
+        { href: "/agenda", label: "Agenda" },
         { href: "/briefings", label: "Briefings" },
         ...(session.user.organisationId
           ? [{ href: "/dashboard", label: "Organisatie" }]
           : []),
         { href: "/settings", label: "Instellingen" },
       ]
-    : []
+    : [
+        { href: "/", label: "Chat" },
+        { href: "/agenda", label: "Agenda" },
+      ]
 
   return (
     <header className="sticky top-0 z-50 flex shrink-0 items-center justify-between border-b border-gray-200 bg-white px-3 py-2 shadow-sm sm:px-6">
