@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import { Providers } from "@/components/providers";
 import { Nav } from "@/components/nav";
+import { BriefingBar } from "@/components/briefing-bar";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -34,6 +35,7 @@ export default function RootLayout({
           <div className="flex h-dvh flex-col overflow-hidden bg-gray-50">
             <Nav />
             <main className="flex min-h-0 flex-1 flex-col">{children}</main>
+            <BriefingBar />
           </div>
         </Providers>
         <Analytics />

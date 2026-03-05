@@ -1,97 +1,22 @@
 "use client"
 
-import { useState, useEffect, useCallback, Suspense } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import ReactMarkdown from "react-markdown"
-import { Document, Page, Text, View, StyleSheet, pdf } from "@react-pdf/renderer"
-
-const pdfStyles = StyleSheet.create({
-  page: { padding: 40, fontFamily: "Helvetica", fontSize: 11, lineHeight: 1.6 },
-  title: { fontSize: 18, fontFamily: "Helvetica-Bold", marginBottom: 8 },
-  subtitle: { fontSize: 12, color: "#666", marginBottom: 20 },
-  content: { fontSize: 11, lineHeight: 1.6 },
-})
-
-function BriefingPDF({ topic, content }: { topic: string; content: string }) {
-  return (
-    <Document>
-      <Page size="A4" style={pdfStyles.page}>
-        <View>
-          <Text style={pdfStyles.title}>Debatbriefing: {topic}</Text>
-          <Text style={pdfStyles.subtitle}>
-            Gegenereerd op {new Date().toLocaleDateString("nl-NL")}
-          </Text>
-          <Text style={pdfStyles.content}>{content}</Text>
-        </View>
-      </Page>
-    </Document>
-  )
-}
+import { useBriefing } from "@/components/briefing-context"
 
 function VoorbereidenContent() {
   const searchParams = useSearchParams()
   const topic = searchParams.get("topic") ?? ""
+  const { state, startBriefing, downloadPDF } = useBriefing()
 
-  const [content, setContent] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [expanded, setExpanded] = useState(false)
-  const [partyName, setPartyName] = useState<string | null>(null)
-  const [partyId, setPartyId] = useState<string | null>(null)
-
-  const downloadPDF = useCallback(async (text: string, title: string) => {
-    const blob = await pdf(<BriefingPDF topic={title} content={text} />).toBlob()
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = `briefing-${title.slice(0, 30).replace(/\s+/g, "-")}.pdf`
-    a.click()
-    URL.revokeObjectURL(url)
-  }, [])
-
+  // Start briefing if topic is set and no matching briefing is running/done
   useEffect(() => {
     if (!topic) return
-
-    // Load user preferences for party
-    fetch("/api/settings/preferences")
-      .then((r) => r.ok ? r.json() : null)
-      .then(async (prefs) => {
-        let pName: string | null = null
-        let pId: string | null = null
-        if (prefs?.defaultPartyId) {
-          const parties = await fetch("/api/parties").then((r) => r.json())
-          const party = parties.find((p: { id: string; shortName: string }) => p.id === prefs.defaultPartyId)
-          if (party) {
-            pName = party.shortName
-            pId = party.id
-            setPartyName(pName)
-            setPartyId(pId)
-          }
-        }
-
-        // Generate briefing
-        const res = await fetch("/api/briefing", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ topic, partyId: pId, partyName: pName }),
-        })
-        const data = await res.json()
-
-        if (data.content) {
-          setContent(data.content)
-          setLoading(false)
-          downloadPDF(data.content, topic)
-        } else {
-          setError(data.error ?? "Kon briefing niet genereren")
-          setLoading(false)
-        }
-      })
-      .catch(() => {
-        setError("Kon briefing niet genereren")
-        setLoading(false)
-      })
-  }, [topic, downloadPDF])
+    if (state?.topic === topic) return // already running or done for this topic
+    startBriefing(topic)
+  }, [topic, state?.topic, startBriefing])
 
   if (!topic) {
     return (
@@ -105,6 +30,11 @@ function VoorbereidenContent() {
       </div>
     )
   }
+
+  const loading = state?.topic === topic && state.loading
+  const content = state?.topic === topic ? state.content : null
+  const error = state?.topic === topic ? state.error : null
+  const partyName = state?.topic === topic ? state.partyName : null
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -137,63 +67,12 @@ function VoorbereidenContent() {
           )}
 
           {content && (
-            <div className="space-y-4">
-              {/* PDF card */}
-              <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-50">
-                      <svg className="h-5 w-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">
-                        briefing-{topic.slice(0, 30).replace(/\s+/g, "-")}.pdf
-                      </p>
-                      <p className="text-xs text-gray-400">
-                        Gegenereerd op {new Date().toLocaleDateString("nl-NL")}
-                        {partyName && <> — {partyName}</>}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => downloadPDF(content, topic)}
-                      className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50"
-                    >
-                      Download PDF
-                    </button>
-                    <button
-                      onClick={() => navigator.clipboard.writeText(content)}
-                      className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50"
-                    >
-                      Kopieer tekst
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Expandable text */}
-              <div className="rounded-2xl border border-gray-200 bg-white shadow-sm">
-                <button
-                  onClick={() => setExpanded(!expanded)}
-                  className="flex w-full items-center justify-between px-6 py-4 text-left"
-                >
-                  <span className="text-sm font-medium text-gray-700">
-                    Briefing bekijken
-                  </span>
-                  <span className="text-xs text-gray-400">{expanded ? "Inklappen" : "Uitklappen"}</span>
-                </button>
-                {expanded && (
-                  <div className="border-t border-gray-100 px-6 py-4">
-                    <div className="prose prose-sm max-w-none prose-headings:mt-4 prose-headings:mb-2 prose-p:my-1.5 prose-li:my-0.5">
-                      <ReactMarkdown>{content}</ReactMarkdown>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
+            <BriefingResult
+              topic={topic}
+              content={content}
+              partyName={partyName}
+              onDownload={downloadPDF}
+            />
           )}
         </div>
       </div>
@@ -201,13 +80,85 @@ function VoorbereidenContent() {
   )
 }
 
+function BriefingResult({
+  topic,
+  content,
+  partyName,
+  onDownload,
+}: {
+  topic: string
+  content: string
+  partyName: string | null
+  onDownload: () => void
+}) {
+  const [expanded, setExpanded] = useState(false)
+
+  return (
+    <div className="space-y-4">
+      <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-50">
+              <svg className="h-5 w-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-900">
+                briefing-{topic.slice(0, 30).replace(/\s+/g, "-")}.pdf
+              </p>
+              <p className="text-xs text-gray-400">
+                Gegenereerd op {new Date().toLocaleDateString("nl-NL")}
+                {partyName && <> — {partyName}</>}
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={onDownload}
+              className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50"
+            >
+              Download PDF
+            </button>
+            <button
+              onClick={() => navigator.clipboard.writeText(content)}
+              className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50"
+            >
+              Kopieer tekst
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-gray-200 bg-white shadow-sm">
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="flex w-full items-center justify-between px-6 py-4 text-left"
+        >
+          <span className="text-sm font-medium text-gray-700">Briefing bekijken</span>
+          <span className="text-xs text-gray-400">{expanded ? "Inklappen" : "Uitklappen"}</span>
+        </button>
+        {expanded && (
+          <div className="border-t border-gray-100 px-6 py-4">
+            <div className="prose prose-sm max-w-none prose-headings:mt-4 prose-headings:mb-2 prose-p:my-1.5 prose-li:my-0.5">
+              <ReactMarkdown>{content}</ReactMarkdown>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export default function VoorbereidenPage() {
   return (
-    <Suspense fallback={
-      <div className="flex flex-1 items-center justify-center">
-        <span className="h-6 w-6 animate-spin rounded-full border-2 border-gray-300 border-t-blue-500" />
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="flex flex-1 items-center justify-center">
+          <span className="h-6 w-6 animate-spin rounded-full border-2 border-gray-300 border-t-blue-500" />
+        </div>
+      }
+    >
       <VoorbereidenContent />
     </Suspense>
   )
