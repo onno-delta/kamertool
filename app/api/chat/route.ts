@@ -3,7 +3,7 @@ import { getModel } from "@/lib/ai"
 import { buildSystemPrompt } from "@/lib/system-prompt"
 import { auth } from "@/auth"
 import { getActiveKey } from "@/lib/user-keys"
-import { checkAndIncrementUsage } from "@/lib/rate-limit"
+import { checkAndIncrementUsage, isUnlimitedEmail } from "@/lib/rate-limit"
 import { cookies } from "next/headers"
 import {
   searchKamerstukken,
@@ -41,8 +41,8 @@ export async function POST(req: Request) {
       }
     }
 
-    // Free tier rate limiting (only when not using own key)
-    if (!usingOwnKey) {
+    // Free tier rate limiting (skip for BYOK and whitelisted domains)
+    if (!usingOwnKey && !isUnlimitedEmail(session?.user?.email)) {
       const cookieStore = await cookies()
       let sessionId = cookieStore.get("session-id")?.value ?? null
       if (!sessionId && !userId) {

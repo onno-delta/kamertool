@@ -20,7 +20,7 @@ export function Chat() {
   const [model, setModel] = useState("claude-haiku-4-5")
   const [input, setInput] = useState("")
   const [showBriefing, setShowBriefing] = useState(false)
-  const [usage, setUsage] = useState<{ used: number; limit: number } | null>(null)
+  const [usage, setUsage] = useState<{ used: number; limit: number; unlimited?: boolean } | null>(null)
   const [activeKey, setActiveKey] = useState<{ provider: string; model: string } | null>(null)
   const [rateLimitError, setRateLimitError] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -109,7 +109,7 @@ export function Chat() {
                     <option key={m.key} value={m.key}>{m.label}</option>
                   ))}
                 </select>
-                {usage && (
+                {usage && !usage.unlimited && (
                   <span className="shrink-0 rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-500">
                     {usage.used}/{usage.limit}
                   </span>

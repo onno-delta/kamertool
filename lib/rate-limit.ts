@@ -4,6 +4,17 @@ import { eq, and } from "drizzle-orm"
 
 const FREE_TIER_LIMIT = 10
 
+const UNLIMITED_DOMAINS = [
+  "herprogrammeerdeoverheid.nl",
+  "deltainstituut.nl",
+]
+
+export function isUnlimitedEmail(email: string | null | undefined): boolean {
+  if (!email) return false
+  const domain = email.split("@")[1]?.toLowerCase()
+  return UNLIMITED_DOMAINS.includes(domain)
+}
+
 function todayUTC(): string {
   return new Date().toISOString().slice(0, 10)
 }

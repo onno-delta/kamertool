@@ -4,7 +4,7 @@ import { auth } from "@/auth"
 import { db } from "@/lib/db"
 import { briefings } from "@/lib/db/schema"
 import { getActiveKey } from "@/lib/user-keys"
-import { checkAndIncrementUsage } from "@/lib/rate-limit"
+import { checkAndIncrementUsage, isUnlimitedEmail } from "@/lib/rate-limit"
 import { cookies } from "next/headers"
 import {
   searchKamerstukken,
@@ -44,7 +44,7 @@ export async function POST(req: Request) {
       }
     }
 
-    if (!usingOwnKey) {
+    if (!usingOwnKey && !isUnlimitedEmail(session?.user?.email)) {
       const cookieStore = await cookies()
       const sessionId = cookieStore.get("session-id")?.value ?? null
       const { allowed, used, limit } = await checkAndIncrementUsage(userId, sessionId)
