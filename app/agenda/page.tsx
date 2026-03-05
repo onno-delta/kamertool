@@ -207,8 +207,8 @@ export default function AgendaPage() {
 
                     {/* Action */}
                     <Link
-                      href={`/?topic=${encodeURIComponent(item.Onderwerp)}`}
-                      className="shrink-0 rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50"
+                      href={`/voorbereiden?topic=${encodeURIComponent(item.Onderwerp)}`}
+                      className="shrink-0 rounded-lg bg-blue-600 px-2.5 py-1.5 text-xs font-medium text-white hover:bg-blue-700"
                     >
                       Voorbereiden
                     </Link>
