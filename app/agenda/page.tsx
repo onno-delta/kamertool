@@ -3,7 +3,6 @@
 import { useState, useEffect, useMemo } from "react"
 import Link from "next/link"
 import { MultiSelect } from "@/components/multi-select"
-import { DOSSIERS } from "@/lib/dossiers"
 
 type Activiteit = {
   Id: string
@@ -66,16 +65,6 @@ function groupByDate(items: Activiteit[]): Record<string, Activiteit[]> {
   return groups
 }
 
-/** Normalize for accent-insensitive matching */
-function normalize(s: string): string {
-  return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
-}
-
-/** Check if a Voortouwnaam matches a dossier label */
-function commissieMatchesDossier(voortouwnaam: string, dossierLabel: string): boolean {
-  return normalize(voortouwnaam).includes(normalize(dossierLabel))
-}
-
 export default function AgendaPage() {
   const [allItems, setAllItems] = useState<Activiteit[]>([])
   const [loading, setLoading] = useState(true)
@@ -84,7 +73,6 @@ export default function AgendaPage() {
   const [selectedTypes, setSelectedTypes] = useState<Set<string>>(new Set())
   const [selectedCommissies, setSelectedCommissies] = useState<Set<string>>(new Set())
   const [search, setSearch] = useState("")
-  const [prefsLoaded, setPrefsLoaded] = useState(false)
 
   // Load agenda data
   useEffect(() => {
@@ -97,46 +85,6 @@ export default function AgendaPage() {
       })
       .catch(() => setLoading(false))
   }, [fromDate, toDate])
-
-  // Load user dossier preferences and pre-select matching commissies
-  useEffect(() => {
-    if (prefsLoaded || allItems.length === 0) return
-
-    fetch("/api/settings/preferences")
-      .then((r) => (r.ok ? r.json() : null))
-      .then((prefs) => {
-        setPrefsLoaded(true)
-        if (!prefs?.dossiers?.length) return
-
-        // Map dossier IDs to labels
-        const dossierLabels = (prefs.dossiers as string[])
-          .map((id: string) => DOSSIERS.find((d) => d.id === id)?.label)
-          .filter(Boolean) as string[]
-
-        if (dossierLabels.length === 0) return
-
-        // Find matching commissie names from the agenda data
-        const allCommissies = new Set<string>()
-        for (const item of allItems) {
-          if (item.Voortouwnaam) allCommissies.add(item.Voortouwnaam)
-        }
-
-        const matched = new Set<string>()
-        for (const commissie of allCommissies) {
-          for (const label of dossierLabels) {
-            if (commissieMatchesDossier(commissie, label)) {
-              matched.add(commissie)
-              break
-            }
-          }
-        }
-
-        if (matched.size > 0) {
-          setSelectedCommissies(matched)
-        }
-      })
-      .catch(() => setPrefsLoaded(true))
-  }, [allItems, prefsLoaded])
 
   // Available types from data
   const availableTypes = useMemo(() => {
