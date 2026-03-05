@@ -91,10 +91,16 @@ export function BriefingProvider({ children }: { children: ReactNode }) {
 
           setState((s) => (s ? { ...s, partyName: pName } : s))
 
+          // Collect kamerlid names for the briefing
+          const kamerledenNames = (prefs?.kamerleden ?? []).map(
+            (k: { naam: string; fractie?: string }) =>
+              k.fractie ? `${k.naam} (${k.fractie})` : k.naam
+          )
+
           const res = await fetch("/api/briefing", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ topic, partyId: pId, partyName: pName }),
+            body: JSON.stringify({ topic, partyId: pId, partyName: pName, kamerleden: kamerledenNames }),
           })
 
           if (!res.ok) {

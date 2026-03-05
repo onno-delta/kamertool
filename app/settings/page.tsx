@@ -19,6 +19,7 @@ type ModelOption = {
 }
 
 type Party = { id: string; name: string; shortName: string }
+type Kamerlid = { id: string; naam: string; fractie?: string }
 
 const PROVIDERS = [
   { id: "anthropic", name: "Anthropic", placeholder: "sk-ant-..." },
@@ -54,6 +55,10 @@ export default function SettingsPage() {
   const [parties, setParties] = useState<Party[]>([])
   const [selectedPartyId, setSelectedPartyId] = useState<string>("")
   const [selectedDossiers, setSelectedDossiers] = useState<string[]>([])
+  const [selectedKamerleden, setSelectedKamerleden] = useState<Kamerlid[]>([])
+  const [kamerleidSearch, setKamerleidSearch] = useState("")
+  const [kamerleidResults, setKamerleidResults] = useState<Kamerlid[]>([])
+  const [kamerleidSearching, setKamerleidSearching] = useState(false)
   const [prefsSaving, setPrefsSaving] = useState(false)
   const [prefsSaved, setPrefsSaved] = useState(false)
 
@@ -83,6 +88,7 @@ export default function SettingsPage() {
         if (data) {
           setSelectedPartyId(data.defaultPartyId ?? "")
           setSelectedDossiers(data.dossiers ?? [])
+          setSelectedKamerleden(data.kamerleden ?? [])
         }
       })
       .catch(() => {})
@@ -132,6 +138,40 @@ export default function SettingsPage() {
     setPrefsSaved(false)
   }
 
+  // Kamerlid search with debounce
+  useEffect(() => {
+    if (kamerleidSearch.length < 2) {
+      setKamerleidResults([])
+      return
+    }
+    const timeout = setTimeout(async () => {
+      setKamerleidSearching(true)
+      try {
+        const res = await fetch(`/api/kamerleden?q=${encodeURIComponent(kamerleidSearch)}`)
+        if (res.ok) {
+          const data = await res.json()
+          // Filter out already selected
+          const selectedIds = new Set(selectedKamerleden.map((k) => k.id))
+          setKamerleidResults(data.filter((k: Kamerlid) => !selectedIds.has(k.id)))
+        }
+      } catch {}
+      setKamerleidSearching(false)
+    }, 300)
+    return () => clearTimeout(timeout)
+  }, [kamerleidSearch, selectedKamerleden])
+
+  function addKamerlid(k: Kamerlid) {
+    setSelectedKamerleden((prev) => [...prev, k])
+    setKamerleidSearch("")
+    setKamerleidResults([])
+    setPrefsSaved(false)
+  }
+
+  function removeKamerlid(id: string) {
+    setSelectedKamerleden((prev) => prev.filter((k) => k.id !== id))
+    setPrefsSaved(false)
+  }
+
   async function handleSavePrefs() {
     setPrefsSaving(true)
     await fetch("/api/settings/preferences", {
@@ -140,6 +180,7 @@ export default function SettingsPage() {
       body: JSON.stringify({
         defaultPartyId: selectedPartyId || null,
         dossiers: selectedDossiers,
+        kamerleden: selectedKamerleden,
       }),
     })
     setPrefsSaving(false)
@@ -210,6 +251,75 @@ export default function SettingsPage() {
                   {d.label}
                 </label>
               ))}
+            </div>
+          </div>
+
+          {/* Kamerleden selector */}
+          <div>
+            <label className="mb-2 block text-sm font-medium text-gray-700">
+              Relevante Kamerleden
+            </label>
+            <p className="mb-3 text-xs text-gray-400">
+              Selecteer Kamerleden die je volgt. Hun standpunten en uitspraken worden meegenomen in briefings.
+            </p>
+
+            {/* Selected kamerleden chips */}
+            {selectedKamerleden.length > 0 && (
+              <div className="mb-3 flex flex-wrap gap-1.5">
+                {selectedKamerleden.map((k) => (
+                  <span
+                    key={k.id}
+                    className="inline-flex items-center gap-1 rounded-full bg-blue-50 py-1 pl-3 pr-1.5 text-sm text-blue-900"
+                  >
+                    {k.naam}
+                    {k.fractie && (
+                      <span className="text-blue-500">({k.fractie})</span>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => removeKamerlid(k.id)}
+                      className="ml-0.5 rounded-full p-0.5 text-blue-400 hover:bg-blue-100 hover:text-blue-700"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Search input */}
+            <div className="relative">
+              <input
+                type="text"
+                value={kamerleidSearch}
+                onChange={(e) => setKamerleidSearch(e.target.value)}
+                placeholder="Zoek op naam..."
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400"
+              />
+              {kamerleidSearching && (
+                <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">
+                  <span className="block h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-blue-500" />
+                </div>
+              )}
+
+              {/* Dropdown results */}
+              {kamerleidResults.length > 0 && (
+                <div className="absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg">
+                  {kamerleidResults.map((k) => (
+                    <button
+                      key={k.id}
+                      type="button"
+                      onClick={() => addKamerlid(k)}
+                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-gray-800 hover:bg-blue-50"
+                    >
+                      <span className="font-medium">{k.naam}</span>
+                      {k.fractie && (
+                        <span className="text-xs text-gray-400">{k.fractie}</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 

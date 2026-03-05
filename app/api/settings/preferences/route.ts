@@ -1,6 +1,6 @@
 import { auth } from "@/auth"
 import { db } from "@/lib/db"
-import { users, userDossiers } from "@/lib/db/schema"
+import { users, userDossiers, userKamerleden } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 import { NextResponse } from "next/server"
 
@@ -23,9 +23,15 @@ export async function GET() {
       .from(userDossiers)
       .where(eq(userDossiers.userId, session.user.id))
 
+    const kamerleden = await db
+      .select({ persoonId: userKamerleden.persoonId, naam: userKamerleden.naam, fractie: userKamerleden.fractie })
+      .from(userKamerleden)
+      .where(eq(userKamerleden.userId, session.user.id))
+
     return NextResponse.json({
       defaultPartyId: user?.defaultPartyId ?? null,
       dossiers: dossiers.map((d) => d.dossier),
+      kamerleden: kamerleden.map((k) => ({ id: k.persoonId, naam: k.naam, fractie: k.fractie })),
     })
   } catch (error) {
     console.error("[settings/preferences] GET ERROR:", error)
@@ -43,8 +49,8 @@ export async function PUT(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { defaultPartyId, dossiers } = await req.json()
-    console.log("[settings/preferences] PUT", { userId: session.user.id, defaultPartyId, dossiers })
+    const { defaultPartyId, dossiers, kamerleden } = await req.json()
+    console.log("[settings/preferences] PUT", { userId: session.user.id, defaultPartyId, dossiers, kamerleden: kamerleden?.length })
 
     // Update default party
     await db
@@ -62,6 +68,22 @@ export async function PUT(req: Request) {
         dossiers.map((d: string) => ({
           userId: session.user.id,
           dossier: d,
+        }))
+      )
+    }
+
+    // Replace kamerleden
+    await db
+      .delete(userKamerleden)
+      .where(eq(userKamerleden.userId, session.user.id))
+
+    if (Array.isArray(kamerleden) && kamerleden.length > 0) {
+      await db.insert(userKamerleden).values(
+        kamerleden.map((k: { id: string; naam: string; fractie?: string }) => ({
+          userId: session.user.id,
+          persoonId: k.id,
+          naam: k.naam,
+          fractie: k.fractie ?? null,
         }))
       )
     }

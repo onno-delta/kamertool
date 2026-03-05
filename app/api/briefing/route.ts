@@ -23,8 +23,8 @@ export const maxDuration = 120
 
 export async function POST(req: Request) {
   try {
-    const { topic, partyId, partyName, organisationId } = await req.json()
-    console.log("[briefing] POST", { topic, partyId, partyName })
+    const { topic, partyId, partyName, organisationId, kamerleden } = await req.json()
+    console.log("[briefing] POST", { topic, partyId, partyName, kamerleden: kamerleden?.length })
 
     if (!topic) {
       return NextResponse.json({ error: "Topic is required" }, { status: 400 })
@@ -93,6 +93,7 @@ Overzicht van posities van de verschillende fracties op basis van stemmingen en 
 Concrete vragen om aan de minister te stellen, met verwijzing naar specifieke documenten en bronnen.
 
 ${partyName ? `Frame alles vanuit het perspectief van ${partyName}.` : "Geef een neutraal, gebalanceerd overzicht."}
+${Array.isArray(kamerleden) && kamerleden.length > 0 ? `\nRelevante Kamerleden om specifiek aandacht aan te besteden: ${kamerleden.join(", ")}. Zoek hun standpunten, uitspraken en ingediende moties op over dit onderwerp. Vermeld hun positie in de sectie Standpunten per Fractie en betrek hun specifieke bijdragen in de suggestievragen.` : ""}
 
 BELANGRIJK: Zoek de daadwerkelijke inhoud van de relevante stukken op en vat samen wat erin staat. Noem altijd het documentnummer en de datum. Gebruik je tools om actuele informatie op te zoeken.`
 

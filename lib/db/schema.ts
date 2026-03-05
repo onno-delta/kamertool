@@ -160,6 +160,19 @@ export const userDossiers = pgTable("user_dossier", {
   createdAt: timestamp("createdAt", { mode: "date" }).notNull().defaultNow(),
 })
 
+export const userKamerleden = pgTable("user_kamerlid", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: text("userId")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  persoonId: text("persoonId").notNull(),
+  naam: text("naam").notNull(),
+  fractie: text("fractie"),
+  createdAt: timestamp("createdAt", { mode: "date" }).notNull().defaultNow(),
+})
+
 export const usageLog = pgTable("usage_log", {
   id: text("id")
     .primaryKey()
