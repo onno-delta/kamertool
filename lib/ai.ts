@@ -4,6 +4,7 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google"
 import type { LanguageModel } from "ai"
 
 const MODELS: Record<string, { provider: string; modelId: string }> = {
+  "claude-opus-4": { provider: "anthropic", modelId: "claude-opus-4-0-20250514" },
   "claude-sonnet-4-5": { provider: "anthropic", modelId: "claude-sonnet-4-5-20250514" },
   "claude-haiku-4-5": { provider: "anthropic", modelId: "claude-haiku-4-5-20251001" },
   "gpt-4o": { provider: "openai", modelId: "gpt-4o" },
