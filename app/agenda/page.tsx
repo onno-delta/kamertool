@@ -258,9 +258,14 @@ export default function AgendaPage() {
                           </span>
                         )}
                       </div>
-                      <p className="text-sm font-medium text-gray-800">
+                      <a
+                        href={`https://www.tweedekamer.nl/vergaderingen/commissievergaderingen/details?id=${item.Nummer}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm font-medium text-gray-800 hover:text-blue-600 hover:underline"
+                      >
                         {item.Onderwerp}
-                      </p>
+                      </a>
                       {item.Voortouwnaam && (
                         <p className="mt-0.5 text-xs text-gray-400">
                           {item.Voortouwnaam}
