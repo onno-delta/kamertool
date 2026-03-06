@@ -101,6 +101,51 @@ const SOORT_MAP: Record<string, string> = {
   "kamervragen": "__kamervragen__",
 }
 
+/**
+ * Convert user search terms to valid CQL by inserting AND between bare words.
+ * Preserves existing AND/OR/NOT operators and quoted phrases.
+ */
+function normalizeToCQL(input: string): string {
+  const tokens: string[] = []
+  const operators = new Set(["AND", "OR", "NOT"])
+  let i = 0
+
+  while (i < input.length) {
+    // Skip whitespace
+    if (input[i] === " ") { i++; continue }
+
+    // Quoted phrase — keep as-is
+    if (input[i] === '"') {
+      const end = input.indexOf('"', i + 1)
+      if (end === -1) {
+        tokens.push(input.slice(i))
+        break
+      }
+      tokens.push(input.slice(i, end + 1))
+      i = end + 1
+      continue
+    }
+
+    // Word
+    let end = i
+    while (end < input.length && input[end] !== " " && input[end] !== '"') end++
+    tokens.push(input.slice(i, end))
+    i = end
+  }
+
+  // Insert AND between consecutive non-operator tokens
+  const result: string[] = []
+  for (let j = 0; j < tokens.length; j++) {
+    const token = tokens[j]
+    if (j > 0 && !operators.has(token) && !operators.has(tokens[j - 1])) {
+      result.push("AND")
+    }
+    result.push(token)
+  }
+
+  return result.join(" ")
+}
+
 export function buildSearchCQL(
   terms: string,
   opts?: {
@@ -131,9 +176,9 @@ export function buildSearchCQL(
     parts.push(`dcterms.modified >= "${opts.dateFrom}"`)
   }
 
-  // Search terms - pass through as-is (SRU handles AND between words)
+  // Search terms - SRU requires explicit AND between words
   if (terms.trim()) {
-    parts.push(terms.trim())
+    parts.push(normalizeToCQL(terms.trim()))
   }
 
   return parts.join(" AND ")
