@@ -108,9 +108,9 @@ export function Chat() {
     <div className="flex min-h-0 flex-1 flex-col p-2 sm:p-4">
       <div className="mx-auto flex min-h-0 w-full max-w-6xl flex-1 gap-4">
         {/* Main chat card */}
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-2xl border border-primary-30 bg-white shadow-sm">
           {/* Toolbar */}
-          <div className="flex flex-wrap items-center gap-2 border-b border-gray-100 px-3 py-2 sm:px-5 sm:py-2.5">
+          <div className="flex flex-wrap items-center gap-2 border-b border-primary-15 px-3 py-2 sm:px-5 sm:py-2.5">
             <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
               <PartySelector value={party} onChange={setParty} />
               {activeKey ? (
@@ -122,7 +122,7 @@ export function Chat() {
                   <select
                     value={model}
                     onChange={(e) => setModel(e.target.value)}
-                    className="shrink-0 rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm text-gray-700 focus:border-blue-500 focus:outline-none sm:px-3 sm:py-2"
+                    className="shrink-0 rounded-lg border border-primary-30 bg-white px-2 py-1.5 text-sm text-primary focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary sm:px-3 sm:py-2"
                   >
                     {FREE_MODELS.map((m) => (
                       <option key={m.key} value={m.key}>{m.label}</option>
@@ -143,11 +143,11 @@ export function Chat() {
             <div className="mx-auto max-w-3xl px-6 py-4">
               {messages.length === 0 && (
                 <div className="flex min-h-[50vh] items-center justify-center">
-                  <div className="max-w-md rounded-2xl bg-gray-50 p-8 text-center">
-                    <h2 className="text-2xl font-semibold text-gray-800">
+                  <div className="max-w-md rounded-2xl bg-primary-15 p-8 text-center">
+                    <h2 className="text-2xl font-semibold text-primary">
                       Bereid je voor op een debat
                     </h2>
-                    <p className="mt-3 text-gray-500 leading-relaxed">
+                    <p className="mt-3 text-primary-75 leading-relaxed">
                       Stel een vraag over een onderwerp en ik zoek de relevante
                       Kamerstukken, debatten en toezeggingen voor je op.
                     </p>
@@ -159,12 +159,12 @@ export function Chat() {
               ))}
               {showThinking && (
                 <div className="flex justify-start mb-4">
-                  <div className="rounded-2xl bg-gray-100 px-4 py-3 text-sm text-gray-500">
+                  <div className="rounded-2xl bg-primary-15 px-4 py-3 text-sm text-primary-75">
                     <span className="inline-flex items-center gap-1.5">
                       <span className="flex gap-0.5">
-                        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-gray-400 [animation-delay:0ms]" />
-                        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-gray-400 [animation-delay:150ms]" />
-                        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-gray-400 [animation-delay:300ms]" />
+                        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-primary [animation-delay:0ms]" />
+                        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-primary [animation-delay:150ms]" />
+                        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-primary [animation-delay:300ms]" />
                       </span>
                       {toolSteps.some((s) => s.status === "running")
                         ? "Bronnen doorzoeken..."
@@ -202,20 +202,20 @@ export function Chat() {
           )}
 
           {/* Input */}
-          <div className="border-t border-gray-100 px-3 py-2 sm:px-5 sm:py-3">
+          <div className="border-t border-primary-15 px-3 py-2 sm:px-5 sm:py-3">
             <form onSubmit={handleSubmit} className="mx-auto max-w-3xl">
               <div className="flex gap-3">
                 <input
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="Bijv. 'Bereid me voor op het stikstofdebat' of 'Welke toezeggingen staan open over woningbouw?'"
-                  className="flex-1 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="flex-1 rounded-xl border border-primary-30 bg-primary-15/50 px-4 py-3 text-primary placeholder:text-primary-60 focus:border-primary focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary"
                   disabled={isLoading}
                 />
                 <button
                   type="submit"
                   disabled={isLoading || !input.trim()}
-                  className="rounded-xl bg-blue-600 px-6 py-3 font-medium text-white shadow-sm hover:bg-blue-700 disabled:opacity-40 disabled:shadow-none"
+                  className="rounded-xl bg-primary px-6 py-3 font-medium text-white shadow-sm hover:bg-primary-dark disabled:opacity-40 disabled:shadow-none"
                 >
                   {isLoading ? "Bezig..." : "Verstuur"}
                 </button>

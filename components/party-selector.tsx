@@ -26,7 +26,7 @@ export function PartySelector({
         const party = parties.find((p) => p.id === e.target.value) ?? null
         onChange(party)
       }}
-      className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-blue-500 focus:outline-none"
+      className="rounded-lg border border-primary-30 bg-white px-3 py-2 text-sm text-primary focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
     >
       <option value="">Geen partij (neutraal)</option>
       {parties.map((p) => (

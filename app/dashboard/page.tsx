@@ -67,9 +67,9 @@ export default function DashboardPage() {
   if (!orgId) {
     return (
       <div className="mx-auto max-w-2xl px-6 py-10">
-        <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
-          <h1 className="mb-2 text-2xl font-semibold text-gray-900">Organisatie</h1>
-          <p className="text-gray-500">
+        <div className="rounded-2xl border border-primary-30 bg-white p-8 shadow-sm">
+          <h1 className="mb-2 text-2xl font-semibold text-primary">Organisatie</h1>
+          <p className="text-primary-75">
             Je bent nog niet gekoppeld aan een organisatie. Neem contact op met je fractiebeheerder.
           </p>
         </div>
@@ -79,23 +79,23 @@ export default function DashboardPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-10">
-      <h1 className="mb-8 text-2xl font-semibold text-gray-900">Organisatie Dashboard</h1>
+      <h1 className="mb-8 text-2xl font-semibold text-primary">Organisatie Dashboard</h1>
 
-      {loading && <p className="text-gray-500">Laden...</p>}
+      {loading && <p className="text-primary-75">Laden...</p>}
 
       {!loading && (
         <div className="space-y-6">
           {/* Members card */}
-          <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-            <h2 className="mb-4 text-lg font-medium text-gray-800">Leden</h2>
+          <div className="rounded-2xl border border-primary-30 bg-white p-6 shadow-sm">
+            <h2 className="mb-4 text-lg font-medium text-primary">Leden</h2>
             <div className="mb-4 space-y-2">
               {members.map((m) => (
-                <div key={m.id} className="flex items-center justify-between rounded-xl bg-gray-50 px-4 py-3">
+                <div key={m.id} className="flex items-center justify-between rounded-xl bg-primary-15 px-4 py-3">
                   <div>
-                    <span className="font-medium text-gray-900">{m.name || m.email}</span>
-                    {m.name && <span className="ml-2 text-sm text-gray-500">{m.email}</span>}
+                    <span className="font-medium text-primary">{m.name || m.email}</span>
+                    {m.name && <span className="ml-2 text-sm text-primary-75">{m.email}</span>}
                   </div>
-                  <span className="rounded-full bg-white px-2.5 py-0.5 text-xs font-medium text-gray-600 ring-1 ring-gray-200">
+                  <span className="rounded-full bg-white px-2.5 py-0.5 text-xs font-medium text-primary-75 ring-1 ring-primary-30">
                     {m.role}
                   </span>
                 </div>
@@ -109,12 +109,12 @@ export default function DashboardPage() {
                   onChange={(e) => setNewEmail(e.target.value)}
                   placeholder="E-mailadres van nieuw lid"
                   type="email"
-                  className="flex-1 rounded-xl border border-gray-300 px-3 py-2 text-gray-900 placeholder:text-gray-400"
+                  className="flex-1 rounded-xl border border-primary-30 px-3 py-2 text-primary placeholder:text-primary-75"
                 />
                 <button
                   type="submit"
                   disabled={inviting || !newEmail}
-                  className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                  className="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-50"
                 >
                   {inviting ? "Uitnodigen..." : "Uitnodigen"}
                 </button>
@@ -123,42 +123,42 @@ export default function DashboardPage() {
           </div>
 
           {/* Documents card */}
-          <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-            <h2 className="mb-4 text-lg font-medium text-gray-800">Documenten</h2>
+          <div className="rounded-2xl border border-primary-30 bg-white p-6 shadow-sm">
+            <h2 className="mb-4 text-lg font-medium text-primary">Documenten</h2>
             {docs.length > 0 ? (
               <div className="mb-4 space-y-2">
                 {docs.map((d) => (
-                  <div key={d.id} className="flex items-center justify-between rounded-xl bg-gray-50 px-4 py-3">
-                    <span className="font-medium text-gray-900">{d.title}</span>
-                    <span className="text-sm text-gray-500">
+                  <div key={d.id} className="flex items-center justify-between rounded-xl bg-primary-15 px-4 py-3">
+                    <span className="font-medium text-primary">{d.title}</span>
+                    <span className="text-sm text-primary-75">
                       {new Date(d.createdAt).toLocaleDateString("nl-NL")}
                     </span>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="mb-4 text-sm text-gray-500">Nog geen documenten geupload.</p>
+              <p className="mb-4 text-sm text-primary-75">Nog geen documenten geupload.</p>
             )}
 
-            <div className="rounded-xl bg-gray-50 p-4">
+            <div className="rounded-xl bg-primary-15 p-4">
               <form onSubmit={handleUploadDoc} className="space-y-3">
                 <input
                   value={newDocTitle}
                   onChange={(e) => setNewDocTitle(e.target.value)}
                   placeholder="Documenttitel"
-                  className="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-gray-900 placeholder:text-gray-400"
+                  className="w-full rounded-xl border border-primary-30 bg-white px-3 py-2 text-primary placeholder:text-primary-75"
                 />
                 <textarea
                   value={newDocContent}
                   onChange={(e) => setNewDocContent(e.target.value)}
                   placeholder="Plak hier de inhoud van het document..."
                   rows={6}
-                  className="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-gray-900 placeholder:text-gray-400"
+                  className="w-full rounded-xl border border-primary-30 bg-white px-3 py-2 text-primary placeholder:text-primary-75"
                 />
                 <button
                   type="submit"
                   disabled={uploading || !newDocTitle || !newDocContent}
-                  className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                  className="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-50"
                 >
                   {uploading ? "Uploaden..." : "Document toevoegen"}
                 </button>

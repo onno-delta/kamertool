@@ -93,7 +93,7 @@ export function Message({ message, topic }: { message: UIMessage; topic?: string
       <div
         className={`max-w-[85%] ${
           isUser
-            ? "rounded-2xl bg-blue-600 px-4 py-3 text-white"
+            ? "rounded-2xl bg-primary px-4 py-3 text-white"
             : "space-y-2"
         }`}
       >
@@ -111,7 +111,7 @@ export function Message({ message, topic }: { message: UIMessage; topic?: string
                 return (
                   <div
                     key={i}
-                    className="rounded-2xl bg-gray-100 px-4 py-2 text-xs italic text-gray-400"
+                    className="rounded-2xl bg-primary-15 px-4 py-2 text-xs italic text-primary-75"
                   >
                     {part.text}
                   </div>
@@ -121,7 +121,7 @@ export function Message({ message, topic }: { message: UIMessage; topic?: string
                 return (
                   <div
                     key={i}
-                    className="prose prose-sm max-w-none leading-relaxed text-gray-900 prose-headings:mt-4 prose-headings:mb-2 prose-p:my-1.5 prose-li:my-0.5 prose-ul:my-1.5 prose-ol:my-1.5"
+                    className="prose prose-sm max-w-none leading-relaxed text-primary prose-headings:mt-4 prose-headings:mb-2 prose-headings:text-primary prose-p:my-1.5 prose-li:my-0.5 prose-ul:my-1.5 prose-ol:my-1.5 prose-a:text-primary"
                   >
                     <ReactMarkdown>{part.text}</ReactMarkdown>
                   </div>
@@ -130,20 +130,20 @@ export function Message({ message, topic }: { message: UIMessage; topic?: string
               return null
             })}
         {isBriefing && (
-          <div className="mt-3 flex items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-50">
-              <svg className="h-4 w-4 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+          <div className="mt-3 flex items-center gap-3 rounded-xl border border-primary-30 bg-primary-15 px-4 py-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+              <svg className="h-4 w-4 text-primary" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
               </svg>
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium text-gray-700">Debatbriefing</p>
-              <p className="truncate text-xs text-gray-400">Download als PDF</p>
+              <p className="text-sm font-medium text-primary">Debatbriefing</p>
+              <p className="truncate text-xs text-primary-75">Download als PDF</p>
             </div>
             <button
               onClick={handleDownloadPDF}
               disabled={pdfBusy}
-              className="shrink-0 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              className="shrink-0 rounded-lg border border-primary-30 bg-white px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary-15 disabled:opacity-50"
             >
               {pdfBusy ? "Bezig..." : "Download PDF"}
             </button>

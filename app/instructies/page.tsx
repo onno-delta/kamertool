@@ -43,15 +43,15 @@ export default function InstructiesPage() {
   if (loading) {
     return (
       <div className="flex flex-1 items-center justify-center">
-        <span className="h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-blue-500" />
+        <span className="h-5 w-5 animate-spin rounded-full border-2 border-primary-30 border-t-primary" />
       </div>
     )
   }
 
   return (
     <div className="mx-auto max-w-2xl overflow-y-auto px-6 py-10">
-      <h1 className="mb-2 text-2xl font-semibold text-gray-900">Instructies</h1>
-      <p className="mb-6 text-sm text-gray-500">
+      <h1 className="mb-2 text-2xl font-semibold text-primary">Instructies</h1>
+      <p className="mb-6 text-sm text-primary-75">
         Pas aan hoe de AI briefings genereert per type vergadering. Elk vergadertype heeft standaardinstructies die bepalen welke secties worden geschreven, hoe de speech eruitziet, en waar de nadruk ligt. Je kunt deze aanpassen aan je eigen werkwijze.
       </p>
 
@@ -62,7 +62,7 @@ export default function InstructiesPage() {
           return (
             <div
               key={skill.soort}
-              className="rounded-xl border border-gray-200 bg-white shadow-sm"
+              className="rounded-xl border border-primary-30 bg-white shadow-sm"
             >
               <button
                 type="button"
@@ -72,11 +72,11 @@ export default function InstructiesPage() {
                 className="flex w-full items-center justify-between px-4 py-3 text-left"
               >
                 <div className="flex items-center gap-2.5">
-                  <span className="text-sm font-medium text-gray-800">
+                  <span className="text-sm font-medium text-primary">
                     {skill.label}
                   </span>
                   {hasCustom && (
-                    <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-medium text-blue-700">
+                    <span className="rounded-full bg-primary-15 px-2 py-0.5 text-[10px] font-medium text-primary">
                       aangepast
                     </span>
                   )}
@@ -90,13 +90,13 @@ export default function InstructiesPage() {
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  className={`text-gray-400 transition-transform ${isExpanded ? "rotate-180" : ""}`}
+                  className={`text-primary-75 transition-transform ${isExpanded ? "rotate-180" : ""}`}
                 >
                   <polyline points="6 9 12 15 18 9" />
                 </svg>
               </button>
               {isExpanded && (
-                <div className="border-t border-gray-100 px-4 py-4">
+                <div className="border-t border-primary-15 px-4 py-4">
                   <textarea
                     value={meetingSkills[skill.soort] ?? skill.prompt}
                     onChange={(e) => {
@@ -107,7 +107,7 @@ export default function InstructiesPage() {
                       setSaved(false)
                     }}
                     rows={12}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900"
+                    className="w-full rounded-lg border border-primary-30 px-3 py-2 text-sm text-primary"
                   />
                   <div className="mt-2 flex items-center justify-end">
                     {hasCustom && (
@@ -138,7 +138,7 @@ export default function InstructiesPage() {
         <button
           onClick={handleSave}
           disabled={saving}
-          className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+          className="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-50"
         >
           {saving ? "Opslaan..." : saved ? "Opgeslagen" : "Instructies opslaan"}
         </button>

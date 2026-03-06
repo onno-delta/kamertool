@@ -113,19 +113,19 @@ export function ProgressSidebar({ steps }: { steps: ToolStep[] }) {
 
   return (
     <div className="sticky top-4">
-      <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-        <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-400">
+      <div className="rounded-xl border border-primary-30 bg-white p-4 shadow-sm">
+        <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-primary-75">
           Voortgang
         </h3>
         <div className="space-y-2.5">
           {hiddenCount > 0 && (
-            <p className="text-xs text-gray-300">+{hiddenCount} eerdere stappen</p>
+            <p className="text-xs text-primary-45">+{hiddenCount} eerdere stappen</p>
           )}
           {items.map((item) => (
             <div key={item.key} className="flex items-start gap-2.5">
               <div className="mt-0.5 shrink-0">
                 {item.status === "running" ? (
-                  <span className="block h-4 w-4 animate-spin rounded-full border-2 border-gray-200 border-t-blue-500" />
+                  <span className="block h-4 w-4 animate-spin rounded-full border-2 border-primary-30 border-t-primary" />
                 ) : item.status === "error" ? (
                   <span className="flex h-4 w-4 items-center justify-center rounded-full bg-red-100">
                     <svg className="h-2.5 w-2.5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
@@ -141,9 +141,9 @@ export function ProgressSidebar({ steps }: { steps: ToolStep[] }) {
                 )}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm text-gray-700">{item.label}</p>
+                <p className="truncate text-sm text-primary">{item.label}</p>
                 {item.detail && (
-                  <p className="truncate text-xs text-gray-400">{item.detail}</p>
+                  <p className="truncate text-xs text-primary-75">{item.detail}</p>
                 )}
               </div>
             </div>

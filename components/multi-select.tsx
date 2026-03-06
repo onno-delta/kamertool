@@ -58,8 +58,8 @@ export function MultiSelect({ label, options, selected, onChange }: Props) {
         onClick={() => setOpen(!open)}
         className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm transition-colors ${
           selected.size > 0
-            ? "border-blue-300 bg-blue-50 text-blue-700"
-            : "border-gray-200 bg-white text-gray-700"
+            ? "border-primary-45 bg-primary-15 text-primary"
+            : "border-primary-30 bg-white text-primary"
         }`}
       >
         <span className="max-w-[200px] truncate">{buttonLabel}</span>
@@ -75,7 +75,7 @@ export function MultiSelect({ label, options, selected, onChange }: Props) {
       </button>
 
       {open && (
-        <div className="absolute left-0 top-full z-50 mt-1 w-72 rounded-xl border border-gray-200 bg-white shadow-lg">
+        <div className="absolute left-0 top-full z-50 mt-1 w-72 rounded-xl border border-primary-30 bg-white shadow-lg">
           <div className="max-h-64 overflow-y-auto py-1">
             {options.map((opt) => {
               const isSelected = selected.has(opt.value)
@@ -84,14 +84,14 @@ export function MultiSelect({ label, options, selected, onChange }: Props) {
                   key={opt.value}
                   onClick={() => toggle(opt.value)}
                   className={`flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm transition-colors ${
-                    isSelected ? "bg-gray-50" : "hover:bg-gray-50"
+                    isSelected ? "bg-primary-15" : "hover:bg-primary-15/50"
                   }`}
                 >
                   <span
                     className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${
                       isSelected
-                        ? "border-blue-500 bg-blue-500"
-                        : "border-gray-300"
+                        ? "border-primary bg-primary"
+                        : "border-primary-30"
                     }`}
                   >
                     {isSelected && (
@@ -100,21 +100,21 @@ export function MultiSelect({ label, options, selected, onChange }: Props) {
                       </svg>
                     )}
                   </span>
-                  <span className="min-w-0 flex-1 truncate text-gray-700">
+                  <span className="min-w-0 flex-1 truncate text-primary">
                     {opt.label}
                   </span>
                   {opt.count !== undefined && (
-                    <span className="shrink-0 text-xs text-gray-400">{opt.count}</span>
+                    <span className="shrink-0 text-xs text-primary-75">{opt.count}</span>
                   )}
                 </button>
               )
             })}
           </div>
           {selected.size > 0 && (
-            <div className="border-t border-gray-100 px-3 py-2">
+            <div className="border-t border-primary-15 px-3 py-2">
               <button
                 onClick={clear}
-                className="text-xs font-medium text-gray-500 hover:text-gray-700"
+                className="text-xs font-medium text-primary-75 hover:text-primary"
               >
                 Filters wissen
               </button>

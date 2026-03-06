@@ -1,14 +1,22 @@
 @import "tailwindcss";
 
+/* Rijkshuisstijl: lintblauw #154273 + tinten; Verdana/Arial als systeemfont */
 @theme inline {
   --color-background: #ffffff;
-  --color-foreground: #171717;
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-foreground: #154273;
+  --color-primary: #154273;
+  --color-primary-75: #4f7196;
+  --color-primary-60: #738eab;
+  --color-primary-45: #95a9c0;
+  --color-primary-30: #b8c6d5;
+  --color-primary-15: #dce3ea;
+  --color-primary-dark: #0f3560;
+  --font-sans: Verdana, Arial, sans-serif;
+  --font-mono: "Courier New", Courier, monospace;
 }
 
 body {
-  background: var(--color-background);
+  background: var(--color-primary-15);
   color: var(--color-foreground);
-  font-family: var(--font-sans), system-ui, sans-serif;
+  font-family: var(--font-sans);
 }
