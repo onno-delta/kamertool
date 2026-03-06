@@ -61,20 +61,11 @@ type DisplayItem = {
   count: number
 }
 
-const MAX_VISIBLE = 5
-
 function processSteps(steps: ToolStep[]): DisplayItem[] {
-  // 1. Filter out completed steps with 0 results
-  const visible = steps.filter((s) => {
-    if (s.status === "running" || s.status === "error") return true
-    return s.detail !== "0 resultaten"
-  })
-
-  // 2. Group consecutive same-tool completed steps
+  // Group consecutive same-tool completed fetchWebPage calls
   const grouped: DisplayItem[] = []
-  for (const step of visible) {
+  for (const step of steps) {
     const last = grouped[grouped.length - 1]
-    // Group consecutive same-tool completed fetchWebPage calls
     if (
       last &&
       last.status === "done" &&
@@ -83,7 +74,7 @@ function processSteps(steps: ToolStep[]): DisplayItem[] {
       last.tool === "fetchWebPage"
     ) {
       last.count++
-      last.label = last.label.split(" ")[0] // keep hostname
+      last.label = last.label.split(" ")[0]
       last.detail = `${last.count}x opgehaald`
       last.key += `-${step.id}`
       continue
@@ -98,8 +89,7 @@ function processSteps(steps: ToolStep[]): DisplayItem[] {
     })
   }
 
-  // 3. Only show last MAX_VISIBLE
-  return grouped.slice(-MAX_VISIBLE)
+  return grouped
 }
 
 export function ProgressSidebar({ steps }: { steps: ToolStep[] }) {
@@ -108,26 +98,18 @@ export function ProgressSidebar({ steps }: { steps: ToolStep[] }) {
   const items = processSteps(steps)
   if (items.length === 0) return null
 
-  const hiddenCount = steps.filter((s) => {
-    if (s.status === "running" || s.status === "error") return true
-    return s.detail !== "0 resultaten"
-  }).length - items.length
-
   return (
-    <div className="sticky top-4">
+    <div className="sticky top-4 max-h-[calc(100vh-2rem)] overflow-y-auto">
       <div className="rounded-xl border border-border-light bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
         <h3 className="mb-3.5 flex items-center gap-1.5 text-[0.6875rem] font-semibold uppercase tracking-[0.075em] text-text-muted">
           <Activity className="h-[13px] w-[13px]" />
           Voortgang
         </h3>
         <div className="space-y-0">
-          {hiddenCount > 0 && (
-            <p className="pb-2 text-xs text-text-muted">+{hiddenCount} eerdere stappen</p>
-          )}
           {items.map((item, idx) => (
             <div
               key={item.key}
-              className={`flex items-start gap-2.5 py-2.5 ${idx > 0 ? "border-t border-border-light" : ""}`}
+              className={`flex items-start gap-2.5 py-2.5 animate-[fadeIn_0.3s_ease-out] ${idx > 0 ? "border-t border-border-light" : ""}`}
             >
               <div className="mt-0.5 shrink-0">
                 {item.status === "running" ? (
