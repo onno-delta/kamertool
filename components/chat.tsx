@@ -125,11 +125,11 @@ export function Chat() {
 
   const partyRef = useRef(party)
   const modelRef = useRef(model)
-  partyRef.current = party
-  modelRef.current = model
+  useEffect(() => { partyRef.current = party }, [party])
+  useEffect(() => { modelRef.current = model }, [model])
 
   const [transport] = useState(
-    () =>
+    () => // eslint-disable-line react-hooks/refs -- refs read in body() callback at request time, not render
       new DefaultChatTransport({
         api: "/api/chat",
         body: () => ({

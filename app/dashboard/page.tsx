@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import Link from "next/link"
 import { useSession } from "next-auth/react"
 
@@ -20,7 +20,7 @@ export default function DashboardPage() {
   const [inviting, setInviting] = useState(false)
   const [uploading, setUploading] = useState(false)
 
-  async function loadData() {
+  const loadData = useCallback(async () => {
     if (!orgId) return
     setLoading(true)
     const [membersRes, docsRes] = await Promise.all([
@@ -30,11 +30,11 @@ export default function DashboardPage() {
     if (membersRes.ok) setMembers(await membersRes.json())
     if (docsRes.ok) setDocs(await docsRes.json())
     setLoading(false)
-  }
+  }, [orgId])
 
   useEffect(() => {
-    if (orgId) loadData()
-  }, [orgId])
+    if (orgId) loadData() // eslint-disable-line react-hooks/set-state-in-effect -- async data fetch
+  }, [orgId, loadData])
 
   async function handleInvite(e: React.FormEvent) {
     e.preventDefault()

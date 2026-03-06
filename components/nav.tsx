@@ -32,8 +32,12 @@ export function Nav() {
   const menuRef = useRef<HTMLDivElement>(null)
 
   // Close menu on route change
+  const prevPathname = useRef(pathname)
   useEffect(() => {
-    setMenuOpen(false)
+    if (prevPathname.current !== pathname) {
+      setMenuOpen(false) // eslint-disable-line react-hooks/set-state-in-effect -- respond to route change
+      prevPathname.current = pathname
+    }
   }, [pathname])
 
   // Close menu on outside click

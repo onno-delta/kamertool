@@ -7,7 +7,17 @@ import { Layers, Download } from "lucide-react"
 import type { ToolStep } from "./progress-sidebar"
 import { getStepLabel, getStepDetail } from "./progress-sidebar"
 
-function getToolName(part: any): string {
+type ToolPart = {
+  type: string
+  toolName?: string
+  toolCallId?: string
+  state?: string
+  input?: Record<string, unknown>
+  args?: Record<string, unknown>
+  output?: unknown
+}
+
+function getToolName(part: ToolPart): string {
   if (part.toolName) return part.toolName
   if (typeof part.type === "string" && part.type.startsWith("tool-")) {
     return part.type.slice(5)
@@ -23,13 +33,12 @@ export function extractToolSteps(messages: UIMessage[]): ToolStep[] {
     if (msg.role !== "assistant") continue
 
     for (const part of msg.parts) {
+      const p = part as unknown as ToolPart
       const isToolPart =
-        (part as any).type === "dynamic-tool" ||
-        (typeof (part as any).type === "string" &&
-          (part as any).type.startsWith("tool-"))
+        p.type === "dynamic-tool" ||
+        (typeof p.type === "string" && p.type.startsWith("tool-"))
       if (!isToolPart) continue
 
-      const p = part as any
       const state = p.state
       if (
         state !== "input-streaming" &&
@@ -49,7 +58,7 @@ export function extractToolSteps(messages: UIMessage[]): ToolStep[] {
         tool: toolName,
         label: getStepLabel(toolName, args),
         status: isDone ? "done" : isError ? "error" : "running",
-        detail: getStepDetail(toolName, state, p.output),
+        detail: getStepDetail(toolName, state, p.output as Record<string, unknown> | undefined),
       })
     }
   }

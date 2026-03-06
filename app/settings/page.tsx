@@ -14,7 +14,6 @@ export default function SettingsPage() {
   const [selectedDossiers, setSelectedDossiers] = useState<string[]>([])
   const [selectedKamerleden, setSelectedKamerleden] = useState<Kamerlid[]>([])
   const [kamerleidSearch, setKamerleidSearch] = useState("")
-  const [kamerleidResults, setKamerleidResults] = useState<Kamerlid[]>([])
   const [kamerleidFocused, setKamerleidFocused] = useState(false)
   const [prefsSaving, setPrefsSaving] = useState(false)
   const [prefsSaved, setPrefsSaved] = useState(false)
@@ -56,21 +55,17 @@ export default function SettingsPage() {
   }, [])
 
   // Filter kamerleden by search input
-  useEffect(() => {
+  const kamerleidResultsFiltered = (() => {
     const selectedIds = new Set(selectedKamerleden.map((k) => k.id))
     const available = allKamerleden.filter((k) => !selectedIds.has(k.id))
-    if (!kamerleidSearch.trim()) {
-      setKamerleidResults(available)
-    } else {
-      const q = kamerleidSearch.toLowerCase()
-      setKamerleidResults(available.filter((k) => k.naam.toLowerCase().includes(q)))
-    }
-  }, [kamerleidSearch, selectedKamerleden, allKamerleden])
+    if (!kamerleidSearch.trim()) return available
+    const q = kamerleidSearch.toLowerCase()
+    return available.filter((k) => k.naam.toLowerCase().includes(q))
+  })()
 
   function addKamerlid(k: Kamerlid) {
     setSelectedKamerleden((prev) => [...prev, k])
     setKamerleidSearch("")
-    setKamerleidResults([])
     setPrefsSaved(false)
   }
 
@@ -210,9 +205,9 @@ export default function SettingsPage() {
               />
 
               {/* Dropdown results */}
-              {kamerleidFocused && kamerleidResults.length > 0 && (
+              {kamerleidFocused && kamerleidResultsFiltered.length > 0 && (
                 <div className="absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-lg border border-border bg-white shadow-lg">
-                  {kamerleidResults.map((k) => (
+                  {kamerleidResultsFiltered.map((k) => (
                     <button
                       key={k.id}
                       type="button"

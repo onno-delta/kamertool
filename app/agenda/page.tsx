@@ -89,14 +89,18 @@ export default function AgendaPage() {
 
   // Load agenda data
   useEffect(() => {
-    setLoading(true)
+    let cancelled = false
+    setLoading(true) // eslint-disable-line react-hooks/set-state-in-effect -- sync before async fetch is intentional
     fetch(`/api/agenda?from=${fromDate}&to=${toDate}`)
       .then((r) => r.json())
       .then((data) => {
-        setAllItems(Array.isArray(data) ? data : [])
-        setLoading(false)
+        if (!cancelled) {
+          setAllItems(Array.isArray(data) ? data : [])
+          setLoading(false)
+        }
       })
-      .catch(() => setLoading(false))
+      .catch(() => { if (!cancelled) setLoading(false) })
+    return () => { cancelled = true }
   }, [fromDate, toDate])
 
   // Available types from data

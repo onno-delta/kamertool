@@ -5,7 +5,6 @@ import {
   integer,
   boolean,
   primaryKey,
-  uuid,
 } from "drizzle-orm/pg-core"
 
 // --- App tables ---

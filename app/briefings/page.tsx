@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import Link from "next/link"
 import ReactMarkdown from "react-markdown"
 import { Search, FileText, Download, ExternalLink, ArrowLeft, Inbox } from "lucide-react"
@@ -20,17 +20,20 @@ export default function BriefingsPage() {
   const [search, setSearch] = useState("")
   const [selected, setSelected] = useState<Briefing | null>(null)
 
-  async function loadBriefings() {
+  const searchRef = useRef(search)
+  useEffect(() => { searchRef.current = search }, [search])
+
+  const loadBriefings = useCallback(async () => {
     setLoading(true)
-    const params = search ? `?q=${encodeURIComponent(search)}` : ""
+    const params = searchRef.current ? `?q=${encodeURIComponent(searchRef.current)}` : ""
     const res = await fetch(`/api/briefings${params}`)
     if (res.ok) setBriefings(await res.json())
     setLoading(false)
-  }
+  }, [])
 
   useEffect(() => {
-    loadBriefings()
-  }, [])
+    loadBriefings() // eslint-disable-line react-hooks/set-state-in-effect -- initial data fetch
+  }, [loadBriefings])
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault()

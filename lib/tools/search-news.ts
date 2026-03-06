@@ -27,7 +27,7 @@ export const searchNews = tool({
       return { count: 0, results: [], error: "News search unavailable" }
 
     const data = await res.json()
-    const articles = (data.news ?? []).map((article: any) => ({
+    const articles = (data.news ?? []).map((article: Record<string, string>) => ({
       title: article.title,
       snippet: article.snippet,
       source: article.source,
