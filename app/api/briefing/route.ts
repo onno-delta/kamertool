@@ -28,7 +28,6 @@ export const maxDuration = 120
 export async function POST(req: Request) {
   try {
     const { topic, partyId, partyName, organisationId, kamerleden, soort, meetingSkill } = await req.json()
-    console.log("[briefing] POST", { topic, partyId, partyName, kamerleden: kamerleden?.length, soort })
 
     if (!topic) {
       return NextResponse.json({ error: "Topic is required" }, { status: 400 })
@@ -36,7 +35,6 @@ export async function POST(req: Request) {
 
     const session = await auth()
     const userId = session?.user?.id ?? null
-    console.log("[briefing] auth", { userId })
 
     let modelOpts: { model?: string; apiKey?: string } | undefined
     let usingOwnKey = false
@@ -49,11 +47,15 @@ export async function POST(req: Request) {
       }
     }
 
+    let setSessionCookie: string | null = null
     if (!usingOwnKey && !isUnlimitedEmail(session?.user?.email)) {
       const cookieStore = await cookies()
-      const sessionId = cookieStore.get("session-id")?.value ?? null
+      let sessionId = cookieStore.get("session-id")?.value ?? null
+      if (!sessionId && !userId) {
+        sessionId = crypto.randomUUID()
+        setSessionCookie = sessionId
+      }
       const { allowed, used, limit } = await checkAndIncrementUsage(userId, sessionId)
-      console.log("[briefing] rate limit", { allowed, used, limit })
       if (!allowed) {
         return NextResponse.json(
           {
@@ -110,7 +112,6 @@ ${Array.isArray(kamerleden) && kamerleden.length > 0 ? `\nRelevante Kamerleden o
 
 BELANGRIJK: Zoek de daadwerkelijke inhoud van de relevante stukken op en vat samen wat erin staat. Noem altijd het documentnummer en de datum. Gebruik je tools om actuele informatie op te zoeken.`
 
-    console.log("[briefing] starting stream...")
     const result = streamText({
       model: getModel(modelOpts),
       system: `Je bent een parlementair onderzoeksassistent die debatbriefings schrijft voor Kamerleden. Gebruik altijd je tools om informatie op te zoeken. Schrijf in het Nederlands. Verwijs naar specifieke documentnummers en Kamerstuknummers.
@@ -182,8 +183,6 @@ Werkwijze:
             }
           }
 
-          console.log("[briefing] stream done, length:", fullText.length)
-
           // Save to DB
           if (userId && fullText) {
             await db.insert(briefings).values({
@@ -192,7 +191,6 @@ Werkwijze:
               topic,
               content: fullText,
             })
-            console.log("[briefing] saved to db")
           }
 
           controller.enqueue(
@@ -218,12 +216,14 @@ Werkwijze:
       },
     })
 
-    return new Response(stream, {
-      headers: {
-        "Content-Type": "application/x-ndjson",
-        "Cache-Control": "no-cache",
-      },
-    })
+    const headers: Record<string, string> = {
+      "Content-Type": "application/x-ndjson",
+      "Cache-Control": "no-cache",
+    }
+    if (setSessionCookie) {
+      headers["Set-Cookie"] = `session-id=${setSessionCookie}; Path=/; Max-Age=31536000; HttpOnly; SameSite=Lax`
+    }
+    return new Response(stream, { headers })
   } catch (error) {
     console.error("[briefing] ERROR:", error)
     return NextResponse.json(

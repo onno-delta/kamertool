@@ -62,6 +62,7 @@ export async function getUsage(
   userId: string | null,
   sessionId: string | null
 ): Promise<{ used: number; limit: number }> {
+  if (!userId && !sessionId) return { used: 0, limit: FREE_TIER_LIMIT }
   const date = todayUTC()
   const identifier = userId
     ? eq(usageLog.userId, userId)

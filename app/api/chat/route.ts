@@ -26,11 +26,9 @@ export const maxDuration = 60
 export async function POST(req: Request) {
   try {
     const { messages, partyId, partyName, organisationId, model: requestedModel } = await req.json()
-    console.log("[chat] POST", { userId: null, partyId, partyName, model: requestedModel, messageCount: messages?.length })
 
     const session = await auth()
     const userId = session?.user?.id ?? null
-    console.log("[chat] auth", { userId, email: session?.user?.email })
 
     // Check for user's own API key
     let modelOpts: { model?: string; apiKey?: string } | undefined
@@ -41,20 +39,20 @@ export async function POST(req: Request) {
       if (userKey) {
         modelOpts = { model: userKey.model, apiKey: userKey.apiKey }
         usingOwnKey = true
-        console.log("[chat] using BYOK", { model: userKey.model })
       }
     }
 
     // Free tier rate limiting (skip for BYOK and whitelisted domains)
+    let setSessionCookie: string | null = null
     if (!usingOwnKey && !isUnlimitedEmail(session?.user?.email)) {
       const cookieStore = await cookies()
       let sessionId = cookieStore.get("session-id")?.value ?? null
       if (!sessionId && !userId) {
         sessionId = crypto.randomUUID()
+        setSessionCookie = sessionId
       }
 
       const { allowed, used, limit } = await checkAndIncrementUsage(userId, sessionId)
-      console.log("[chat] rate limit", { allowed, used, limit })
       if (!allowed) {
         return NextResponse.json(
           {
@@ -72,9 +70,6 @@ export async function POST(req: Request) {
     if (!modelOpts && requestedModel) {
       modelOpts = { model: requestedModel }
     }
-
-    const finalModel = modelOpts?.model ?? "default"
-    console.log("[chat] streaming with model:", finalModel)
 
     const tools = {
       searchKamerstukken,
@@ -95,7 +90,6 @@ export async function POST(req: Request) {
     }
 
     const modelMessages = await convertToModelMessages(messages, { tools })
-    console.log("[chat] converted", messages.length, "UI messages to", modelMessages.length, "model messages")
 
     const result = streamText({
       model: getModel(modelOpts),
@@ -105,7 +99,15 @@ export async function POST(req: Request) {
       tools,
     })
 
-    return result.toUIMessageStreamResponse()
+    const response = result.toUIMessageStreamResponse()
+    if (setSessionCookie) {
+      const cookie = `session-id=${setSessionCookie}; Path=/; Max-Age=31536000; HttpOnly; SameSite=Lax`
+      const headers = new Headers(response.headers)
+      headers.append("Set-Cookie", cookie)
+      const cloned = response.clone()
+      return new Response(cloned.body, { status: cloned.status, headers })
+    }
+    return response
   } catch (error) {
     console.error("[chat] ERROR:", error)
     return NextResponse.json(
