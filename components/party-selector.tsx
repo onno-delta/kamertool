@@ -68,17 +68,16 @@ export function PartySelector({
       {open && (
         <div
           role="listbox"
-          className="absolute left-0 top-full z-50 mt-1 max-h-80 w-72 overflow-y-auto rounded-lg border border-border bg-white shadow-lg"
+          className="absolute left-0 top-full z-50 mt-1 max-h-80 w-48 overflow-y-auto rounded-lg border border-border bg-white shadow-lg"
         >
           <button
             role="option"
             aria-selected={!value}
             onClick={() => { onChange(null); setOpen(false) }}
-            className={`flex w-full items-center gap-3 px-3 py-2 text-left text-sm hover:bg-surface-muted ${!value ? "bg-surface-muted" : ""}`}
+            className={`flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm hover:bg-surface-muted ${!value ? "bg-surface-muted" : ""}`}
           >
             <span className="inline-block h-2 w-2 shrink-0 rounded-full bg-gray-300" />
             <span className="font-medium text-text-muted">Geen partij</span>
-            <span className="text-xs text-text-muted">Neutraal</span>
           </button>
           {parties.map((p) => {
             const c = PARTY_COLORS[p.shortName] ?? "#6B7280"
@@ -89,14 +88,13 @@ export function PartySelector({
                 role="option"
                 aria-selected={selected}
                 onClick={() => { onChange(p); setOpen(false) }}
-                className={`flex w-full items-center gap-3 px-3 py-2 text-left text-sm hover:bg-surface-muted ${selected ? "bg-surface-muted" : ""}`}
+                className={`flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm hover:bg-surface-muted ${selected ? "bg-surface-muted" : ""}`}
               >
                 <span
                   className="inline-block h-2 w-2 shrink-0 rounded-full"
                   style={{ backgroundColor: c }}
                 />
                 <span className="font-medium text-primary">{p.shortName}</span>
-                <span className="truncate text-xs text-text-muted">{p.name}</span>
               </button>
             )
           })}
