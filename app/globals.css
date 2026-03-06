@@ -1,6 +1,36 @@
 @import "tailwindcss";
 
-/* Rijkshuisstijl: lintblauw #154273 + tinten; Verdana/Arial als systeemfont */
+/* Rijkshuisstijl: lintblauw #154273 + tinten; Rijksoverheid Sans als basisfont */
+@font-face {
+  font-family: "Rijksoverheid Sans Web Text";
+  src:
+    url("/fonts/RijksoverheidSansWebText-Regular.woff2") format("woff2"),
+    url("/fonts/RijksoverheidSansWebText-Regular.woff") format("woff");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Rijksoverheid Sans Web Text";
+  src:
+    url("/fonts/RijksoverheidSansWebText-Italic.woff2") format("woff2"),
+    url("/fonts/RijksoverheidSansWebText-Italic.woff") format("woff");
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Rijksoverheid Sans Web Text";
+  src:
+    url("/fonts/RijksoverheidSansWebText-Bold.woff2") format("woff2"),
+    url("/fonts/RijksoverheidSansWebText-Bold.woff") format("woff");
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
 @theme inline {
   --color-background: #ffffff;
   --color-foreground: #154273;
@@ -11,7 +41,7 @@
   --color-primary-30: #b8c6d5;
   --color-primary-15: #dce3ea;
   --color-primary-dark: #0f3560;
-  --font-sans: Verdana, Arial, sans-serif;
+  --font-sans: "Rijksoverheid Sans Web Text", Arial, sans-serif;
   --font-mono: "Courier New", Courier, monospace;
 }
 

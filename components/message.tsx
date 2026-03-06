@@ -93,7 +93,7 @@ export function Message({ message, topic }: { message: UIMessage; topic?: string
       <div
         className={`max-w-[85%] ${
           isUser
-            ? "rounded-2xl bg-primary px-4 py-3 text-white"
+            ? "rounded-xl bg-primary px-4 py-3 text-white shadow-sm"
             : "space-y-2"
         }`}
       >
@@ -111,7 +111,7 @@ export function Message({ message, topic }: { message: UIMessage; topic?: string
                 return (
                   <div
                     key={i}
-                    className="rounded-2xl bg-primary-15 px-4 py-2 text-xs italic text-primary-75"
+                    className="rounded-lg bg-primary-15 px-4 py-2 text-xs italic text-primary-75"
                   >
                     {part.text}
                   </div>

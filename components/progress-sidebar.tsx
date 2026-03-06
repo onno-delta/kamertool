@@ -113,7 +113,7 @@ export function ProgressSidebar({ steps }: { steps: ToolStep[] }) {
 
   return (
     <div className="sticky top-4">
-      <div className="rounded-xl border border-primary-30 bg-white p-4 shadow-sm">
+      <div className="rounded-xl border border-primary-30 bg-white/95 p-4 shadow-sm">
         <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-primary-75">
           Voortgang
         </h3>

@@ -49,11 +49,14 @@ export default function InstructiesPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl overflow-y-auto px-6 py-10">
-      <h1 className="mb-2 text-2xl font-semibold text-primary">Instructies</h1>
-      <p className="mb-6 text-sm text-primary-75">
-        Pas aan hoe de AI briefings genereert per type vergadering. Elk vergadertype heeft standaardinstructies die bepalen welke secties worden geschreven, hoe de speech eruitziet, en waar de nadruk ligt. Je kunt deze aanpassen aan je eigen werkwijze.
-      </p>
+    <div className="mx-auto max-w-3xl overflow-y-auto px-4 py-6 sm:px-6 sm:py-8">
+      <section className="mb-6 rounded-xl border border-primary-30 bg-white/95 px-6 py-5 shadow-sm">
+        <h1 className="text-2xl font-semibold text-primary">Instructies</h1>
+        <p className="mt-2 text-sm text-primary-75">
+          Pas aan hoe de AI briefings genereert per type vergadering. Elk vergadertype heeft
+          standaardinstructies die je hier kunt overschrijven met eigen tekst.
+        </p>
+      </section>
 
       <div className="space-y-2">
         {MEETING_SKILLS.map((skill) => {
@@ -62,7 +65,7 @@ export default function InstructiesPage() {
           return (
             <div
               key={skill.soort}
-              className="rounded-xl border border-primary-30 bg-white shadow-sm"
+              className="rounded-xl border border-primary-30 bg-white/95 shadow-sm"
             >
               <button
                 type="button"

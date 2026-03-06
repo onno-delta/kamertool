@@ -17,7 +17,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="nl">
-      <body className="antialiased">
+      <body className="antialiased bg-primary-15">
         {/* Skip links — Rijkshuisstijl/toegankelijkheid: direct naar inhoud/nav */}
         <a
           href="#main-content"
@@ -32,18 +32,25 @@ export default function RootLayout({
           Direct naar navigatie
         </a>
         <Providers>
-          <div className="flex min-h-dvh flex-col bg-primary-15">
+          <div className="flex min-h-dvh flex-col">
             <Nav />
             <main id="main-content" className="flex min-h-0 flex-1 flex-col" role="main">
-              {children}
+              <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 pb-10 pt-6 sm:px-6 sm:pt-8">
+                {children}
+              </div>
             </main>
-            <footer className="shrink-0 border-t border-primary-30 bg-white py-6">
-              <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-center gap-x-6 gap-y-2 px-6 text-center text-sm text-primary-75">
+            <footer className="shrink-0 border-t border-primary-30 bg-white/95">
+              <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-6 gap-y-2 px-6 py-6 text-center text-sm text-primary-75">
                 <span>Kamertool — Debatvoorbereiding</span>
-                <a href="https://kamer.deltainstituut.nl" className="hover:text-primary underline">
+                <a href="https://kamer.deltainstituut.nl" className="underline hover:text-primary">
                   Live site
                 </a>
-                <a href="https://github.com/onno-delta/kamertool" className="hover:text-primary underline" target="_blank" rel="noopener noreferrer">
+                <a
+                  href="https://github.com/onno-delta/kamertool"
+                  className="underline hover:text-primary"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   Broncode
                 </a>
               </div>

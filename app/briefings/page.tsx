@@ -80,21 +80,27 @@ export default function BriefingsPage() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
-      <div className="mx-auto w-full max-w-4xl px-6 py-10">
-        <h1 className="mb-8 text-2xl font-semibold text-primary">Briefing Geschiedenis</h1>
+      <div className="mx-auto w-full max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
+        <section className="mb-6 rounded-xl border border-primary-30 bg-white/95 px-6 py-5 shadow-sm">
+          <h1 className="text-2xl font-semibold text-primary">Briefinggeschiedenis</h1>
+          <p className="mt-2 text-sm text-primary-75">
+            Zoek en hergebruik eerder gegenereerde debatbriefings. Je kunt de tekst bekijken of
+            direct een PDF downloaden.
+          </p>
+        </section>
 
         {/* Search */}
-        <div className="mb-6 rounded-2xl border border-primary-30 bg-white p-4 shadow-sm">
-          <form onSubmit={handleSearch} className="flex gap-3">
+        <div className="mb-6 rounded-xl border border-primary-30 bg-white/95 p-4 shadow-sm">
+          <form onSubmit={handleSearch} className="flex flex-col gap-3 sm:flex-row">
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Zoek op onderwerp..."
-              className="flex-1 rounded-xl border border-primary-30 px-4 py-2 text-primary placeholder:text-primary-60"
+              className="flex-1 rounded-md border border-primary-30 px-4 py-2 text-sm text-primary placeholder:text-primary-60"
             />
             <button
               type="submit"
-              className="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark"
+              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark"
             >
               Zoeken
             </button>
@@ -104,7 +110,7 @@ export default function BriefingsPage() {
         {loading && <p className="text-primary-75">Laden...</p>}
 
         {!loading && briefings.length === 0 && (
-          <div className="rounded-2xl border border-primary-30 bg-white p-8 shadow-sm text-center">
+          <div className="rounded-xl border border-primary-30 bg-white/95 p-8 shadow-sm text-center">
             <p className="text-primary-75">Geen briefings gevonden. Genereer een briefing vanuit de chat.</p>
           </div>
         )}
@@ -116,7 +122,7 @@ export default function BriefingsPage() {
               <button
                 key={b.id}
                 onClick={() => setSelected(b)}
-                className="w-full rounded-2xl border border-primary-30 bg-white p-5 text-left shadow-sm transition-shadow hover:shadow-md"
+                className="w-full rounded-xl border border-primary-30 bg-white/95 p-5 text-left shadow-sm transition-shadow hover:shadow-md"
               >
                 <div className="flex items-center justify-between">
                   <h3 className="font-medium text-primary">{b.topic}</h3>
@@ -157,7 +163,7 @@ export default function BriefingsPage() {
                 </button>
               </div>
             </div>
-            <div className="rounded-2xl border border-primary-30 bg-white p-6 shadow-sm">
+            <div className="rounded-xl border border-primary-30 bg-white/95 p-6 shadow-sm">
               <h2 className="mb-1 text-xl font-semibold text-primary">{selected.topic}</h2>
               <p className="mb-4 text-sm text-primary-75">
                 {new Date(selected.createdAt).toLocaleDateString("nl-NL")}

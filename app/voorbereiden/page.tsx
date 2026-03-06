@@ -40,53 +40,60 @@ function VoorbereidenContent() {
   const steps = state?.topic === topic ? state.steps : []
 
   return (
-    <div className="flex min-h-0 flex-1">
+    <div className="flex min-h-0 flex-1 gap-6 lg:grid lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
       {/* Main content */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="mx-auto max-w-3xl px-6 py-8">
-          <Link href="/agenda" className="mb-4 inline-block text-sm text-primary-75 hover:text-primary">
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+        <div className="mx-auto max-w-3xl px-0 py-2 sm:py-3">
+          <Link href="/agenda" className="mb-3 inline-block text-sm text-primary-75 hover:text-primary">
             &larr; Terug naar agenda
           </Link>
 
-          <h1 className="mb-6 text-xl font-semibold text-primary">{topic}</h1>
+          <section className="rounded-xl border border-primary-30 bg-white/95 px-6 py-6 shadow-sm">
+            <h1 className="text-2xl font-semibold text-primary">{topic}</h1>
+            {partyName && (
+              <p className="mt-1 text-sm text-primary-75">
+                Briefing gericht op: {partyName}
+              </p>
+            )}
 
-          {loading && (
-            <div className="rounded-2xl border border-primary-30 bg-white p-8 shadow-sm">
-              <div className="flex flex-col items-center gap-4">
-                <span className="h-8 w-8 animate-spin rounded-full border-3 border-primary-15 border-t-primary" />
-                <div className="text-center">
-                  <p className="font-medium text-primary">Briefing wordt gegenereerd...</p>
-                  <p className="mt-1 text-sm text-primary-75">
-                    De PDF wordt automatisch gedownload.
-                  </p>
+            {loading && (
+              <div className="mt-6 rounded-xl border border-primary-30 bg-primary-15/40 px-6 py-6">
+                <div className="flex flex-col items-center gap-4">
+                  <span className="h-8 w-8 animate-spin rounded-full border-3 border-primary-15 border-t-primary" />
+                  <div className="text-center">
+                    <p className="font-medium text-primary">Briefing wordt gegenereerd...</p>
+                    <p className="mt-1 text-sm text-primary-75">
+                      De PDF wordt automatisch gedownload zodra hij klaar is.
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {error && (
-            <div className="rounded-2xl border border-red-200 bg-red-50 p-6">
-              <p className="text-sm text-red-700">{error}</p>
-            </div>
-          )}
+            {error && (
+              <div className="mt-6 rounded-xl border border-red-200 bg-red-50 px-6 py-4">
+                <p className="text-sm text-red-700">{error}</p>
+              </div>
+            )}
 
-          {content && (
-            <BriefingResult
-              topic={topic}
-              content={content}
-              partyName={partyName}
-              onDownload={downloadPDF}
-            />
-          )}
+            {content && (
+              <div className="mt-6">
+                <BriefingResult
+                  topic={topic}
+                  content={content}
+                  partyName={partyName}
+                  onDownload={downloadPDF}
+                />
+              </div>
+            )}
+          </section>
         </div>
       </div>
 
-      {/* Progress sidebar - desktop only */}
-      {steps.length > 0 && (
-        <div className="hidden w-72 shrink-0 overflow-y-auto border-l border-primary-30 p-4 lg:block">
-          <ProgressSidebar steps={steps} />
-        </div>
-      )}
+      {/* Progress sidebar */}
+      <div className="hidden min-h-0 lg:block">
+        {steps.length > 0 && <ProgressSidebar steps={steps} />}
+      </div>
     </div>
   )
 }

@@ -189,11 +189,16 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl overflow-y-auto px-6 py-10">
-      <h1 className="mb-8 text-2xl font-semibold text-primary">Instellingen</h1>
+    <div className="mx-auto max-w-3xl overflow-y-auto px-4 py-6 sm:px-6 sm:py-8">
+      <section className="mb-6 rounded-xl border border-primary-30 bg-white/95 px-6 py-5 shadow-sm">
+        <h1 className="text-2xl font-semibold text-primary">Instellingen</h1>
+        <p className="mt-2 text-sm text-primary-75">
+          Beheer je standaardpartij, dossiers, Kamerleden en API-keys voor eigen modellen.
+        </p>
+      </section>
 
       {/* Party & Dossiers */}
-      <div className="mb-6 rounded-2xl border border-primary-30 bg-white p-6 shadow-sm">
+      <div className="mb-6 rounded-xl border border-primary-30 bg-white/95 p-6 shadow-sm">
         <h2 className="mb-4 text-lg font-medium text-primary">
           Partij en dossiers
         </h2>
@@ -332,7 +337,7 @@ export default function SettingsPage() {
 
       {/* Existing keys */}
       {!loading && keys.length > 0 && (
-        <div className="mb-6 rounded-2xl border border-primary-30 bg-white p-6 shadow-sm">
+        <div className="mb-6 rounded-xl border border-primary-30 bg-white/95 p-6 shadow-sm">
           <h2 className="mb-4 text-lg font-medium text-primary">
             Je API keys
           </h2>
@@ -385,7 +390,7 @@ export default function SettingsPage() {
       )}
 
       {/* Add new key */}
-      <div className="rounded-2xl border border-primary-30 bg-white p-6 shadow-sm">
+      <div className="rounded-xl border border-primary-30 bg-white/95 p-6 shadow-sm">
         <h2 className="mb-4 text-lg font-medium text-primary">
           API key toevoegen
         </h2>
