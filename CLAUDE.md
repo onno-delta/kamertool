@@ -14,7 +14,16 @@ npm run build    # Production build
 npm run lint     # ESLint
 ```
 
-**Database migrations:** `npx drizzle-kit push` (uses Supabase PostgreSQL). If the pooler connection fails, use the Supabase MCP `apply_migration` tool directly.
+**Database migrations:** `drizzle-kit push` is broken with Supabase's transaction pooler (port 6543). Stable (v0.31.9) crashes on check constraint introspection ([#4496](https://github.com/drizzle-team/drizzle-orm/issues/4496)), beta (v1.0.0-beta) hangs because it uses prepared statements which PgBouncer doesn't support. Direct connection (port 5432) is unreachable.
+
+**Workaround:** apply migrations via direct SQL instead:
+```bash
+set -a && source .env.local && set +a && node -e "
+const sql = require('postgres')(process.env.DATABASE_URL, { prepare: false });
+sql\`ALTER TABLE ... \`.then(() => { console.log('done'); return sql.end() });
+"
+```
+Check if drizzle v1 stable is released: `npm view drizzle-kit dist-tags --json | grep latest` — when `latest` shows `1.x.x`, retry `drizzle-kit push`.
 
 **Scripts** (require `set -a && source .env.local && set +a` before running):
 - `npx tsx scripts/seed-parties.ts` — Insert base party rows
