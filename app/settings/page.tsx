@@ -3,14 +3,14 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { DOSSIERS } from "@/lib/dossiers"
+import { PartySelector } from "@/components/party-selector"
 
 type Party = { id: string; name: string; shortName: string }
 type Kamerlid = { id: string; naam: string; fractie?: string }
 
 export default function SettingsPage() {
   // Preferences state
-  const [parties, setParties] = useState<Party[]>([])
-  const [selectedPartyId, setSelectedPartyId] = useState<string>("")
+  const [selectedParty, setSelectedParty] = useState<Party | null>(null)
   const [selectedDossiers, setSelectedDossiers] = useState<string[]>([])
   const [selectedKamerleden, setSelectedKamerleden] = useState<Kamerlid[]>([])
   const [kamerleidSearch, setKamerleidSearch] = useState("")
@@ -20,22 +20,20 @@ export default function SettingsPage() {
   const [prefsSaved, setPrefsSaved] = useState(false)
 
   useEffect(() => {
-    // Load parties
-    fetch("/api/parties")
-      .then((r) => r.json())
-      .then(setParties)
-      .catch(() => {})
-    // Load preferences
-    fetch("/api/settings/preferences")
-      .then((r) => r.ok ? r.json() : null)
-      .then((data) => {
-        if (data) {
-          setSelectedPartyId(data.defaultPartyId ?? "")
-          setSelectedDossiers(data.dossiers ?? [])
-          setSelectedKamerleden(data.kamerleden ?? [])
+    // Load preferences + parties, then resolve the default party
+    Promise.all([
+      fetch("/api/settings/preferences").then((r) => r.ok ? r.json() : null),
+      fetch("/api/parties").then((r) => r.json()),
+    ]).then(([prefs, allParties]) => {
+      if (prefs) {
+        setSelectedDossiers(prefs.dossiers ?? [])
+        setSelectedKamerleden(prefs.kamerleden ?? [])
+        if (prefs.defaultPartyId && allParties) {
+          const match = allParties.find((p: Party) => p.id === prefs.defaultPartyId)
+          if (match) setSelectedParty(match)
         }
-      })
-      .catch(() => {})
+      }
+    }).catch(() => {})
   }, [])
 
   function toggleDossier(dossierId: string) {
@@ -87,7 +85,7 @@ export default function SettingsPage() {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        defaultPartyId: selectedPartyId || null,
+        defaultPartyId: selectedParty?.id ?? null,
         dossiers: selectedDossiers,
         kamerleden: selectedKamerleden,
       }),
@@ -124,21 +122,13 @@ export default function SettingsPage() {
             <label className="mb-1 block text-sm font-medium text-primary">
               Partij
             </label>
-            <select
-              value={selectedPartyId}
-              onChange={(e) => {
-                setSelectedPartyId(e.target.value)
+            <PartySelector
+              value={selectedParty}
+              onChange={(p) => {
+                setSelectedParty(p)
                 setPrefsSaved(false)
               }}
-              className="w-full rounded border border-border px-3 py-2 text-primary"
-            >
-              <option value="">Geen partij (neutraal)</option>
-              {parties.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.shortName} — {p.name}
-                </option>
-              ))}
-            </select>
+            />
             <p className="mt-1 text-xs text-text-muted">
               De standaardpartij wordt automatisch geselecteerd in de chat.
             </p>
