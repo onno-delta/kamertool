@@ -1,5 +1,6 @@
 import { db } from "@/lib/db"
 import { parties } from "@/lib/db/schema"
+import { PARTY_SORT_ORDER } from "@/lib/parties"
 import { NextResponse } from "next/server"
 
 export async function GET() {
@@ -12,7 +13,13 @@ export async function GET() {
         shortName: parties.shortName,
       })
       .from(parties)
-      .orderBy(parties.shortName)
+
+    // Sort by seat count (PARTY_SORT_ORDER), unknowns at the end
+    allParties.sort((a, b) => {
+      const orderA = PARTY_SORT_ORDER[a.shortName] ?? 999
+      const orderB = PARTY_SORT_ORDER[b.shortName] ?? 999
+      return orderA - orderB
+    })
 
     console.log("[parties] returning", allParties.length, "parties")
     return NextResponse.json(allParties)

@@ -15,6 +15,59 @@ const FREE_MODELS = [
   { key: "claude-opus-4-6", label: "Opus 4.6" },
 ]
 
+function ModelSelector({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+  const selected = FREE_MODELS.find((m) => m.key === value)
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    function handleEscape(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false)
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    document.addEventListener("keydown", handleEscape)
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+      document.removeEventListener("keydown", handleEscape)
+    }
+  }, [])
+
+  return (
+    <div ref={ref} className="relative inline-flex shrink-0">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        aria-expanded={open}
+        aria-haspopup="listbox"
+        className="inline-flex items-center gap-2 rounded border border-border bg-white px-3 py-1.5 text-sm font-medium text-primary hover:bg-surface-muted focus:border-primary focus:outline-none"
+      >
+        {selected?.label ?? value}
+        <svg className="h-3.5 w-3.5 text-text-muted" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+        </svg>
+      </button>
+      {open && (
+        <div role="listbox" className="absolute left-0 top-full z-50 mt-1 w-44 overflow-hidden rounded-lg border border-border bg-white shadow-lg">
+          {FREE_MODELS.map((m) => (
+            <button
+              key={m.key}
+              role="option"
+              aria-selected={value === m.key}
+              onClick={() => { onChange(m.key); setOpen(false) }}
+              className={`flex w-full items-center px-3 py-2 text-left text-sm hover:bg-surface-muted ${value === m.key ? "bg-surface-muted font-medium text-primary" : "text-primary"}`}
+            >
+              {m.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export function Chat() {
   const [party, setParty] = useState<Party | null>(null)
   const [model, setModel] = useState("claude-sonnet-4-5")
@@ -105,7 +158,11 @@ export function Chat() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="grid min-h-0 w-full gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+      <div className={`min-h-0 w-full ${
+        toolSteps.length > 0
+          ? "grid gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]"
+          : "mx-auto max-w-4xl"
+      }`}>
         {/* Main chat card */}
         <section className="flex min-h-0 min-w-0 flex-col overflow-hidden rounded-lg border border-border bg-white">
           {/* Toolbar */}
@@ -118,17 +175,7 @@ export function Chat() {
                 </span>
               ) : (
                 <>
-                  <select
-                    value={model}
-                    onChange={(e) => setModel(e.target.value)}
-                    className="shrink-0 rounded border border-border bg-white px-2.5 py-1.5 text-sm text-primary focus:border-primary focus:outline-none sm:px-3"
-                  >
-                    {FREE_MODELS.map((m) => (
-                      <option key={m.key} value={m.key}>
-                        {m.label}
-                      </option>
-                    ))}
-                  </select>
+                  <ModelSelector value={model} onChange={setModel} />
                   {usage && !usage.unlimited && (
                     <span className="shrink-0 rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">
                       {usage.used}/{usage.limit}
@@ -143,8 +190,8 @@ export function Chat() {
           <div className="flex-1 overflow-y-auto">
             <div className="mx-auto max-w-3xl px-6 py-5">
               {messages.length === 0 && (
-                <div className="border-l-4 border-primary pl-6 py-4">
-                  <h1 className="text-4xl font-bold tracking-tight text-primary">
+                <div className="border-l-4 border-primary pl-6 py-6">
+                  <h1 className="text-3xl font-bold tracking-tight text-primary">
                     Bereid je voor op een debat
                   </h1>
                   <p className="mt-3 text-sm leading-relaxed text-text-secondary">
@@ -209,13 +256,13 @@ export function Chat() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="Bijv. 'Bereid me voor op het stikstofdebat' of 'Welke toezeggingen staan open over woningbouw?'"
-                  className="flex-1 rounded border-2 border-border bg-white px-4 py-3 text-sm text-primary placeholder:text-text-muted focus:border-primary focus:shadow-[0_0_0_1px_var(--color-primary)] focus:outline-none"
+                  className="flex-1 rounded border border-border bg-white px-4 py-3 text-sm text-primary placeholder:text-text-muted focus:border-primary focus:shadow-[0_0_0_1px_var(--color-primary)] focus:outline-none"
                   disabled={isLoading}
                 />
                 <button
                   type="submit"
                   disabled={isLoading || !input.trim()}
-                  className="inline-flex items-center justify-center rounded bg-primary px-6 py-3 text-sm font-medium text-white hover:bg-primary-dark active:translate-y-px disabled:opacity-40"
+                  className="inline-flex items-center justify-center rounded-md bg-primary px-6 py-3 text-sm font-medium text-white hover:bg-primary-dark active:translate-y-px disabled:opacity-40"
                 >
                   {isLoading ? "Bezig..." : "Verstuur"}
                 </button>
@@ -225,9 +272,11 @@ export function Chat() {
         </section>
 
         {/* Progress sidebar */}
-        <aside className="hidden min-h-0 lg:block">
-          {toolSteps.length > 0 && <ProgressSidebar steps={toolSteps} />}
-        </aside>
+        {toolSteps.length > 0 && (
+          <aside className="hidden min-h-0 lg:block">
+            <ProgressSidebar steps={toolSteps} />
+          </aside>
+        )}
       </div>
     </div>
   )
