@@ -17,6 +17,7 @@ import {
 import { PartySelector } from "./party-selector"
 import { Message, extractToolSteps } from "./message"
 import { ProgressSidebar } from "./progress-sidebar"
+import { LinksSidebar } from "./links-sidebar"
 
 type Party = { id: string; name: string; shortName: string }
 
@@ -195,11 +196,7 @@ export function Chat() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className={`min-h-0 w-full ${
-        toolSteps.length > 0
-          ? "grid gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]"
-          : "mx-auto max-w-[56rem]"
-      }`}>
+      <div className="grid min-h-0 w-full gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
         {/* Main chat card */}
         <section className="flex min-h-0 min-w-0 flex-col overflow-hidden rounded-xl border border-border-light bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.02)]">
           {/* Toolbar */}
@@ -343,12 +340,14 @@ export function Chat() {
           </footer>
         </section>
 
-        {/* Progress sidebar */}
-        {toolSteps.length > 0 && (
-          <aside className="hidden min-h-0 lg:block">
+        {/* Right sidebar: progress when tools active, links otherwise */}
+        <aside className="hidden min-h-0 lg:block">
+          {toolSteps.length > 0 ? (
             <ProgressSidebar steps={toolSteps} />
-          </aside>
-        )}
+          ) : (
+            <LinksSidebar />
+          )}
+        </aside>
       </div>
     </div>
   )
