@@ -4,34 +4,13 @@ import { useState, useEffect, useCallback } from "react"
 import Link from "next/link"
 import ReactMarkdown from "react-markdown"
 import { Search, FileText, Download, ExternalLink, ArrowLeft, Inbox } from "lucide-react"
-import { Document, Page, Text, View, StyleSheet, pdf } from "@react-pdf/renderer"
+import { createBriefingBlob, downloadBriefingPDF } from "@/lib/pdf-template"
 
 type Briefing = {
   id: string
   topic: string
   content: string
   createdAt: string
-}
-
-const pdfStyles = StyleSheet.create({
-  page: { padding: 40, fontFamily: "Helvetica", fontSize: 11, lineHeight: 1.6 },
-  title: { fontSize: 18, fontFamily: "Helvetica-Bold", marginBottom: 8 },
-  subtitle: { fontSize: 12, color: "#666", marginBottom: 20 },
-  content: { fontSize: 11, lineHeight: 1.6 },
-})
-
-function BriefingPDF({ topic, content, date }: { topic: string; content: string; date: string }) {
-  return (
-    <Document>
-      <Page size="A4" style={pdfStyles.page}>
-        <View>
-          <Text style={pdfStyles.title}>Debatbriefing: {topic}</Text>
-          <Text style={pdfStyles.subtitle}>{date}</Text>
-          <Text style={pdfStyles.content}>{content}</Text>
-        </View>
-      </Page>
-    </Document>
-  )
 }
 
 export default function BriefingsPage() {
@@ -57,28 +36,19 @@ export default function BriefingsPage() {
     loadBriefings()
   }
 
-  const makePdfBlob = useCallback(async (b: Briefing) => {
-    const date = new Date(b.createdAt).toLocaleDateString("nl-NL")
-    return pdf(<BriefingPDF topic={b.topic} content={b.content} date={date} />).toBlob()
-  }, [])
-
   const handleDownload = useCallback(async () => {
     if (!selected) return
-    const blob = await makePdfBlob(selected)
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = `briefing-${selected.topic.slice(0, 30).replace(/\s+/g, "-")}.pdf`
-    a.click()
-    URL.revokeObjectURL(url)
-  }, [selected, makePdfBlob])
+    const date = new Date(selected.createdAt).toLocaleDateString("nl-NL")
+    downloadBriefingPDF(selected.content, selected.topic, { date })
+  }, [selected])
 
   const handleOpenPdf = useCallback(async () => {
     if (!selected) return
-    const blob = await makePdfBlob(selected)
+    const date = new Date(selected.createdAt).toLocaleDateString("nl-NL")
+    const blob = await createBriefingBlob(selected.content, selected.topic, { date })
     const url = URL.createObjectURL(blob)
     window.open(url, "_blank")
-  }, [selected, makePdfBlob])
+  }, [selected])
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">

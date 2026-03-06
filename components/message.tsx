@@ -82,7 +82,7 @@ export function Message({ message, topic }: { message: UIMessage; topic?: string
   async function handleDownloadPDF() {
     setPdfBusy(true)
     try {
-      const { downloadBriefingPDF } = await import("./briefing-context")
+      const { downloadBriefingPDF } = await import("@/lib/pdf-template")
       await downloadBriefingPDF(fullText, topic || "Debatbriefing")
     } finally {
       setPdfBusy(false)

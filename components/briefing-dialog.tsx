@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Document, Page, Text, View, StyleSheet, pdf } from "@react-pdf/renderer"
+import { downloadBriefingPDF } from "@/lib/pdf-template"
 
 type Props = {
   topic: string
@@ -9,29 +9,6 @@ type Props = {
   partyName?: string | null
   organisationId?: string | null
   onClose: () => void
-}
-
-const pdfStyles = StyleSheet.create({
-  page: { padding: 40, fontFamily: "Helvetica", fontSize: 11, lineHeight: 1.6 },
-  title: { fontSize: 18, fontFamily: "Helvetica-Bold", marginBottom: 8 },
-  subtitle: { fontSize: 12, color: "#666", marginBottom: 20 },
-  content: { fontSize: 11, lineHeight: 1.6 },
-})
-
-function BriefingPDF({ topic, content }: { topic: string; content: string }) {
-  return (
-    <Document>
-      <Page size="A4" style={pdfStyles.page}>
-        <View>
-          <Text style={pdfStyles.title}>Debatbriefing: {topic}</Text>
-          <Text style={pdfStyles.subtitle}>
-            Gegenereerd op {new Date().toLocaleDateString("nl-NL")}
-          </Text>
-          <Text style={pdfStyles.content}>{content}</Text>
-        </View>
-      </Page>
-    </Document>
-  )
 }
 
 export function BriefingDialog({ topic, partyId, partyName, organisationId, onClose }: Props) {
@@ -51,13 +28,7 @@ export function BriefingDialog({ topic, partyId, partyName, organisationId, onCl
         setLoading(false)
         // Auto-download PDF
         if (data.content) {
-          const blob = await pdf(<BriefingPDF topic={topic} content={data.content} />).toBlob()
-          const url = URL.createObjectURL(blob)
-          const a = document.createElement("a")
-          a.href = url
-          a.download = `briefing-${topic.slice(0, 30).replace(/\s+/g, "-")}.pdf`
-          a.click()
-          URL.revokeObjectURL(url)
+          downloadBriefingPDF(data.content, topic)
         }
       })
       .catch(() => {
@@ -72,13 +43,7 @@ export function BriefingDialog({ topic, partyId, partyName, organisationId, onCl
 
   const handleDownloadPDF = async () => {
     if (!content) return
-    const blob = await pdf(<BriefingPDF topic={topic} content={content} />).toBlob()
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = `briefing-${topic.slice(0, 30).replace(/\s+/g, "-")}.pdf`
-    a.click()
-    URL.revokeObjectURL(url)
+    downloadBriefingPDF(content, topic)
   }
 
   return (

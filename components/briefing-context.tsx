@@ -1,142 +1,9 @@
 "use client"
 
 import { createContext, useContext, useState, useCallback, useRef, type ReactNode } from "react"
-import { Document, Page, Text, View, StyleSheet, pdf } from "@react-pdf/renderer"
+import { downloadBriefingPDF } from "@/lib/pdf-template"
 import type { ToolStep } from "./progress-sidebar"
 import { getStepLabel } from "./progress-sidebar"
-
-const s = StyleSheet.create({
-  page: { padding: 40, fontFamily: "Helvetica", fontSize: 10.5, lineHeight: 1.55, color: "#1a1a1a" },
-  title: { fontSize: 20, fontFamily: "Helvetica-Bold", marginBottom: 4, color: "#1a3a5c" },
-  subtitle: { fontSize: 11, color: "#666", marginBottom: 20 },
-  h1: { fontSize: 16, fontFamily: "Helvetica-Bold", color: "#1a3a5c", marginTop: 18, marginBottom: 6, borderBottomWidth: 1, borderBottomColor: "#d0d0d0", paddingBottom: 3 },
-  h2: { fontSize: 13, fontFamily: "Helvetica-Bold", color: "#1a3a5c", marginTop: 14, marginBottom: 5 },
-  h3: { fontSize: 11.5, fontFamily: "Helvetica-Bold", color: "#2a5a8c", marginTop: 10, marginBottom: 4 },
-  h4: { fontSize: 10.5, fontFamily: "Helvetica-Bold", color: "#333", marginTop: 8, marginBottom: 3 },
-  p: { fontSize: 10.5, lineHeight: 1.55, marginBottom: 6 },
-  bullet: { fontSize: 10.5, lineHeight: 1.55, marginBottom: 3, paddingLeft: 16 },
-  bulletDot: { position: "absolute", left: 0 },
-  hr: { borderBottomWidth: 0.5, borderBottomColor: "#ddd", marginTop: 10, marginBottom: 10 },
-  bold: { fontFamily: "Helvetica-Bold" },
-  italic: { fontFamily: "Helvetica-Oblique" },
-})
-
-/** Parse inline **bold** and *italic* into Text segments */
-type PdfStyle = (typeof s)[keyof typeof s]
-
-function renderInline(text: string, baseStyle?: PdfStyle) {
-  const parts: React.ReactNode[] = []
-  // Match **bold**, *italic*, or plain text
-  const regex = /(\*\*.*?\*\*|\*.*?\*|[^*]+|\*)/g
-  let match
-  let i = 0
-  while ((match = regex.exec(text)) !== null) {
-    const seg = match[1]
-    if (seg.startsWith("**") && seg.endsWith("**") && seg.length > 4) {
-      parts.push(<Text key={i++} style={s.bold}>{seg.slice(2, -2)}</Text>)
-    } else if (seg.startsWith("*") && seg.endsWith("*") && seg.length > 2) {
-      parts.push(<Text key={i++} style={s.italic}>{seg.slice(1, -1)}</Text>)
-    } else {
-      parts.push(<Text key={i++}>{seg}</Text>)
-    }
-  }
-  return <Text style={baseStyle ?? s.p}>{parts}</Text>
-}
-
-function BriefingPDF({ topic, content }: { topic: string; content: string }) {
-  const lines = content.split("\n")
-  const elements: React.ReactNode[] = []
-  let i = 0
-
-  for (let li = 0; li < lines.length; li++) {
-    const line = lines[li]
-    const trimmed = line.trim()
-
-    // Skip empty lines
-    if (!trimmed) continue
-
-    // Horizontal rule
-    if (trimmed === "---" || trimmed === "***" || trimmed === "___") {
-      elements.push(<View key={i++} style={s.hr} />)
-      continue
-    }
-
-    // Headings
-    if (trimmed.startsWith("#### ")) {
-      elements.push(renderInline(trimmed.slice(5), s.h4))
-      // Fix key
-      elements[elements.length - 1] = <View key={i++}>{renderInline(trimmed.slice(5), s.h4)}</View>
-      continue
-    }
-    if (trimmed.startsWith("### ")) {
-      elements.push(<View key={i++}>{renderInline(trimmed.slice(4), s.h3)}</View>)
-      continue
-    }
-    if (trimmed.startsWith("## ")) {
-      elements.push(<View key={i++}>{renderInline(trimmed.slice(3), s.h2)}</View>)
-      continue
-    }
-    if (trimmed.startsWith("# ")) {
-      elements.push(<View key={i++}><Text style={s.h1}>{trimmed.slice(2)}</Text></View>)
-      continue
-    }
-
-    // Bullet points
-    if (trimmed.startsWith("- ")) {
-      elements.push(
-        <View key={i++} style={{ flexDirection: "row", marginBottom: 3 }}>
-          <Text style={{ width: 16, fontSize: 10.5 }}>•  </Text>
-          <View style={{ flex: 1 }}>{renderInline(trimmed.slice(2))}</View>
-        </View>
-      )
-      continue
-    }
-
-    // Numbered items (e.g. "1. text")
-    const numMatch = trimmed.match(/^(\d+)\.\s+(.*)/)
-    if (numMatch) {
-      elements.push(
-        <View key={i++} style={{ flexDirection: "row", marginBottom: 3 }}>
-          <Text style={{ width: 20, fontSize: 10.5 }}>{numMatch[1]}. </Text>
-          <View style={{ flex: 1 }}>{renderInline(numMatch[2])}</View>
-        </View>
-      )
-      continue
-    }
-
-    // Regular paragraph — collect continuation lines
-    let para = trimmed
-    while (li + 1 < lines.length) {
-      const next = lines[li + 1].trim()
-      if (!next || next.startsWith("#") || next.startsWith("- ") || next === "---" || next === "***" || /^\d+\.\s+/.test(next)) break
-      para += " " + next
-      li++
-    }
-    elements.push(<View key={i++}>{renderInline(para, s.p)}</View>)
-  }
-
-  return (
-    <Document>
-      <Page size="A4" style={s.page}>
-        <Text style={s.title}>Debatbriefing: {topic}</Text>
-        <Text style={s.subtitle}>
-          Gegenereerd op {new Date().toLocaleDateString("nl-NL")}
-        </Text>
-        {elements}
-      </Page>
-    </Document>
-  )
-}
-
-export async function downloadBriefingPDF(content: string, topic: string) {
-  const blob = await pdf(<BriefingPDF topic={topic} content={content} />).toBlob()
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement("a")
-  a.href = url
-  a.download = `briefing-${topic.slice(0, 30).replace(/\s+/g, "-")}.pdf`
-  a.click()
-  URL.revokeObjectURL(url)
-}
 
 export type BriefingState = {
   topic: string
@@ -173,13 +40,7 @@ export function BriefingProvider({ children }: { children: ReactNode }) {
   const abortRef = useRef<AbortController | null>(null)
 
   const triggerDownload = useCallback(async (text: string, title: string) => {
-    const blob = await pdf(<BriefingPDF topic={title} content={text} />).toBlob()
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = `briefing-${title.slice(0, 30).replace(/\s+/g, "-")}.pdf`
-    a.click()
-    URL.revokeObjectURL(url)
+    downloadBriefingPDF(text, title)
   }, [])
 
   const startBriefing = useCallback(
