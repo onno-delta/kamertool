@@ -186,7 +186,6 @@ import type { LanguageModelV1 } from "ai"
 
 const MODELS: Record<string, { provider: string; modelId: string }> = {
   "claude-sonnet-4-5": { provider: "anthropic", modelId: "claude-sonnet-4-5-20250514" },
-  "claude-haiku-4-5": { provider: "anthropic", modelId: "claude-haiku-4-5-20251001" },
   "gpt-4o": { provider: "openai", modelId: "gpt-4o" },
   "gpt-4o-mini": { provider: "openai", modelId: "gpt-4o-mini" },
   "gemini-2.5-pro": { provider: "google", modelId: "gemini-2.5-pro-preview-05-06" },

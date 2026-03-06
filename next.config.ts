@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Use Node resolution for AI SDK (avoids Turbopack/bundler resolution issues)
+  serverExternalPackages: ["@ai-sdk/anthropic", "@ai-sdk/openai", "@ai-sdk/google"],
   async headers() {
     return [
       {
