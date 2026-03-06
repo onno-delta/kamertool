@@ -11,14 +11,13 @@ import { ProgressSidebar } from "./progress-sidebar"
 type Party = { id: string; name: string; shortName: string }
 
 const FREE_MODELS = [
-  { key: "claude-haiku-4-5", label: "Haiku 4.5" },
   { key: "claude-sonnet-4-5", label: "Sonnet 4.5" },
   { key: "claude-opus-4-6", label: "Opus 4.6" },
 ]
 
 export function Chat() {
   const [party, setParty] = useState<Party | null>(null)
-  const [model, setModel] = useState("claude-haiku-4-5")
+  const [model, setModel] = useState("claude-sonnet-4-5")
   const [input, setInput] = useState("")
   const [usage, setUsage] = useState<{ used: number; limit: number; unlimited?: boolean } | null>(null)
   const [activeKey, setActiveKey] = useState<{ provider: string; model: string } | null>(null)

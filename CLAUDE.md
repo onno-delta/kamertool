@@ -30,7 +30,7 @@ Live at https://kamer.deltainstituut.nl (also https://kamertool.vercel.app) — 
 
 ### AI Layer (`lib/ai.ts`)
 
-Multi-provider model factory supporting Anthropic, OpenAI, and Google. `getModel({ model?, apiKey? })` creates a `LanguageModel` — if `apiKey` is provided, creates a fresh provider instance (BYOK); otherwise falls back to env var keys. Default model is `claude-haiku-4-5`. Free-tier users can switch models via the chat toolbar; the selected model key is sent in the request body.
+Multi-provider model factory supporting Anthropic, OpenAI, and Google. `getModel({ model?, apiKey? })` creates a `LanguageModel` — if `apiKey` is provided, creates a fresh provider instance (BYOK); otherwise falls back to env var keys. Default model is `claude-sonnet-4-5`. Free-tier users can switch models via the chat toolbar; the selected model key is sent in the request body.
 
 **AI SDK v6 specifics:** Use `maxOutputTokens` (not `maxTokens`), import `LanguageModel` (not `LanguageModelV1`).
 

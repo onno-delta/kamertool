@@ -89,7 +89,7 @@ npm run lint     # ESLint
 
 ### AI
 
-- **`lib/ai.ts`** — Model-factory (Anthropic, OpenAI, Google). Standaardmodel: `claude-haiku-4-5`. Bij eigen API-key (BYOK) wordt die key gebruikt en is er geen daglimiet.
+- **`lib/ai.ts`** — Model-factory (Anthropic, OpenAI, Google). Standaardmodel: `claude-sonnet-4-5`. Bij eigen API-key (BYOK) wordt die key gebruikt en is er geen daglimiet.
 - **Gratis tier** — 10 berichten per dag (geteld in `usage_log`). Whitelist-domeinen (o.a. `tweedekamer.nl`, `deltainstituut.nl`) hebben onbeperkt gratis gebruik.
 
 ### Tools (LLM)

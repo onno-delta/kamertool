@@ -30,7 +30,6 @@ const PROVIDERS = [
 const MODEL_OPTIONS: ModelOption[] = [
   { key: "claude-opus-4-6", provider: "anthropic", label: "Claude Opus 4.6" },
   { key: "claude-sonnet-4-5", provider: "anthropic", label: "Claude Sonnet 4.5" },
-  { key: "claude-haiku-4-5", provider: "anthropic", label: "Claude Haiku 4.5" },
   { key: "gpt-4o", provider: "openai", label: "GPT-4o" },
   { key: "gpt-4o-mini", provider: "openai", label: "GPT-4o Mini" },
   { key: "gemini-2.5-pro", provider: "google", label: "Gemini 2.5 Pro" },
