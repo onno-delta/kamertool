@@ -8,7 +8,7 @@ AI-gestuurde debatvoorbereidingstool voor de Tweede Kamer. Kamertool biedt een c
 
 ## Wat doet Kamertool?
 
-- **Chat** — Vraag stellen over Kamerstukken, debatten, stemmingen, toezeggingen, agenda en nieuws. De AI zoekt in OpenTK en de TK OData-API’s en geeft antwoorden met bronverwijzingen.
+- **Chat** — Vraag stellen over Kamerstukken, debatten, stemmingen, toezeggingen, agenda en nieuws. De AI zoekt in Overheid.nl en de TK OData-API’s en geeft antwoorden met bronverwijzingen.
 - **Briefings** — Genereer debatbriefings op basis van een onderwerp (en optioneel vergadertype). De briefing wordt opgeslagen en als PDF gedownload.
 - **Agenda** — Blader door de Kameragenda en start direct een briefing voor een gepland debat.
 - **Instellingen** — Eigen API-key (BYOK), partij/Kamerleden/dossiers, en instructies per vergadertype.
@@ -96,7 +96,7 @@ npm run lint     # ESLint
 
 De AI kan tijdens chat en briefing o.a.:
 
-- **searchOpenTK** — Volledige-tekstzoeken in parlementaire documenten (OpenTK).
+- **searchParlement** — Volledige-tekstzoeken in parlementaire documenten (Overheid.nl SRU).
 - **search-kamerstukken / documenten / handelingen / toezeggingen / stemmingen / agenda** — TK OData API.
 - **search-news** — Nieuws (Serper).
 - **search-party-docs** — Partijprogramma’s en organisatiedocumenten (DB).

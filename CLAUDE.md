@@ -52,7 +52,7 @@ Flow: `lib/user-keys.ts` → `lib/crypto.ts` → `user_api_key` table (encrypted
 ### AI Tools (`lib/tools/`)
 
 Eleven tools the LLM can call during chat/briefing generation:
-- `search-opentk.ts` — **Primary search**: full-text search over all parliamentary documents via OpenTK (`berthub.eu/tkconv`). Supports AND/OR/NOT, NEAR(), exact phrases. Also exports `getOpenTKDocument` (fetch full document text by nummer) and `getRecenteKamervragen` (recent written questions).
+- `search-overheid.ts` — **Primary search**: full-text search over all parliamentary documents via Overheid.nl SRU API (`zoek.officielebekendmakingen.nl`). Exports `searchParlement` (search), `getDocumentText` (fetch full document text by nummer) and `getRecenteKamervragen` (recent written questions). Backed by `lib/sru-api.ts` for SRU protocol handling.
 - `search-kamerstukken.ts` — Parliamentary documents via TK OData API
 - `search-documenten.ts` — Letters, notes, reports via TK OData API
 - `search-handelingen.ts` — Debate transcripts via TK OData API
@@ -152,4 +152,4 @@ ENCRYPTION_KEY        # 64-char hex for AES-256-GCM (node -e "console.log(requir
 - Rate limit check in chat/briefing routes: check `getActiveKey()` first; if BYOK skip rate limit, then check `isUnlimitedEmail()`, otherwise call `checkAndIncrementUsage()`
 - All user-facing text in Dutch
 - Tool descriptions in Dutch (they're shown to the LLM in the system prompt context)
-- `searchOpenTK` is the primary search tool — the system prompt and briefing prompt both instruct the LLM to use it first, then fall back to TK OData tools for structured queries
+- `searchParlement` is the primary search tool — the system prompt and briefing prompt both instruct the LLM to use it first, then fall back to TK OData tools for structured queries

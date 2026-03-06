@@ -13,17 +13,17 @@ Overzicht van alle databronnen waar Kamertool toegang toe heeft via AI tools, AP
 
 ## Externe API's
 
-### 1. OpenTK (berthub.eu/tkconv)
+### 1. Overheid.nl SRU API (zoek.officielebekendmakingen.nl)
 
-Primaire zoekmachine. Full-text zoek over alle parlementaire documenten.
+Primaire zoekmachine. Full-text zoek over alle parlementaire documenten via het SRU-protocol.
 
 | Tool | Functie |
 |------|---------|
-| `searchOpenTK` | Full-text zoek met AND/OR/NOT, NEAR(), exacte frase, prefix. Filtert op documentsoort en periode. |
-| `getOpenTKDocument` | Volledige documenttekst ophalen op documentnummer (bijv. `2026D10162`) |
+| `searchParlement` | Full-text zoek over Kamerstukken, Handelingen en Kamervragen. Filtert op documentsoort en periode. |
+| `getDocumentText` | Volledige documenttekst ophalen op documentnummer (bijv. `kst-36748-30`) via XML |
 | `getRecenteKamervragen` | Lijst van recent ingediende schriftelijke Kamervragen |
 
-**Geen API-key nodig.** Timeout: 10-15s.
+**Geen API-key nodig.** Timeout: 15s. Vervangt OpenTK (berthub.eu/tkconv) dat offline is.
 
 ### 2. TK OData API (tweedekamer.nl)
 
@@ -92,7 +92,7 @@ Wordt gebruikt wanneer een gebruiker een URL deelt, of wanneer de AI meer contex
 
 | # | Bron | Type | Auth |
 |---|------|------|------|
-| 1 | OpenTK (berthub.eu) | Parlementair full-text | Geen |
+| 1 | Overheid.nl SRU (zoek.officielebekendmakingen.nl) | Parlementair full-text | Geen |
 | 2 | TK OData API (tweedekamer.nl) | Parlementair gestructureerd | Geen |
 | 3 | Google Serper | Nieuws | API key |
 | 4 | Supabase PostgreSQL | Partijprogramma's + org docs | Database |

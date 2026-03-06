@@ -20,8 +20,8 @@ const TOOL_LABELS: Record<string, string> = {
   searchAgenda: "Kameragenda",
   searchDocumenten: "Documenten",
   searchPartyDocs: "Partijdocumenten",
-  searchOpenTK: "OpenTK",
-  getOpenTKDocument: "Document (OpenTK)",
+  searchParlement: "Parlementaire documenten",
+  getDocumentText: "Document ophalen",
   getRecenteKamervragen: "Recente Kamervragen",
 }
 

@@ -15,8 +15,8 @@ import {
   fetchWebPage,
   searchAgenda,
   searchDocumenten,
-  searchOpenTK,
-  getOpenTKDocument,
+  searchParlement,
+  getDocumentText,
   getRecenteKamervragen,
 } from "@/lib/tools"
 import { NextResponse } from "next/server"
@@ -66,8 +66,8 @@ export async function POST(req: Request) {
     const prompt = `Genereer een uitgebreide debriefing over het onderwerp: "${topic}"${soort ? ` (type vergadering: ${soort})` : ""}
 
 Aanpak:
-1. Zoek eerst via searchOpenTK (full-text search over alle parlementaire documenten) naar relevante stukken.
-2. Haal voor de belangrijkste documenten de volledige tekst op via getOpenTKDocument en vat samen wat erin staat.
+1. Zoek eerst via searchParlement (full-text search over alle parlementaire documenten) naar relevante stukken.
+2. Haal voor de belangrijkste documenten de volledige tekst op via getDocumentText en vat samen wat erin staat.
 3. Zoek aanvullend via searchKamerstukken en searchDocumenten voor gestructureerde resultaten.
 4. Zoek toezeggingen, stemmingen, handelingen en nieuws.
 
@@ -95,7 +95,7 @@ Concrete vragen om aan de minister te stellen, met verwijzing naar specifieke do
 
 ## Mogelijke Speech
 Schrijf een concept-speech voor gebruik in het debat.
-${Array.isArray(kamerleden) && kamerleden.length > 0 ? `Zoek eerst via searchOpenTK naar eerdere speeches en bijdragen van ${kamerleden[0]} in de Handelingen. Analyseer hun spreekstijl: toon, woordgebruik, lengte van zinnen, retorische patronen, hoe ze ministers aanspreken. Schrijf de concept-speech in diezelfde stijl.` : "Schrijf een zakelijke, neutrale speech die past bij een Kamerdebat."}
+${Array.isArray(kamerleden) && kamerleden.length > 0 ? `Zoek eerst via searchParlement naar eerdere speeches en bijdragen van ${kamerleden[0]} in de Handelingen. Analyseer hun spreekstijl: toon, woordgebruik, lengte van zinnen, retorische patronen, hoe ze ministers aanspreken. Schrijf de concept-speech in diezelfde stijl.` : "Schrijf een zakelijke, neutrale speech die past bij een Kamerdebat."}
 De speech moet verwijzen naar concrete documenten en feiten uit de briefing hierboven.
 ${skillPrompt ? `\n--- SPECIFIEKE INSTRUCTIES VOOR DIT TYPE VERGADERING (${soort}) ---\n${skillPrompt}\n--- EINDE SPECIFIEKE INSTRUCTIES ---` : ""}
 ${partyName ? `\nFrame alles vanuit het perspectief van ${partyName}.` : "\nGeef een neutraal, gebalanceerd overzicht."}
@@ -111,13 +111,13 @@ BELANGRIJK: Zoek de daadwerkelijke inhoud van de relevante stukken op en vat sam
       system: `Je bent een parlementair onderzoeksassistent die debatbriefings schrijft voor Kamerleden. Gebruik altijd je tools om informatie op te zoeken. Schrijf in het Nederlands. Gebruik NOOIT em dashes (—), gebruik gewone streepjes (-) of herformuleer de zin. Verwijs naar specifieke documentnummers en Kamerstuknummers.
 
 Werkwijze:
-- Gebruik searchOpenTK als primaire zoekmachine — dit doorzoekt alle parlementaire documenten via full-text search (opentk.nl)
-- Gebruik getOpenTKDocument om de volledige tekst van gevonden documenten op te halen via hun documentnummer
+- Gebruik searchParlement als primaire zoekmachine — dit doorzoekt alle parlementaire documenten via full-text search (Overheid.nl)
+- Gebruik getDocumentText om de volledige tekst van gevonden documenten op te halen via hun documentnummer
 - Gebruik searchDocumenten en searchKamerstukken voor aanvullende gestructureerde zoekopdrachten via de TK API
 - Gebruik searchToezeggingen, searchStemmingen en searchHandelingen voor context
 - Gebruik getRecenteKamervragen om recente schriftelijke vragen te bekijken
 - Vat de inhoud van elk relevant stuk bondig maar volledig samen
-- Voor de concept-speech: zoek altijd eerst eerdere bijdragen van het Kamerlid op in de Handelingen via searchOpenTK om hun spreekstijl te analyseren en te imiteren`,
+- Voor de concept-speech: zoek altijd eerst eerdere bijdragen van het Kamerlid op in de Handelingen via searchParlement om hun spreekstijl te analyseren en te imiteren`,
       prompt,
       stopWhen: stepCountIs(25),
       tools: {
@@ -129,8 +129,8 @@ Werkwijze:
         fetchWebPage,
         searchAgenda,
         searchDocumenten,
-        searchOpenTK,
-        getOpenTKDocument,
+        searchParlement,
+        getDocumentText,
         getRecenteKamervragen,
         searchPartyDocs: createSearchPartyDocs(
           partyId ?? null,
