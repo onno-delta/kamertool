@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import Link from "next/link"
 import ReactMarkdown from "react-markdown"
 import { Document, Page, Text, View, StyleSheet, pdf } from "@react-pdf/renderer"
 
@@ -81,37 +82,43 @@ export default function BriefingsPage() {
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
       <div className="mx-auto w-full max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
-        <section className="mb-6 rounded-xl border border-primary-30 bg-white/95 px-6 py-5 shadow-sm">
-          <h1 className="text-2xl font-semibold text-primary">Briefinggeschiedenis</h1>
-          <p className="mt-2 text-sm text-primary-75">
+        <nav aria-label="Kruimelpad" className="mb-4 text-sm text-text-muted">
+          <Link href="/" className="hover:text-primary hover:underline">Home</Link>
+          <span className="mx-1.5">&rsaquo;</span>
+          <span className="text-primary font-medium">Briefings</span>
+        </nav>
+
+        <section className="mb-6">
+          <h1 className="text-4xl font-bold tracking-tight text-primary">Briefinggeschiedenis</h1>
+          <p className="mt-2 text-sm text-text-secondary">
             Zoek en hergebruik eerder gegenereerde debatbriefings. Je kunt de tekst bekijken of
             direct een PDF downloaden.
           </p>
         </section>
 
         {/* Search */}
-        <div className="mb-6 rounded-xl border border-primary-30 bg-white/95 p-4 shadow-sm">
+        <div className="mb-6 rounded-lg border border-border bg-white p-4">
           <form onSubmit={handleSearch} className="flex flex-col gap-3 sm:flex-row">
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Zoek op onderwerp..."
-              className="flex-1 rounded-md border border-primary-30 px-4 py-2 text-sm text-primary placeholder:text-primary-60"
+              className="flex-1 rounded border border-border px-4 py-2 text-sm text-primary placeholder:text-text-muted"
             />
             <button
               type="submit"
-              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark"
+              className="rounded bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark active:translate-y-px"
             >
               Zoeken
             </button>
           </form>
         </div>
 
-        {loading && <p className="text-primary-75">Laden...</p>}
+        {loading && <p className="text-text-secondary">Laden...</p>}
 
         {!loading && briefings.length === 0 && (
-          <div className="rounded-xl border border-primary-30 bg-white/95 p-8 shadow-sm text-center">
-            <p className="text-primary-75">Geen briefings gevonden. Genereer een briefing vanuit de chat.</p>
+          <div className="rounded-lg border border-border bg-white p-8 text-center">
+            <p className="text-text-secondary">Geen briefings gevonden. Genereer een briefing vanuit de chat.</p>
           </div>
         )}
 
@@ -122,15 +129,15 @@ export default function BriefingsPage() {
               <button
                 key={b.id}
                 onClick={() => setSelected(b)}
-                className="w-full rounded-xl border border-primary-30 bg-white/95 p-5 text-left shadow-sm transition-shadow hover:shadow-md"
+                className="w-full rounded-lg border border-border bg-white p-5 text-left hover:border-primary/30"
               >
                 <div className="flex items-center justify-between">
                   <h3 className="font-medium text-primary">{b.topic}</h3>
-                  <span className="text-sm text-primary-75">
+                  <span className="text-sm text-text-muted">
                     {new Date(b.createdAt).toLocaleDateString("nl-NL")}
                   </span>
                 </div>
-                <p className="mt-1.5 text-sm text-primary-75 line-clamp-2">
+                <p className="mt-1.5 text-sm text-text-secondary line-clamp-2">
                   {b.content.slice(0, 200)}...
                 </p>
               </button>
@@ -151,24 +158,24 @@ export default function BriefingsPage() {
               <div className="flex gap-2">
                 <button
                   onClick={handleDownload}
-                  className="rounded-xl border border-primary-30 bg-primary px-3 py-1.5 text-sm text-white shadow-sm hover:bg-primary-dark"
+                  className="rounded bg-primary px-3 py-1.5 text-sm text-white hover:bg-primary-dark active:translate-y-px"
                 >
                   Download PDF
                 </button>
                 <button
                   onClick={handleOpenPdf}
-                  className="rounded-xl border border-primary-30 bg-white px-3 py-1.5 text-sm text-primary shadow-sm hover:bg-primary-15"
+                  className="rounded border border-border bg-white px-3 py-1.5 text-sm text-primary hover:bg-surface-muted"
                 >
                   Open PDF
                 </button>
               </div>
             </div>
-            <div className="rounded-xl border border-primary-30 bg-white/95 p-6 shadow-sm">
+            <div className="rounded-lg border border-border bg-white p-6">
               <h2 className="mb-1 text-xl font-semibold text-primary">{selected.topic}</h2>
-              <p className="mb-4 text-sm text-primary-75">
+              <p className="mb-4 text-sm text-text-muted">
                 {new Date(selected.createdAt).toLocaleDateString("nl-NL")}
               </p>
-              <div className="prose prose-sm max-w-none prose-headings:mt-4 prose-headings:mb-2 prose-p:my-1.5 prose-li:my-0.5 prose-ul:my-1.5 prose-ol:my-1.5">
+              <div className="prose prose-sm max-w-none prose-headings:mt-4 prose-headings:mb-2 prose-p:my-1.5 prose-li:my-0.5 prose-ul:my-1.5 prose-ol:my-1.5 prose-a:text-primary prose-a:underline">
                 <ReactMarkdown>{selected.content}</ReactMarkdown>
               </div>
             </div>

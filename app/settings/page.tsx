@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Link from "next/link"
 import { DOSSIERS } from "@/lib/dossiers"
 
 type StoredKey = {
@@ -190,15 +191,21 @@ export default function SettingsPage() {
 
   return (
     <div className="mx-auto max-w-3xl overflow-y-auto px-4 py-6 sm:px-6 sm:py-8">
-      <section className="mb-6 rounded-xl border border-primary-30 bg-white/95 px-6 py-5 shadow-sm">
-        <h1 className="text-2xl font-semibold text-primary">Instellingen</h1>
-        <p className="mt-2 text-sm text-primary-75">
+      <nav aria-label="Kruimelpad" className="mb-4 text-sm text-text-muted">
+        <Link href="/" className="hover:text-primary hover:underline">Home</Link>
+        <span className="mx-1.5">&rsaquo;</span>
+        <span className="text-primary font-medium">Instellingen</span>
+      </nav>
+
+      <section className="mb-6">
+        <h1 className="text-4xl font-bold tracking-tight text-primary">Instellingen</h1>
+        <p className="mt-2 text-sm text-text-secondary">
           Beheer je standaardpartij, dossiers, Kamerleden en API-keys voor eigen modellen.
         </p>
       </section>
 
       {/* Party & Dossiers */}
-      <div className="mb-6 rounded-xl border border-primary-30 bg-white/95 p-6 shadow-sm">
+      <div className="mb-6 rounded-lg border border-border bg-white p-6">
         <h2 className="mb-4 text-lg font-medium text-primary">
           Partij en dossiers
         </h2>
@@ -215,7 +222,7 @@ export default function SettingsPage() {
                 setSelectedPartyId(e.target.value)
                 setPrefsSaved(false)
               }}
-              className="w-full rounded-xl border border-primary-30 px-3 py-2 text-primary"
+              className="w-full rounded border border-border px-3 py-2 text-primary"
             >
               <option value="">Geen partij (neutraal)</option>
               {parties.map((p) => (
@@ -224,7 +231,7 @@ export default function SettingsPage() {
                 </option>
               ))}
             </select>
-            <p className="mt-1 text-xs text-primary-75">
+            <p className="mt-1 text-xs text-text-muted">
               De standaardpartij wordt automatisch geselecteerd in de chat.
             </p>
           </div>
@@ -234,24 +241,24 @@ export default function SettingsPage() {
             <label className="mb-2 block text-sm font-medium text-primary">
               Dossiers
             </label>
-            <p className="mb-3 text-xs text-primary-75">
+            <p className="mb-3 text-xs text-text-muted">
               Selecteer de beleidsterreinen die je volgt. Deze worden meegenomen in briefings.
             </p>
             <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
               {DOSSIERS.map((d) => (
                 <label
                   key={d.id}
-                  className={`flex cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors ${
+                  className={`flex cursor-pointer items-center gap-2.5 rounded px-3 py-2 text-sm ${
                     selectedDossiers.includes(d.id)
-                      ? "bg-primary-15 text-primary"
-                      : "bg-primary-15/50 text-primary hover:bg-primary-15"
+                      ? "bg-surface-muted text-primary"
+                      : "bg-surface-muted/50 text-primary hover:bg-surface-muted"
                   }`}
                 >
                   <input
                     type="checkbox"
                     checked={selectedDossiers.includes(d.id)}
                     onChange={() => toggleDossier(d.id)}
-                    className="h-4 w-4 rounded border-primary-30 text-primary focus:ring-primary"
+                    className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
                   />
                   {d.label}
                 </label>
@@ -264,7 +271,7 @@ export default function SettingsPage() {
             <label className="mb-2 block text-sm font-medium text-primary">
               Relevante Kamerleden
             </label>
-            <p className="mb-3 text-xs text-primary-75">
+            <p className="mb-3 text-xs text-text-muted">
               Selecteer Kamerleden die je volgt. Hun standpunten en uitspraken worden meegenomen in briefings.
             </p>
 
@@ -274,7 +281,7 @@ export default function SettingsPage() {
                 {selectedKamerleden.map((k) => (
                   <span
                     key={k.id}
-                    className="inline-flex items-center gap-1 rounded-full bg-primary-15 py-1 pl-3 pr-1.5 text-sm text-primary"
+                    className="inline-flex items-center gap-1 rounded-full bg-surface-muted py-1 pl-3 pr-1.5 text-sm text-primary"
                   >
                     {k.naam}
                     {k.fractie && (
@@ -283,7 +290,7 @@ export default function SettingsPage() {
                     <button
                       type="button"
                       onClick={() => removeKamerlid(k.id)}
-                      className="ml-0.5 rounded-full p-0.5 text-primary-75 hover:bg-primary-15 hover:text-primary"
+                      className="ml-0.5 rounded-full p-0.5 text-text-muted hover:bg-border-light hover:text-primary"
                     >
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                     </button>
@@ -301,22 +308,22 @@ export default function SettingsPage() {
                 onFocus={() => setKamerleidFocused(true)}
                 onBlur={() => setTimeout(() => setKamerleidFocused(false), 200)}
                 placeholder="Zoek op naam..."
-                className="w-full rounded-lg border border-primary-30 px-3 py-2 text-sm text-primary placeholder:text-primary-75"
+                className="w-full rounded border border-border px-3 py-2 text-sm text-primary placeholder:text-text-muted"
               />
 
               {/* Dropdown results */}
               {kamerleidFocused && kamerleidResults.length > 0 && (
-                <div className="absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-lg border border-primary-30 bg-white shadow-lg">
+                <div className="absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-lg border border-border bg-white shadow-lg">
                   {kamerleidResults.map((k) => (
                     <button
                       key={k.id}
                       type="button"
                       onClick={() => addKamerlid(k)}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-primary hover:bg-primary-15"
+                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-primary hover:bg-surface-muted"
                     >
                       <span className="font-medium">{k.naam}</span>
                       {k.fractie && (
-                        <span className="text-xs text-primary-75">{k.fractie}</span>
+                        <span className="text-xs text-text-muted">{k.fractie}</span>
                       )}
                     </button>
                   ))}
@@ -328,7 +335,7 @@ export default function SettingsPage() {
           <button
             onClick={handleSavePrefs}
             disabled={prefsSaving}
-            className="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-50"
+            className="rounded bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark active:translate-y-px disabled:opacity-50"
           >
             {prefsSaving ? "Opslaan..." : prefsSaved ? "Opgeslagen" : "Voorkeuren opslaan"}
           </button>
@@ -337,7 +344,7 @@ export default function SettingsPage() {
 
       {/* Existing keys */}
       {!loading && keys.length > 0 && (
-        <div className="mb-6 rounded-xl border border-primary-30 bg-white/95 p-6 shadow-sm">
+        <div className="mb-6 rounded-lg border border-border bg-white p-6">
           <h2 className="mb-4 text-lg font-medium text-primary">
             Je API keys
           </h2>
@@ -345,10 +352,10 @@ export default function SettingsPage() {
             {keys.map((k) => (
               <div
                 key={k.id}
-                className={`flex items-center justify-between rounded-xl p-4 ${
+                className={`flex items-center justify-between rounded-lg p-4 ${
                   k.isActive
-                    ? "bg-primary-15 ring-1 ring-primary-45"
-                    : "bg-primary-15/50"
+                    ? "bg-surface-muted ring-1 ring-primary/30"
+                    : "bg-surface-muted"
                 }`}
               >
                 <div>
@@ -356,29 +363,29 @@ export default function SettingsPage() {
                     <span className="font-medium text-primary">
                       {k.provider}
                     </span>
-                    <span className="text-sm text-primary-75">{k.model}</span>
+                    <span className="text-sm text-text-secondary">{k.model}</span>
                     {k.isActive && (
-                      <span className="rounded-full bg-primary-15 px-2 py-0.5 text-xs font-medium text-primary">
+                      <span className="rounded-full bg-white px-2 py-0.5 text-xs font-medium text-primary">
                         actief
                       </span>
                     )}
                   </div>
                   {k.label && (
-                    <p className="text-sm text-primary-75">{k.label}</p>
+                    <p className="text-sm text-text-secondary">{k.label}</p>
                   )}
                 </div>
                 <div className="flex items-center gap-2">
                   {!k.isActive && (
                     <button
                       onClick={() => handleActivate(k.id)}
-                      className="rounded-lg border border-primary-30 bg-white px-3 py-1.5 text-sm hover:bg-primary-15/50"
+                      className="rounded border border-border bg-white px-3 py-1.5 text-sm hover:bg-surface-muted"
                     >
                       Activeren
                     </button>
                   )}
                   <button
                     onClick={() => handleDelete(k.id)}
-                    className="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-sm text-red-600 hover:bg-red-50"
+                    className="rounded border border-red-200 bg-white px-3 py-1.5 text-sm text-red-600 hover:bg-red-50"
                   >
                     Verwijderen
                   </button>
@@ -390,7 +397,7 @@ export default function SettingsPage() {
       )}
 
       {/* Add new key */}
-      <div className="rounded-xl border border-primary-30 bg-white/95 p-6 shadow-sm">
+      <div className="rounded-lg border border-border bg-white p-6">
         <h2 className="mb-4 text-lg font-medium text-primary">
           API key toevoegen
         </h2>
@@ -403,7 +410,7 @@ export default function SettingsPage() {
             <select
               value={provider}
               onChange={(e) => setProvider(e.target.value)}
-              className="w-full rounded-xl border border-primary-30 px-3 py-2 text-primary"
+              className="w-full rounded border border-border px-3 py-2 text-primary"
             >
               {PROVIDERS.map((p) => (
                 <option key={p.id} value={p.id}>
@@ -420,7 +427,7 @@ export default function SettingsPage() {
             <select
               value={model}
               onChange={(e) => setModel(e.target.value)}
-              className="w-full rounded-xl border border-primary-30 px-3 py-2 text-primary"
+              className="w-full rounded border border-border px-3 py-2 text-primary"
             >
               {modelsForProvider.map((m) => (
                 <option key={m.key} value={m.key}>
@@ -441,13 +448,13 @@ export default function SettingsPage() {
               placeholder={
                 PROVIDERS.find((p) => p.id === provider)?.placeholder
               }
-              className="w-full rounded-xl border border-primary-30 px-3 py-2 text-primary placeholder:text-primary-75"
+              className="w-full rounded border border-border px-3 py-2 text-primary placeholder:text-text-muted"
             />
           </div>
 
           {testResult && (
             <div
-              className={`rounded-xl p-3 text-sm ${
+              className={`rounded-lg p-3 text-sm ${
                 testResult.valid
                   ? "bg-green-50 text-green-700 ring-1 ring-green-200"
                   : "bg-red-50 text-red-700 ring-1 ring-red-200"
@@ -463,14 +470,14 @@ export default function SettingsPage() {
             <button
               onClick={handleTest}
               disabled={!apiKey || testing}
-              className="rounded-xl border border-primary-30 px-4 py-2 text-sm font-medium text-primary hover:bg-primary-15/50 disabled:opacity-50"
+              className="rounded border border-border px-4 py-2 text-sm font-medium text-primary hover:bg-surface-muted disabled:opacity-50"
             >
               {testing ? "Testen..." : "Test key"}
             </button>
             <button
               onClick={handleSave}
               disabled={!apiKey || saving !== null}
-              className="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-50"
+              className="rounded bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark active:translate-y-px disabled:opacity-50"
             >
               {saving ? "Opslaan..." : "Opslaan"}
             </button>

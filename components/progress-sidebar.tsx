@@ -113,19 +113,19 @@ export function ProgressSidebar({ steps }: { steps: ToolStep[] }) {
 
   return (
     <div className="sticky top-4">
-      <div className="rounded-xl border border-primary-30 bg-white/95 p-4 shadow-sm">
-        <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-primary-75">
+      <div className="rounded-lg border border-border bg-white p-4">
+        <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-text-secondary">
           Voortgang
         </h3>
         <div className="space-y-2.5">
           {hiddenCount > 0 && (
-            <p className="text-xs text-primary-45">+{hiddenCount} eerdere stappen</p>
+            <p className="text-xs text-text-muted">+{hiddenCount} eerdere stappen</p>
           )}
           {items.map((item) => (
             <div key={item.key} className="flex items-start gap-2.5">
               <div className="mt-0.5 shrink-0">
                 {item.status === "running" ? (
-                  <span className="block h-4 w-4 animate-spin rounded-full border-2 border-primary-30 border-t-primary" />
+                  <span className="block h-4 w-4 animate-spin rounded-full border-2 border-border border-t-primary" />
                 ) : item.status === "error" ? (
                   <span className="flex h-4 w-4 items-center justify-center rounded-full bg-red-100">
                     <svg className="h-2.5 w-2.5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
@@ -143,7 +143,7 @@ export function ProgressSidebar({ steps }: { steps: ToolStep[] }) {
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm text-primary">{item.label}</p>
                 {item.detail && (
-                  <p className="truncate text-xs text-primary-75">{item.detail}</p>
+                  <p className="truncate text-xs text-text-secondary">{item.detail}</p>
                 )}
               </div>
             </div>

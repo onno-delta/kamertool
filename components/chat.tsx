@@ -107,9 +107,9 @@ export function Chat() {
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="grid min-h-0 w-full gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
         {/* Main chat card */}
-        <section className="flex min-h-0 min-w-0 flex-col overflow-hidden rounded-xl border border-primary-30 bg-white/95 shadow-sm">
+        <section className="flex min-h-0 min-w-0 flex-col overflow-hidden rounded-lg border border-border bg-white">
           {/* Toolbar */}
-          <header className="flex flex-wrap items-center gap-2 border-b border-primary-15 px-4 py-3 sm:px-6">
+          <header className="flex flex-wrap items-center gap-2 border-b border-border-light px-4 py-3 sm:px-6">
             <div className="flex min-w-0 flex-1 items-center gap-3">
               <PartySelector value={party} onChange={setParty} />
               {activeKey ? (
@@ -121,7 +121,7 @@ export function Chat() {
                   <select
                     value={model}
                     onChange={(e) => setModel(e.target.value)}
-                    className="shrink-0 rounded-md border border-primary-30 bg-white px-2.5 py-1.5 text-sm text-primary focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary sm:px-3"
+                    className="shrink-0 rounded border border-border bg-white px-2.5 py-1.5 text-sm text-primary focus:border-primary focus:outline-none sm:px-3"
                   >
                     {FREE_MODELS.map((m) => (
                       <option key={m.key} value={m.key}>
@@ -143,11 +143,11 @@ export function Chat() {
           <div className="flex-1 overflow-y-auto">
             <div className="mx-auto max-w-3xl px-6 py-5">
               {messages.length === 0 && (
-                <div className="rounded-xl bg-primary-15 px-6 py-8 text-center sm:px-10">
-                  <h1 className="text-2xl font-semibold text-primary">
+                <div className="border-l-4 border-primary pl-6 py-4">
+                  <h1 className="text-4xl font-bold tracking-tight text-primary">
                     Bereid je voor op een debat
                   </h1>
-                  <p className="mt-3 text-sm leading-relaxed text-primary-75">
+                  <p className="mt-3 text-sm leading-relaxed text-text-secondary">
                     Stel een vraag over een onderwerp en ik zoek de relevante Kamerstukken,
                     debatten en toezeggingen voor je op. Gebruik de partijselector bovenaan
                     om de antwoorden te richten op jouw fractie.
@@ -159,7 +159,7 @@ export function Chat() {
               ))}
               {showThinking && (
                 <div className="mb-4 flex justify-start">
-                  <div className="rounded-2xl bg-primary-15 px-4 py-3 text-sm text-primary-75">
+                  <div className="rounded-lg bg-surface-muted px-4 py-3 text-sm text-text-muted">
                     <span className="inline-flex items-center gap-1.5">
                       <span className="flex gap-0.5">
                         <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-primary [animation-delay:0ms]" />
@@ -175,7 +175,7 @@ export function Chat() {
               )}
               {status === "error" && (
                 <div className="mb-4 flex justify-start">
-                  <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                     Er ging iets mis. Probeer het opnieuw.
                     {chatError && (
                       <span className="mt-1 block text-xs text-red-500">
@@ -202,20 +202,20 @@ export function Chat() {
           )}
 
           {/* Input */}
-          <footer className="border-t border-primary-15 px-4 py-3 sm:px-6 sm:py-4">
+          <footer className="border-t border-border-light px-4 py-3 sm:px-6 sm:py-4">
             <form onSubmit={handleSubmit} className="mx-auto max-w-3xl">
               <div className="flex flex-col gap-3 sm:flex-row">
                 <input
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="Bijv. 'Bereid me voor op het stikstofdebat' of 'Welke toezeggingen staan open over woningbouw?'"
-                  className="flex-1 rounded-md border border-primary-30 bg-primary-15/40 px-4 py-3 text-sm text-primary placeholder:text-primary-60 focus:border-primary focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="flex-1 rounded border-2 border-border bg-white px-4 py-3 text-sm text-primary placeholder:text-text-muted focus:border-primary focus:shadow-[0_0_0_1px_var(--color-primary)] focus:outline-none"
                   disabled={isLoading}
                 />
                 <button
                   type="submit"
                   disabled={isLoading || !input.trim()}
-                  className="inline-flex items-center justify-center rounded-md bg-primary px-6 py-3 text-sm font-medium text-white shadow-sm hover:bg-primary-dark disabled:opacity-40 disabled:shadow-none"
+                  className="inline-flex items-center justify-center rounded bg-primary px-6 py-3 text-sm font-medium text-white hover:bg-primary-dark active:translate-y-px disabled:opacity-40"
                 >
                   {isLoading ? "Bezig..." : "Verstuur"}
                 </button>

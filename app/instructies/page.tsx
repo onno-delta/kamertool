@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Link from "next/link"
 import { MEETING_SKILLS, getDefaultSkill } from "@/lib/meeting-skills"
 
 export default function InstructiesPage() {
@@ -43,16 +44,22 @@ export default function InstructiesPage() {
   if (loading) {
     return (
       <div className="flex flex-1 items-center justify-center">
-        <span className="h-5 w-5 animate-spin rounded-full border-2 border-primary-30 border-t-primary" />
+        <span className="h-5 w-5 animate-spin rounded-full border-2 border-border border-t-primary" />
       </div>
     )
   }
 
   return (
     <div className="mx-auto max-w-3xl overflow-y-auto px-4 py-6 sm:px-6 sm:py-8">
-      <section className="mb-6 rounded-xl border border-primary-30 bg-white/95 px-6 py-5 shadow-sm">
-        <h1 className="text-2xl font-semibold text-primary">Instructies</h1>
-        <p className="mt-2 text-sm text-primary-75">
+      <nav aria-label="Kruimelpad" className="mb-4 text-sm text-text-muted">
+        <Link href="/" className="hover:text-primary hover:underline">Home</Link>
+        <span className="mx-1.5">&rsaquo;</span>
+        <span className="text-primary font-medium">Instructies</span>
+      </nav>
+
+      <section className="mb-6">
+        <h1 className="text-4xl font-bold tracking-tight text-primary">Instructies</h1>
+        <p className="mt-2 text-sm text-text-secondary">
           Pas aan hoe de AI briefings genereert per type vergadering. Elk vergadertype heeft
           standaardinstructies die je hier kunt overschrijven met eigen tekst.
         </p>
@@ -65,7 +72,7 @@ export default function InstructiesPage() {
           return (
             <div
               key={skill.soort}
-              className="rounded-xl border border-primary-30 bg-white/95 shadow-sm"
+              className="rounded-lg border border-border bg-white"
             >
               <button
                 type="button"
@@ -79,7 +86,7 @@ export default function InstructiesPage() {
                     {skill.label}
                   </span>
                   {hasCustom && (
-                    <span className="rounded-full bg-primary-15 px-2 py-0.5 text-[10px] font-medium text-primary">
+                    <span className="rounded-full bg-surface-muted px-2 py-0.5 text-[10px] font-medium text-primary">
                       aangepast
                     </span>
                   )}
@@ -93,13 +100,13 @@ export default function InstructiesPage() {
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  className={`text-primary-75 transition-transform ${isExpanded ? "rotate-180" : ""}`}
+                  className={`text-text-muted transition-transform ${isExpanded ? "rotate-180" : ""}`}
                 >
                   <polyline points="6 9 12 15 18 9" />
                 </svg>
               </button>
               {isExpanded && (
-                <div className="border-t border-primary-15 px-4 py-4">
+                <div className="border-t border-border-light px-4 py-4">
                   <textarea
                     value={meetingSkills[skill.soort] ?? skill.prompt}
                     onChange={(e) => {
@@ -110,7 +117,7 @@ export default function InstructiesPage() {
                       setSaved(false)
                     }}
                     rows={12}
-                    className="w-full rounded-lg border border-primary-30 px-3 py-2 text-sm text-primary"
+                    className="w-full rounded border border-border px-3 py-2 text-sm text-primary"
                   />
                   <div className="mt-2 flex items-center justify-end">
                     {hasCustom && (
@@ -141,7 +148,7 @@ export default function InstructiesPage() {
         <button
           onClick={handleSave}
           disabled={saving}
-          className="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-50"
+          className="rounded bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark active:translate-y-px disabled:opacity-50"
         >
           {saving ? "Opslaan..." : saved ? "Opgeslagen" : "Instructies opslaan"}
         </button>

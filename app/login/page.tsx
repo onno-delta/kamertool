@@ -19,9 +19,9 @@ async function LoginForm({
 
   return (
     <div className="flex flex-1 items-center justify-center">
-      <div className="w-full max-w-sm rounded-xl border border-primary-30 bg-white/95 p-8 shadow-lg">
+      <div className="w-full max-w-sm rounded-lg border border-border bg-white p-8 shadow-lg">
         <h1 className="text-2xl font-semibold text-primary">Kamertool</h1>
-        <p className="mt-2 text-sm text-primary-75">
+        <p className="mt-2 text-sm text-text-secondary">
           Log in met je e-mail. Je ontvangt een magic link.
         </p>
         {error && (
@@ -51,11 +51,11 @@ async function LoginForm({
             name="email"
             placeholder="je@email.nl"
             required
-            className="w-full rounded-md border border-primary-30 px-4 py-3 text-primary placeholder:text-primary-60 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+            className="w-full rounded border-2 border-border px-4 py-3 text-primary placeholder:text-text-muted focus:border-primary focus:shadow-[0_0_0_1px_var(--color-primary)] focus:outline-none"
           />
           <button
             type="submit"
-            className="mt-4 w-full rounded-md bg-primary py-3 text-sm font-medium text-white shadow-sm hover:bg-primary-dark"
+            className="mt-4 w-full rounded bg-primary py-3 text-sm font-medium text-white hover:bg-primary-dark active:translate-y-px"
           >
             Verstuur magic link
           </button>

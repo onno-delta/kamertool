@@ -24,7 +24,7 @@ function VoorbereidenContent() {
     return (
       <div className="flex flex-1 items-center justify-center">
         <div className="text-center">
-          <p className="text-primary-75">Geen onderwerp opgegeven.</p>
+          <p className="text-text-secondary">Geen onderwerp opgegeven.</p>
           <Link href="/agenda" className="mt-2 inline-block text-sm text-primary hover:underline">
             Terug naar agenda
           </Link>
@@ -44,25 +44,29 @@ function VoorbereidenContent() {
       {/* Main content */}
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
         <div className="mx-auto max-w-3xl px-0 py-2 sm:py-3">
-          <Link href="/agenda" className="mb-3 inline-block text-sm text-primary-75 hover:text-primary">
-            &larr; Terug naar agenda
-          </Link>
+          <nav aria-label="Kruimelpad" className="mb-4 text-sm text-text-muted">
+            <Link href="/" className="hover:text-primary hover:underline">Home</Link>
+            <span className="mx-1.5">&rsaquo;</span>
+            <Link href="/agenda" className="hover:text-primary hover:underline">Agenda</Link>
+            <span className="mx-1.5">&rsaquo;</span>
+            <span className="text-primary font-medium">Voorbereiding</span>
+          </nav>
 
-          <section className="rounded-xl border border-primary-30 bg-white/95 px-6 py-6 shadow-sm">
+          <section className="rounded-lg border border-border bg-white px-6 py-6">
             <h1 className="text-2xl font-semibold text-primary">{topic}</h1>
             {partyName && (
-              <p className="mt-1 text-sm text-primary-75">
+              <p className="mt-1 text-sm text-text-secondary">
                 Briefing gericht op: {partyName}
               </p>
             )}
 
             {loading && (
-              <div className="mt-6 rounded-xl border border-primary-30 bg-primary-15/40 px-6 py-6">
+              <div className="mt-6 rounded-lg border border-border bg-surface-muted px-6 py-6">
                 <div className="flex flex-col items-center gap-4">
-                  <span className="h-8 w-8 animate-spin rounded-full border-3 border-primary-15 border-t-primary" />
+                  <span className="h-8 w-8 animate-spin rounded-full border-3 border-border-light border-t-primary" />
                   <div className="text-center">
                     <p className="font-medium text-primary">Briefing wordt gegenereerd...</p>
-                    <p className="mt-1 text-sm text-primary-75">
+                    <p className="mt-1 text-sm text-text-secondary">
                       De PDF wordt automatisch gedownload zodra hij klaar is.
                     </p>
                   </div>
@@ -71,7 +75,7 @@ function VoorbereidenContent() {
             )}
 
             {error && (
-              <div className="mt-6 rounded-xl border border-red-200 bg-red-50 px-6 py-4">
+              <div className="mt-6 rounded-lg border border-red-200 bg-red-50 px-6 py-4">
                 <p className="text-sm text-red-700">{error}</p>
               </div>
             )}
@@ -113,10 +117,10 @@ function BriefingResult({
 
   return (
     <div className="space-y-4">
-      <div className="rounded-2xl border border-primary-30 bg-white p-6 shadow-sm">
+      <div className="rounded-lg border border-border bg-white p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-15">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-surface-muted">
               <svg className="h-5 w-5 text-primary" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
               </svg>
@@ -125,7 +129,7 @@ function BriefingResult({
               <p className="text-sm font-medium text-primary">
                 briefing-{topic.slice(0, 30).replace(/\s+/g, "-")}.pdf
               </p>
-              <p className="text-xs text-primary-75">
+              <p className="text-xs text-text-muted">
                 Gegenereerd op {new Date().toLocaleDateString("nl-NL")}
                 {partyName && <> — {partyName}</>}
               </p>
@@ -134,13 +138,13 @@ function BriefingResult({
           <div className="flex gap-2">
             <button
               onClick={onDownload}
-              className="rounded-lg border border-primary-30 bg-primary px-3 py-1.5 text-xs font-medium text-white hover:bg-primary-dark"
+              className="rounded bg-primary px-3 py-1.5 text-xs font-medium text-white hover:bg-primary-dark active:translate-y-px"
             >
               Download PDF
             </button>
             <button
               onClick={() => navigator.clipboard.writeText(content)}
-              className="rounded-lg border border-primary-30 px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary-15"
+              className="rounded border border-border px-3 py-1.5 text-xs font-medium text-primary hover:bg-surface-muted"
             >
               Kopieer tekst
             </button>
@@ -148,17 +152,17 @@ function BriefingResult({
         </div>
       </div>
 
-      <div className="rounded-2xl border border-primary-30 bg-white shadow-sm">
+      <div className="rounded-lg border border-border bg-white">
         <button
           onClick={() => setExpanded(!expanded)}
           className="flex w-full items-center justify-between px-6 py-4 text-left"
         >
           <span className="text-sm font-medium text-primary">Briefing bekijken</span>
-          <span className="text-xs text-primary-75">{expanded ? "Inklappen" : "Uitklappen"}</span>
+          <span className="text-xs text-text-muted">{expanded ? "Inklappen" : "Uitklappen"}</span>
         </button>
         {expanded && (
-          <div className="border-t border-primary-15 px-6 py-4">
-            <div className="prose prose-sm max-w-none prose-headings:mt-4 prose-headings:mb-2 prose-p:my-1.5 prose-li:my-0.5">
+          <div className="border-t border-border-light px-6 py-4">
+            <div className="prose prose-sm max-w-none prose-headings:mt-4 prose-headings:mb-2 prose-p:my-1.5 prose-li:my-0.5 prose-ul:my-1.5 prose-ol:my-1.5 prose-a:text-primary prose-a:underline">
               <ReactMarkdown>{content}</ReactMarkdown>
             </div>
           </div>
@@ -173,7 +177,7 @@ export default function VoorbereidenPage() {
     <Suspense
       fallback={
         <div className="flex flex-1 items-center justify-center">
-          <span className="h-6 w-6 animate-spin rounded-full border-2 border-primary-30 border-t-primary" />
+          <span className="h-6 w-6 animate-spin rounded-full border-2 border-border border-t-primary" />
         </div>
       }
     >

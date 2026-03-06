@@ -31,30 +31,29 @@ export function Nav() {
   // Don't render anything while loading to avoid flash
   if (status === "loading") {
     return (
-      <header
-        id="main-nav"
-        className="sticky top-0 z-50 border-b border-primary-30 bg-primary-dark/95 text-white backdrop-blur"
-      >
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-2.5 sm:px-6">
-          <span className="text-lg font-semibold tracking-tight">Kamertool</span>
+      <header id="main-nav" className="sticky top-0 z-50">
+        {/* Accent bar */}
+        <div className="h-1 bg-primary" />
+        {/* Header zone skeleton */}
+        <div className="hidden border-b border-border-light bg-white md:block">
+          <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
+            <span className="text-xl font-bold tracking-tight text-primary">Kamertool</span>
+          </div>
+        </div>
+        {/* Nav bar skeleton */}
+        <div className="bg-primary">
+          <div className="mx-auto flex max-w-6xl items-center px-4 py-2 sm:px-6 md:hidden">
+            <span className="text-lg font-bold tracking-tight text-white">Kamertool</span>
+          </div>
         </div>
       </header>
     )
   }
 
-  const mainLinks = session
+  const allLinks = session
     ? [
         { href: "/", label: "Chat" },
         { href: "/agenda", label: "Agenda" },
-      ]
-    : [
-        { href: "/", label: "Chat" },
-        { href: "/agenda", label: "Agenda" },
-      ]
-
-  // Links shown in hamburger on mobile, inline on desktop
-  const moreLinks = session
-    ? [
         { href: "/briefings", label: "Eerdere briefings" },
         { href: "/instructies", label: "Instructies" },
         ...(session.user.organisationId
@@ -62,90 +61,104 @@ export function Nav() {
           : []),
         { href: "/settings", label: "Instellingen" },
       ]
-    : []
+    : [
+        { href: "/", label: "Chat" },
+        { href: "/agenda", label: "Agenda" },
+      ]
+
+  function isActive(href: string) {
+    return href === "/" ? pathname === "/" : pathname.startsWith(href)
+  }
 
   return (
-    <header
-      id="main-nav"
-      className="sticky top-0 z-50 border-b border-primary-30 bg-primary-dark/95 text-white backdrop-blur"
-    >
-      <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-2.5 sm:px-6">
-        <div className="flex min-w-0 items-center gap-3 sm:gap-6">
+    <header id="main-nav" className="sticky top-0 z-50">
+      {/* Rijkshuisstijl accent bar */}
+      <div className="h-1 bg-primary" />
+
+      {/* Band 1 — Header zone (hidden on mobile) */}
+      <div className="hidden border-b border-border-light bg-white md:block">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
           <Link
             href="/"
-            className="shrink-0 text-lg font-semibold tracking-tight text-white hover:text-white"
+            className="text-xl font-bold tracking-tight text-primary hover:text-primary-dark"
           >
             Kamertool
           </Link>
-          <nav className="hidden min-w-0 items-center gap-1 md:flex">
-            {mainLinks.map((link) => {
-              const active =
-                link.href === "/"
-                  ? pathname === "/"
-                  : pathname.startsWith(link.href)
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`border-b-2 px-2.5 py-1 text-sm font-medium transition-colors ${
-                    active
-                      ? "border-white text-white"
-                      : "border-transparent text-white/90 hover:border-white/70 hover:text-white"
-                  }`}
-                >
-                  {link.label}
-                </Link>
-              )
-            })}
-          </nav>
-        </div>
-        <div className="flex shrink-0 items-center gap-2 sm:gap-4">
-          {session && (
-            <span className="hidden max-w-xs truncate text-sm text-white/80 sm:inline">
-              {session.user.email}
-            </span>
-          )}
-          {moreLinks.length > 0 && (
-            <nav className="hidden items-center gap-1 lg:flex">
-              {moreLinks.map((link) => {
-                const active = pathname.startsWith(link.href)
-                return (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className={`border-b-2 px-2.5 py-1 text-sm font-medium transition-colors ${
-                      active
-                        ? "border-white text-white"
-                        : "border-transparent text-white/90 hover:border-white/70 hover:text-white"
-                    }`}
-                  >
-                    {link.label}
-                  </Link>
-                )
-              })}
-            </nav>
-          )}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-4">
+            {session && (
+              <span className="text-sm text-text-muted">
+                {session.user.email}
+              </span>
+            )}
             {session ? (
               <button
                 onClick={() => signOut()}
-                className="rounded-full border border-white/30 px-3 py-1.5 text-xs font-medium text-white hover:border-white hover:bg-white/10"
+                className="rounded border border-border bg-white px-3 py-1.5 text-xs font-medium text-primary hover:bg-surface-muted"
               >
                 Uitloggen
               </button>
             ) : (
               <Link
                 href="/login"
-                className="rounded-full bg-white px-3 py-1.5 text-xs font-medium text-primary hover:bg-white/90"
+                className="rounded bg-primary px-3 py-1.5 text-xs font-medium text-white hover:bg-primary-dark"
               >
                 Inloggen
               </Link>
             )}
-            {moreLinks.length > 0 && (
-              <div className="relative md:hidden" ref={menuRef}>
+          </div>
+        </div>
+      </div>
+
+      {/* Band 2 — Navigation bar */}
+      <div className="bg-primary">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-2 sm:px-6">
+          {/* Mobile: logo */}
+          <Link
+            href="/"
+            className="text-lg font-bold tracking-tight text-white md:hidden"
+          >
+            Kamertool
+          </Link>
+
+          {/* Desktop nav links */}
+          <nav className="hidden items-center gap-0.5 md:flex">
+            {allLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`-my-2 px-4 py-2 text-sm font-medium ${
+                  isActive(link.href)
+                    ? "bg-white/20 text-white"
+                    : "text-white/80 hover:bg-white/10 hover:text-white"
+                }`}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+
+          {/* Mobile: right side */}
+          <div className="flex items-center gap-2 md:hidden">
+            {session ? (
+              <button
+                onClick={() => signOut()}
+                className="rounded border border-white/30 px-3 py-1.5 text-xs font-medium text-white hover:border-white hover:bg-white/10"
+              >
+                Uitloggen
+              </button>
+            ) : (
+              <Link
+                href="/login"
+                className="rounded bg-white px-3 py-1.5 text-xs font-medium text-primary hover:bg-white/90"
+              >
+                Inloggen
+              </Link>
+            )}
+            {allLinks.length > 2 && (
+              <div className="relative" ref={menuRef}>
                 <button
                   onClick={() => setMenuOpen(!menuOpen)}
-                  className="rounded-full p-1.5 text-white/90 hover:bg-white/10 hover:text-white"
+                  className="rounded p-1.5 text-white/90 hover:bg-white/10 hover:text-white"
                   aria-label="Menu"
                 >
                   <svg
@@ -171,43 +184,20 @@ export function Nav() {
                   </svg>
                 </button>
                 {menuOpen && (
-                  <div className="absolute right-0 top-full mt-2 w-52 rounded-xl border border-primary-30 bg-white py-1 text-primary shadow-lg">
-                    {mainLinks.map((link) => {
-                      const active =
-                        link.href === "/"
-                          ? pathname === "/"
-                          : pathname.startsWith(link.href)
-                      return (
-                        <Link
-                          key={link.href}
-                          href={link.href}
-                          className={`block px-4 py-2 text-sm ${
-                            active
-                              ? "bg-primary-15 font-medium text-primary-dark"
-                              : "hover:bg-primary-15"
-                          }`}
-                        >
-                          {link.label}
-                        </Link>
-                      )
-                    })}
-                    <div className="my-1 h-px bg-primary-15" />
-                    {moreLinks.map((link) => {
-                      const active = pathname.startsWith(link.href)
-                      return (
-                        <Link
-                          key={link.href}
-                          href={link.href}
-                          className={`block px-4 py-2 text-sm ${
-                            active
-                              ? "bg-primary-15 font-medium text-primary-dark"
-                              : "hover:bg-primary-15"
-                          }`}
-                        >
-                          {link.label}
-                        </Link>
-                      )
-                    })}
+                  <div className="absolute right-0 top-full mt-2 w-52 rounded-lg border border-border bg-white py-1 text-primary shadow-lg">
+                    {allLinks.map((link) => (
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        className={`block px-4 py-2 text-sm ${
+                          isActive(link.href)
+                            ? "bg-surface-muted font-medium text-primary-dark"
+                            : "hover:bg-surface-muted"
+                        }`}
+                      >
+                        {link.label}
+                      </Link>
+                    ))}
                   </div>
                 )}
               </div>

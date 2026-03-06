@@ -56,10 +56,10 @@ export function MultiSelect({ label, options, selected, onChange }: Props) {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm transition-colors ${
+        className={`flex items-center gap-1.5 rounded border px-3 py-1.5 text-sm ${
           selected.size > 0
-            ? "border-primary-45 bg-primary-15 text-primary"
-            : "border-primary-30 bg-white text-primary"
+            ? "border-primary bg-surface-muted text-primary"
+            : "border-border bg-white text-primary"
         }`}
       >
         <span className="max-w-[200px] truncate">{buttonLabel}</span>
@@ -75,7 +75,7 @@ export function MultiSelect({ label, options, selected, onChange }: Props) {
       </button>
 
       {open && (
-        <div className="absolute left-0 top-full z-50 mt-1 w-72 rounded-xl border border-primary-30 bg-white shadow-lg">
+        <div className="absolute left-0 top-full z-50 mt-1 w-72 rounded-lg border border-border bg-white shadow-lg">
           <div className="max-h-64 overflow-y-auto py-1">
             {options.map((opt) => {
               const isSelected = selected.has(opt.value)
@@ -83,15 +83,15 @@ export function MultiSelect({ label, options, selected, onChange }: Props) {
                 <button
                   key={opt.value}
                   onClick={() => toggle(opt.value)}
-                  className={`flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm transition-colors ${
-                    isSelected ? "bg-primary-15" : "hover:bg-primary-15/50"
+                  className={`flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm ${
+                    isSelected ? "bg-surface-muted" : "hover:bg-surface-muted"
                   }`}
                 >
                   <span
                     className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${
                       isSelected
                         ? "border-primary bg-primary"
-                        : "border-primary-30"
+                        : "border-border"
                     }`}
                   >
                     {isSelected && (
@@ -104,17 +104,17 @@ export function MultiSelect({ label, options, selected, onChange }: Props) {
                     {opt.label}
                   </span>
                   {opt.count !== undefined && (
-                    <span className="shrink-0 text-xs text-primary-75">{opt.count}</span>
+                    <span className="shrink-0 text-xs text-text-muted">{opt.count}</span>
                   )}
                 </button>
               )
             })}
           </div>
           {selected.size > 0 && (
-            <div className="border-t border-primary-15 px-3 py-2">
+            <div className="border-t border-border-light px-3 py-2">
               <button
                 onClick={clear}
-                className="text-xs font-medium text-primary-75 hover:text-primary"
+                className="text-xs font-medium text-text-muted hover:text-primary"
               >
                 Filters wissen
               </button>

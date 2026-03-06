@@ -21,7 +21,7 @@ export function PartySelector({
 
   return (
     <div className="inline-flex items-center gap-2">
-      <span className="hidden text-xs font-medium uppercase tracking-wide text-primary-75 sm:inline">
+      <span className="hidden text-xs font-medium uppercase tracking-wide text-text-secondary sm:inline">
         Partij
       </span>
       <select
@@ -30,7 +30,7 @@ export function PartySelector({
           const party = parties.find((p) => p.id === e.target.value) ?? null
           onChange(party)
         }}
-        className="rounded-md border border-primary-30 bg-white px-3 py-1.5 text-sm text-primary focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+        className="rounded border border-border bg-white px-3 py-1.5 text-sm text-primary focus:border-primary focus:outline-none"
       >
         <option value="">Geen partij (neutraal)</option>
         {parties.map((p) => (

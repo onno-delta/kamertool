@@ -17,7 +17,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="nl">
-      <body className="antialiased bg-primary-15">
+      <body className="antialiased">
         {/* Skip links — Rijkshuisstijl/toegankelijkheid: direct naar inhoud/nav */}
         <a
           href="#main-content"
@@ -35,19 +35,19 @@ export default function RootLayout({
           <div className="flex min-h-dvh flex-col">
             <Nav />
             <main id="main-content" className="flex min-h-0 flex-1 flex-col" role="main">
-              <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 pb-10 pt-6 sm:px-6 sm:pt-8">
+              <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 pb-10 pt-8 sm:px-6 sm:pt-10">
                 {children}
               </div>
             </main>
-            <footer className="shrink-0 border-t border-primary-30 bg-white/95">
-              <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-6 gap-y-2 px-6 py-6 text-center text-sm text-primary-75">
-                <span>Kamertool — Debatvoorbereiding</span>
-                <a href="https://kamer.deltainstituut.nl" className="underline hover:text-primary">
+            <footer className="shrink-0 border-t-4 border-primary bg-primary-dark py-10 text-white">
+              <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-6 gap-y-2 px-6 text-center text-sm">
+                <span className="text-white">Kamertool — Debatvoorbereiding</span>
+                <a href="https://kamer.deltainstituut.nl" className="text-white/70 hover:text-white">
                   Live site
                 </a>
                 <a
                   href="https://github.com/onno-delta/kamertool"
-                  className="underline hover:text-primary"
+                  className="text-white/70 hover:text-white"
                   target="_blank"
                   rel="noopener noreferrer"
                 >

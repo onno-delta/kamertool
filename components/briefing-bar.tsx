@@ -18,10 +18,10 @@ export function BriefingBar() {
           onClick={() =>
             router.push(`/voorbereiden?topic=${encodeURIComponent(state.topic)}`)
           }
-          className="flex cursor-pointer items-center gap-3 rounded-xl border border-primary-30 bg-white px-4 py-3 shadow-lg transition-shadow hover:shadow-xl"
+          className="flex cursor-pointer items-center gap-3 rounded-lg border border-border bg-white px-4 py-3 shadow-lg hover:shadow-xl"
         >
           {state.loading ? (
-            <span className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-primary-30 border-t-primary" />
+            <span className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-border border-t-primary" />
           ) : state.error ? (
             <span className="h-4 w-4 shrink-0 rounded-full bg-red-500" />
           ) : (
@@ -36,7 +36,7 @@ export function BriefingBar() {
                   ? "Briefing mislukt"
                   : "Briefing klaar"}
             </p>
-            <p className="truncate text-xs text-primary-75">{state.topic}</p>
+            <p className="truncate text-xs text-text-muted">{state.topic}</p>
           </div>
 
           {!state.loading && (
@@ -45,7 +45,7 @@ export function BriefingBar() {
                 e.stopPropagation()
                 dismiss()
               }}
-              className="shrink-0 text-primary-60 hover:text-primary"
+              className="shrink-0 text-text-muted hover:text-primary"
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />

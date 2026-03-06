@@ -153,20 +153,17 @@ export default function AgendaPage() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      {/* Header card */}
-      <section className="mb-4 rounded-xl border border-primary-30 bg-white/95 px-6 py-5 shadow-sm sm:mb-6">
-        <div className="mx-auto max-w-4xl">
-          <p className="text-xs text-primary-75">Agenda</p>
-          <h1 className="mt-1 text-2xl font-semibold text-primary">Kameragenda</h1>
-          <p className="mt-2 text-sm text-primary-75">
-            Bekijk de komende vergaderingen van de Tweede Kamer en ga direct door naar
-            de voorbereiding van jouw debatbriefing.
-          </p>
-        </div>
+      {/* Header */}
+      <section className="mb-4 sm:mb-6">
+        <h1 className="text-4xl font-bold tracking-tight text-primary">Kameragenda</h1>
+        <p className="mt-2 text-sm text-text-secondary">
+          Bekijk de komende vergaderingen van de Tweede Kamer en ga direct door naar
+          de voorbereiding van jouw debatbriefing.
+        </p>
       </section>
 
       {/* Filters */}
-      <div className="shrink-0 rounded-xl border border-primary-30 bg-white/95 px-4 py-3 shadow-sm sm:px-6">
+      <div className="shrink-0 rounded-lg border border-border bg-white px-4 py-3 sm:px-6">
         <div className="mx-auto flex max-w-4xl flex-wrap items-center gap-2">
           <MultiSelect
             label="Type"
@@ -182,8 +179,8 @@ export default function AgendaPage() {
             onChange={setSelectedCommissies}
           />
 
-          <div className="flex items-center gap-1.5 rounded-md border border-primary-30 bg-white px-2.5 py-1.5 shadow-sm">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-primary-75">
+          <div className="flex items-center gap-1.5 rounded border border-border bg-white px-2.5 py-1.5">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-text-muted">
               <rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
             </svg>
             <input
@@ -193,7 +190,7 @@ export default function AgendaPage() {
               max={maxDate ?? undefined}
               className="border-none bg-transparent py-0.5 text-sm text-primary outline-none"
             />
-            <span className="text-xs font-medium text-primary-45">t/m</span>
+            <span className="text-xs font-medium text-text-muted">t/m</span>
             <input
               type="date"
               value={toDate}
@@ -210,7 +207,7 @@ export default function AgendaPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Zoek op onderwerp of commissie..."
-              className="w-52 rounded-md border border-primary-30 bg-white px-3 py-1.5 text-sm text-primary placeholder:text-primary-60"
+              className="w-52 rounded border border-border bg-white px-3 py-1.5 text-sm text-primary placeholder:text-text-muted"
             />
           </div>
         </div>
@@ -221,13 +218,13 @@ export default function AgendaPage() {
         <div className="mx-auto max-w-4xl px-4 py-4 sm:px-6">
           {loading && (
             <div className="flex items-center justify-center py-20">
-              <span className="h-5 w-5 animate-spin rounded-full border-2 border-primary-30 border-t-primary" />
-              <span className="ml-3 text-sm text-primary-75">Agenda laden...</span>
+              <span className="h-5 w-5 animate-spin rounded-full border-2 border-border border-t-primary" />
+              <span className="ml-3 text-sm text-text-secondary">Agenda laden...</span>
             </div>
           )}
 
           {!loading && filtered.length === 0 && (
-            <div className="py-20 text-center text-sm text-primary-75">
+            <div className="py-20 text-center text-sm text-text-secondary">
               Geen vergaderingen gevonden.
             </div>
           )}
@@ -242,10 +239,10 @@ export default function AgendaPage() {
                   {grouped[date].map((item) => (
                     <div
                       key={item.Id}
-                      className="flex items-start gap-3 rounded-xl bg-white px-4 py-3 shadow-sm ring-1 ring-primary-15"
+                      className="flex items-start gap-3 rounded-lg border border-border border-l-3 border-l-primary bg-white px-4 py-3"
                     >
                       <div
-                        className="shrink-0 pt-0.5 text-xs text-primary-75"
+                        className="shrink-0 pt-0.5 text-xs text-text-muted"
                         style={{ minWidth: "5rem" }}
                       >
                         {formatTime(item.Aanvangstijd)}
@@ -276,7 +273,7 @@ export default function AgendaPage() {
                           {item.Onderwerp}
                         </a>
                         {item.Voortouwnaam && (
-                          <p className="mt-0.5 text-xs text-primary-75">
+                          <p className="mt-0.5 text-xs text-text-muted">
                             {item.Voortouwnaam}
                           </p>
                         )}
@@ -284,7 +281,7 @@ export default function AgendaPage() {
 
                       <Link
                         href={`/voorbereiden?topic=${encodeURIComponent(item.Onderwerp)}&soort=${encodeURIComponent(item.Soort)}`}
-                        className="shrink-0 rounded-lg bg-primary px-2.5 py-1.5 text-xs font-medium text-white hover:bg-primary-dark"
+                        className="shrink-0 rounded bg-primary px-2.5 py-1.5 text-xs font-medium text-white hover:bg-primary-dark active:translate-y-px"
                       >
                         Voorbereiden
                       </Link>
