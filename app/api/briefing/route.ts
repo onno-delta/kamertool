@@ -23,7 +23,7 @@ import { NextResponse } from "next/server"
 import { getDefaultSkill } from "@/lib/meeting-skills"
 import { briefingBodySchema } from "@/lib/validation"
 
-export const maxDuration = 120
+export const maxDuration = 300
 
 export async function POST(req: Request) {
   try {
