@@ -22,8 +22,9 @@ import { LinksSidebar } from "./links-sidebar"
 type Party = { id: string; name: string; shortName: string }
 
 const FREE_MODELS = [
-  { key: "claude-sonnet-4-5", label: "Sonnet 4.5" },
-  { key: "claude-opus-4-6", label: "Opus 4.6" },
+  { key: "claude-sonnet-4", label: "Claude Sonnet 4" },
+  { key: "gpt-4o", label: "GPT-4o" },
+  { key: "gemini-2.5-flash", label: "Gemini 2.5 Flash" },
 ]
 
 const SUGGESTIONS = [
@@ -103,19 +104,14 @@ function ModelSelector({ value, onChange }: { value: string; onChange: (v: strin
 
 export function Chat() {
   const [party, setParty] = useState<Party | null>(null)
-  const [model, setModel] = useState("claude-sonnet-4-5")
+  const [model, setModel] = useState("claude-sonnet-4")
   const [input, setInput] = useState("")
   const [usage, setUsage] = useState<{ used: number; limit: number; unlimited?: boolean } | null>(null)
-  const [activeKey, setActiveKey] = useState<{ provider: string; model: string } | null>(null)
   const [rateLimitError, setRateLimitError] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     fetch("/api/settings/usage").then(r => r.json()).then(setUsage).catch(() => {})
-    fetch("/api/settings/keys").then(r => r.ok ? r.json() : []).then((keys: Array<{ isActive: boolean; provider: string; model: string }>) => {
-      const active = keys.find((k: { isActive: boolean }) => k.isActive)
-      if (active) setActiveKey({ provider: active.provider, model: active.model })
-    }).catch(() => {})
     Promise.all([
       fetch("/api/settings/preferences").then(r => r.ok ? r.json() : null),
       fetch("/api/parties").then(r => r.json()),
@@ -129,10 +125,8 @@ export function Chat() {
 
   const partyRef = useRef(party)
   const modelRef = useRef(model)
-  const activeKeyRef = useRef(activeKey)
   partyRef.current = party
   modelRef.current = model
-  activeKeyRef.current = activeKey
 
   const [transport] = useState(
     () =>
@@ -141,7 +135,7 @@ export function Chat() {
         body: () => ({
           partyId: partyRef.current?.id ?? null,
           partyName: partyRef.current?.shortName ?? null,
-          model: activeKeyRef.current ? undefined : modelRef.current,
+          model: modelRef.current,
         }),
       }),
   )
@@ -204,20 +198,11 @@ export function Chat() {
             <div className="flex min-w-0 flex-1 items-center gap-2">
               <PartySelector value={party} onChange={setParty} />
               <div className="h-5 w-px bg-border-light" />
-              {activeKey ? (
-                <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700 ring-1 ring-green-200">
-                  <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                  {activeKey.model} — eigen key
+              <ModelSelector value={model} onChange={setModel} />
+              {usage && !usage.unlimited && (
+                <span className="shrink-0 rounded-full border border-border-light bg-surface-muted px-2.5 py-0.5 text-xs font-medium text-text-muted">
+                  {usage.used}/{usage.limit}
                 </span>
-              ) : (
-                <>
-                  <ModelSelector value={model} onChange={setModel} />
-                  {usage && !usage.unlimited && (
-                    <span className="shrink-0 rounded-full border border-border-light bg-surface-muted px-2.5 py-0.5 text-xs font-medium text-text-muted">
-                      {usage.used}/{usage.limit}
-                    </span>
-                  )}
-                </>
               )}
             </div>
           </header>
@@ -325,7 +310,7 @@ export function Chat() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="Stel een vraag over een debatonderwerp..."
-                  className="flex-1 border-none bg-transparent py-2 text-sm text-primary placeholder:text-text-muted focus:outline-none"
+                  className="flex-1 border-none bg-transparent py-2 text-[0.9375rem] text-primary placeholder:text-text-muted focus:outline-none"
                   disabled={isLoading}
                 />
                 <button

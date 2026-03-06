@@ -9,6 +9,10 @@ export const fetchWebPage = tool({
   }),
   execute: async ({ url }) => {
     try {
+      if (!isAllowedUrl(url)) {
+        return { error: "URL geblokkeerd: interne of private adressen zijn niet toegestaan", content: null }
+      }
+
       const res = await fetch(url, {
         headers: {
           "User-Agent":
@@ -51,13 +55,52 @@ export const fetchWebPage = tool({
   },
 })
 
+function isAllowedUrl(urlString: string): boolean {
+  try {
+    const url = new URL(urlString)
+    const hostname = url.hostname.toLowerCase()
+
+    if (url.protocol !== "http:" && url.protocol !== "https:") {
+      return false
+    }
+
+    if (
+      hostname === "localhost" ||
+      hostname === "127.0.0.1" ||
+      hostname === "::1" ||
+      hostname === "0.0.0.0"
+    ) {
+      return false
+    }
+
+    if (
+      hostname === "169.254.169.254" ||
+      hostname === "metadata.google.internal"
+    ) {
+      return false
+    }
+
+    const parts = hostname.split(".").map(Number)
+    if (parts.length === 4 && parts.every((p) => !isNaN(p))) {
+      if (parts[0] === 10) return false
+      if (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) return false
+      if (parts[0] === 192 && parts[1] === 168) return false
+      if (parts[0] === 169 && parts[1] === 254) return false
+    }
+
+    return true
+  } catch {
+    return false
+  }
+}
+
 function extractTitle(html: string): string | null {
   const match = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)
   return match ? decodeEntities(match[1].trim()) : null
 }
 
 function extractText(html: string): string {
-  let text = html
+  const text = html
     // Remove script and style blocks
     .replace(/<script[\s\S]*?<\/script>/gi, "")
     .replace(/<style[\s\S]*?<\/style>/gi, "")

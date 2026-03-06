@@ -95,7 +95,7 @@ export function Message({ message, topic }: { message: UIMessage; topic?: string
         <div className="max-w-[80%] rounded-xl rounded-br bg-primary px-4 py-3 text-white">
           {parts.map((part, i) =>
             part.type === "text" ? (
-              <div key={i} className="whitespace-pre-wrap text-sm leading-relaxed">
+              <div key={i} className="whitespace-pre-wrap text-[0.9375rem] leading-relaxed">
                 {part.text}
               </div>
             ) : null
@@ -127,7 +127,7 @@ export function Message({ message, topic }: { message: UIMessage; topic?: string
             return (
               <div
                 key={i}
-                className="prose prose-sm max-w-none leading-relaxed text-primary prose-headings:mt-4 prose-headings:mb-2 prose-headings:font-semibold prose-headings:text-primary prose-p:my-1.5 prose-li:my-0.5 prose-ul:my-1.5 prose-ol:my-1.5 prose-a:text-primary prose-a:underline"
+                className="prose max-w-none leading-relaxed text-primary prose-headings:mt-4 prose-headings:mb-2 prose-headings:font-semibold prose-headings:text-primary prose-p:my-1.5 prose-li:my-0.5 prose-ul:my-1.5 prose-ol:my-1.5 prose-a:text-primary prose-a:underline"
               >
                 <ReactMarkdown>{part.text}</ReactMarkdown>
               </div>

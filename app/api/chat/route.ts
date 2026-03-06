@@ -2,7 +2,6 @@ import { streamText, stepCountIs, convertToModelMessages } from "ai"
 import { getModel } from "@/lib/ai"
 import { buildSystemPrompt } from "@/lib/system-prompt"
 import { auth } from "@/auth"
-import { getActiveKey } from "@/lib/user-keys"
 import { checkAndIncrementUsage, isUnlimitedEmail } from "@/lib/rate-limit"
 import { cookies } from "next/headers"
 import {
@@ -20,31 +19,25 @@ import {
   getRecenteKamervragen,
 } from "@/lib/tools"
 import { NextResponse } from "next/server"
+import { chatBodySchema } from "@/lib/validation"
 
 export const maxDuration = 60
 
 export async function POST(req: Request) {
   try {
-    const { messages, partyId, partyName, organisationId, model: requestedModel } = await req.json()
+    const body = await req.json()
+    const parsed = chatBodySchema.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Invalid request" }, { status: 400 })
+    }
+    const { messages, partyId, partyName, organisationId, model: requestedModel } = parsed.data
 
     const session = await auth()
     const userId = session?.user?.id ?? null
 
-    // Check for user's own API key
-    let modelOpts: { model?: string; apiKey?: string } | undefined
-    let usingOwnKey = false
-
-    if (userId) {
-      const userKey = await getActiveKey(userId)
-      if (userKey) {
-        modelOpts = { model: userKey.model, apiKey: userKey.apiKey }
-        usingOwnKey = true
-      }
-    }
-
-    // Free tier rate limiting (skip for BYOK and whitelisted domains)
+    // Free tier rate limiting (skip for whitelisted domains)
     let setSessionCookie: string | null = null
-    if (!usingOwnKey && !isUnlimitedEmail(session?.user?.email)) {
+    if (!isUnlimitedEmail(session?.user?.email)) {
       const cookieStore = await cookies()
       let sessionId = cookieStore.get("session-id")?.value ?? null
       if (!sessionId && !userId) {
@@ -52,7 +45,8 @@ export async function POST(req: Request) {
         setSessionCookie = sessionId
       }
 
-      const { allowed, used, limit } = await checkAndIncrementUsage(userId, sessionId)
+      const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null
+      const { allowed, used, limit } = await checkAndIncrementUsage(userId, sessionId, ip)
       if (!allowed) {
         return NextResponse.json(
           {
@@ -66,10 +60,7 @@ export async function POST(req: Request) {
       }
     }
 
-    // Use BYOK model if set, otherwise use requested model from toolbar
-    if (!modelOpts && requestedModel) {
-      modelOpts = { model: requestedModel }
-    }
+    const modelOpts = requestedModel ? { model: requestedModel } : undefined
 
     const tools = {
       searchKamerstukken,

@@ -3,7 +3,6 @@ import { getModel } from "@/lib/ai"
 import { auth } from "@/auth"
 import { db } from "@/lib/db"
 import { briefings } from "@/lib/db/schema"
-import { getActiveKey } from "@/lib/user-keys"
 import { checkAndIncrementUsage, isUnlimitedEmail } from "@/lib/rate-limit"
 import { cookies } from "next/headers"
 import {
@@ -22,40 +21,32 @@ import {
 } from "@/lib/tools"
 import { NextResponse } from "next/server"
 import { getDefaultSkill } from "@/lib/meeting-skills"
+import { briefingBodySchema } from "@/lib/validation"
 
 export const maxDuration = 120
 
 export async function POST(req: Request) {
   try {
-    const { topic, partyId, partyName, organisationId, kamerleden, soort, meetingSkill } = await req.json()
-
-    if (!topic) {
-      return NextResponse.json({ error: "Topic is required" }, { status: 400 })
+    const body = await req.json()
+    const parsed = briefingBodySchema.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Invalid request" }, { status: 400 })
     }
+    const { topic, partyId, partyName, organisationId, kamerleden, soort, meetingSkill } = parsed.data
 
     const session = await auth()
     const userId = session?.user?.id ?? null
 
-    let modelOpts: { model?: string; apiKey?: string } | undefined
-    let usingOwnKey = false
-
-    if (userId) {
-      const userKey = await getActiveKey(userId)
-      if (userKey) {
-        modelOpts = { model: userKey.model, apiKey: userKey.apiKey }
-        usingOwnKey = true
-      }
-    }
-
     let setSessionCookie: string | null = null
-    if (!usingOwnKey && !isUnlimitedEmail(session?.user?.email)) {
+    if (!isUnlimitedEmail(session?.user?.email)) {
       const cookieStore = await cookies()
       let sessionId = cookieStore.get("session-id")?.value ?? null
       if (!sessionId && !userId) {
         sessionId = crypto.randomUUID()
         setSessionCookie = sessionId
       }
-      const { allowed, used, limit } = await checkAndIncrementUsage(userId, sessionId)
+      const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null
+      const { allowed, used, limit } = await checkAndIncrementUsage(userId, sessionId, ip)
       if (!allowed) {
         return NextResponse.json(
           {
@@ -113,7 +104,7 @@ ${Array.isArray(kamerleden) && kamerleden.length > 0 ? `\nRelevante Kamerleden o
 BELANGRIJK: Zoek de daadwerkelijke inhoud van de relevante stukken op en vat samen wat erin staat. Noem altijd het documentnummer en de datum. Gebruik je tools om actuele informatie op te zoeken.`
 
     const result = streamText({
-      model: getModel(modelOpts),
+      model: getModel(),
       system: `Je bent een parlementair onderzoeksassistent die debatbriefings schrijft voor Kamerleden. Gebruik altijd je tools om informatie op te zoeken. Schrijf in het Nederlands. Verwijs naar specifieke documentnummers en Kamerstuknummers.
 
 Werkwijze:

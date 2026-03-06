@@ -3,13 +3,19 @@ import { db } from "@/lib/db"
 import { organisations, users } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 import { NextResponse } from "next/server"
+import { organisationSchema } from "@/lib/validation"
 
 export async function POST(req: Request) {
   try {
     const session = await auth()
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-    const { name, slug } = await req.json()
+    const body = await req.json()
+    const parsed = organisationSchema.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Invalid request", details: parsed.error.issues }, { status: 400 })
+    }
+    const { name, slug } = parsed.data
     console.log("[organisations] POST", { userId: session.user.id, name, slug })
 
     const org = await db.insert(organisations).values({

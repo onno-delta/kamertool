@@ -4,11 +4,9 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google"
 import type { LanguageModel } from "ai"
 
 const MODELS: Record<string, { provider: string; modelId: string }> = {
-  "claude-opus-4-6": { provider: "anthropic", modelId: "claude-opus-4-6" },
-  "claude-sonnet-4-5": { provider: "anthropic", modelId: "claude-sonnet-4-5-20250514" },
+  "claude-sonnet-4": { provider: "anthropic", modelId: "claude-sonnet-4-20250514" },
   "gpt-4o": { provider: "openai", modelId: "gpt-4o" },
   "gpt-4o-mini": { provider: "openai", modelId: "gpt-4o-mini" },
-  "gemini-2.5-pro": { provider: "google", modelId: "gemini-2.5-pro-preview-05-06" },
   "gemini-2.5-flash": { provider: "google", modelId: "gemini-2.5-flash-preview-04-17" },
 }
 
@@ -18,7 +16,7 @@ export const MODEL_OPTIONS = Object.entries(MODELS).map(([key, val]) => ({
   label: key,
 }))
 
-export const DEFAULT_MODEL = "claude-sonnet-4-5"
+export const DEFAULT_MODEL = "claude-sonnet-4"
 
 function createProviderModel(
   provider: string,
