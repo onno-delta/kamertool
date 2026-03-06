@@ -39,10 +39,6 @@ export function BriefingProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<BriefingState | null>(null)
   const abortRef = useRef<AbortController | null>(null)
 
-  const triggerDownload = useCallback(async (text: string, title: string) => {
-    downloadBriefingPDF(text, title)
-  }, [])
-
   const startBriefing = useCallback(
     (topic: string, soort?: string, partyOverride?: { id: string; name: string } | null) => {
       // Abort any previous request
@@ -162,9 +158,6 @@ export function BriefingProvider({ children }: { children: ReactNode }) {
                       ? { ...s, loading: false, content: event.content }
                       : s
                   )
-                  if (event.content) {
-                    triggerDownload(event.content, topic)
-                  }
                 } else if (event.type === "error") {
                   setState((s) =>
                     s?.topic === topic
@@ -187,14 +180,14 @@ export function BriefingProvider({ children }: { children: ReactNode }) {
           )
         })
     },
-    [triggerDownload]
+    []
   )
 
   const downloadPDF = useCallback(() => {
     if (state?.content && state.topic) {
-      triggerDownload(state.content, state.topic)
+      downloadBriefingPDF(state.content, state.topic)
     }
-  }, [state, triggerDownload])
+  }, [state])
 
   const cancelBriefing = useCallback(() => {
     abortRef.current?.abort()

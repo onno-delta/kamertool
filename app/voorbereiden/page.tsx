@@ -3,8 +3,8 @@
 import { useState, useEffect, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
-import ReactMarkdown from "react-markdown"
 import { useBriefing } from "@/components/briefing-context"
+import { copyAsRichText } from "@/lib/copy-rich-text"
 import { ProgressSidebar } from "@/components/progress-sidebar"
 import { PartySelector } from "@/components/party-selector"
 
@@ -223,7 +223,40 @@ function BriefingResult({
   partyName: string | null
   onDownload: () => void
 }) {
-  const [expanded, setExpanded] = useState(false)
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null)
+  const [pdfLoading, setPdfLoading] = useState(true)
+  const [pdfError, setPdfError] = useState(false)
+
+  // Generate PDF preview on mount
+  useEffect(() => {
+    let cancelled = false
+    setPdfLoading(true) // eslint-disable-line react-hooks/set-state-in-effect -- initial fetch
+    setPdfError(false)
+
+    fetch("/api/briefings/pdf", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content, topic, partyName }),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("PDF failed")
+        return res.blob()
+      })
+      .then((blob) => {
+        if (cancelled) return
+        setPdfUrl(URL.createObjectURL(blob))
+        setPdfLoading(false)
+      })
+      .catch(() => {
+        if (cancelled) return
+        setPdfError(true)
+        setPdfLoading(false)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [content, topic, partyName])
 
   return (
     <div className="space-y-4">
@@ -248,13 +281,13 @@ function BriefingResult({
           <div className="flex gap-2">
             <button
               onClick={onDownload}
-              className="rounded bg-primary px-3 py-1.5 text-xs font-medium text-white hover:bg-primary-dark active:translate-y-px"
+              className="rounded bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark active:translate-y-px"
             >
               Download PDF
             </button>
             <button
-              onClick={() => navigator.clipboard.writeText(content)}
-              className="rounded border border-border px-3 py-1.5 text-xs font-medium text-primary hover:bg-surface-muted"
+              onClick={() => copyAsRichText(content)}
+              className="rounded border border-border px-4 py-2 text-sm font-medium text-primary hover:bg-surface-muted active:translate-y-px"
             >
               Kopieer tekst
             </button>
@@ -262,20 +295,25 @@ function BriefingResult({
         </div>
       </div>
 
-      <div className="rounded-lg border border-border bg-white">
-        <button
-          onClick={() => setExpanded(!expanded)}
-          className="flex w-full items-center justify-between px-6 py-4 text-left"
-        >
-          <span className="text-sm font-medium text-primary">Briefing bekijken</span>
-          <span className="text-xs text-text-muted">{expanded ? "Inklappen" : "Uitklappen"}</span>
-        </button>
-        {expanded && (
-          <div className="border-t border-border-light px-6 py-4">
-            <div className="prose prose-sm max-w-none prose-headings:mt-4 prose-headings:mb-2 prose-p:my-1.5 prose-li:my-0.5 prose-ul:my-1.5 prose-ol:my-1.5 prose-a:text-primary prose-a:underline">
-              <ReactMarkdown>{content}</ReactMarkdown>
-            </div>
+      {/* PDF preview */}
+      <div className="rounded-lg border border-border bg-white overflow-hidden">
+        {pdfLoading && (
+          <div className="flex items-center justify-center py-20">
+            <span className="h-6 w-6 animate-spin rounded-full border-2 border-border-light border-t-primary" />
+            <span className="ml-3 text-sm text-text-secondary">PDF wordt geladen...</span>
           </div>
+        )}
+        {pdfError && (
+          <div className="px-6 py-10 text-center">
+            <p className="text-sm text-text-secondary">PDF preview niet beschikbaar.</p>
+          </div>
+        )}
+        {pdfUrl && (
+          <iframe
+            src={pdfUrl}
+            className="h-[80vh] w-full"
+            title="Briefing PDF preview"
+          />
         )}
       </div>
     </div>
