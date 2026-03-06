@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState, useRef } from "react"
+import { ChevronDown } from "lucide-react"
 import { PARTY_COLORS } from "@/lib/parties"
 
 type Party = { id: string; name: string; shortName: string }
@@ -48,12 +49,12 @@ export function PartySelector({
         onClick={() => setOpen(!open)}
         aria-expanded={open}
         aria-haspopup="listbox"
-        className="inline-flex items-center gap-2 rounded border border-border bg-white px-3 py-1.5 text-sm text-primary hover:bg-surface-muted focus:border-primary focus:outline-none"
+        className="inline-flex items-center gap-1.5 rounded-md border border-border bg-white px-3 py-1.5 text-[0.8125rem] text-primary hover:bg-surface-muted focus:border-primary focus:outline-none"
       >
         {value ? (
           <>
             <span
-              className="inline-block h-2.5 w-2.5 shrink-0 rounded-full"
+              className="inline-block h-2 w-2 shrink-0 rounded-full"
               style={{ backgroundColor: color }}
             />
             <span className="font-medium">{value.shortName}</span>
@@ -61,9 +62,7 @@ export function PartySelector({
         ) : (
           <span className="text-text-muted">Partij</span>
         )}
-        <svg className="h-3.5 w-3.5 text-text-muted" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-        </svg>
+        <ChevronDown className="h-3.5 w-3.5 text-text-muted" />
       </button>
 
       {open && (
@@ -77,7 +76,7 @@ export function PartySelector({
             onClick={() => { onChange(null); setOpen(false) }}
             className={`flex w-full items-center gap-3 px-3 py-2 text-left text-sm hover:bg-surface-muted ${!value ? "bg-surface-muted" : ""}`}
           >
-            <span className="inline-block h-2.5 w-2.5 shrink-0 rounded-full bg-gray-300" />
+            <span className="inline-block h-2 w-2 shrink-0 rounded-full bg-gray-300" />
             <span className="font-medium text-text-muted">Geen partij</span>
             <span className="text-xs text-text-muted">Neutraal</span>
           </button>
@@ -93,7 +92,7 @@ export function PartySelector({
                 className={`flex w-full items-center gap-3 px-3 py-2 text-left text-sm hover:bg-surface-muted ${selected ? "bg-surface-muted" : ""}`}
               >
                 <span
-                  className="inline-block h-2.5 w-2.5 shrink-0 rounded-full"
+                  className="inline-block h-2 w-2 shrink-0 rounded-full"
                   style={{ backgroundColor: c }}
                 />
                 <span className="font-medium text-primary">{p.shortName}</span>

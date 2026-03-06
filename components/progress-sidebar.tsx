@@ -1,5 +1,7 @@
 "use client"
 
+import { Activity } from "lucide-react"
+
 export type ToolStep = {
   id: string
   tool: string
@@ -113,37 +115,41 @@ export function ProgressSidebar({ steps }: { steps: ToolStep[] }) {
 
   return (
     <div className="sticky top-4">
-      <div className="rounded-lg border border-border bg-white p-4">
-        <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-text-secondary">
+      <div className="rounded-xl border border-border-light bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+        <h3 className="mb-3.5 flex items-center gap-1.5 text-[0.6875rem] font-semibold uppercase tracking-[0.075em] text-text-muted">
+          <Activity className="h-[13px] w-[13px]" />
           Voortgang
         </h3>
-        <div className="space-y-2.5">
+        <div className="space-y-0">
           {hiddenCount > 0 && (
-            <p className="text-xs text-text-muted">+{hiddenCount} eerdere stappen</p>
+            <p className="pb-2 text-xs text-text-muted">+{hiddenCount} eerdere stappen</p>
           )}
-          {items.map((item) => (
-            <div key={item.key} className="flex items-start gap-2.5">
+          {items.map((item, idx) => (
+            <div
+              key={item.key}
+              className={`flex items-start gap-2.5 py-2.5 ${idx > 0 ? "border-t border-border-light" : ""}`}
+            >
               <div className="mt-0.5 shrink-0">
                 {item.status === "running" ? (
-                  <span className="block h-4 w-4 animate-spin rounded-full border-2 border-border border-t-primary" />
+                  <span className="block h-5 w-5 animate-spin rounded-full border-2 border-border border-t-primary" />
                 ) : item.status === "error" ? (
-                  <span className="flex h-4 w-4 items-center justify-center rounded-full bg-red-100">
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-red-100">
                     <svg className="h-2.5 w-2.5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                   </span>
                 ) : (
-                  <span className="flex h-4 w-4 items-center justify-center rounded-full bg-green-100">
-                    <svg className="h-2.5 w-2.5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-green-100">
+                    <svg className="h-[11px] w-[11px] text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
                   </span>
                 )}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm text-primary">{item.label}</p>
+                <p className="truncate text-[0.8125rem] font-medium text-primary">{item.label}</p>
                 {item.detail && (
-                  <p className="truncate text-xs text-text-secondary">{item.detail}</p>
+                  <p className="truncate text-xs text-text-muted">{item.detail}</p>
                 )}
               </div>
             </div>

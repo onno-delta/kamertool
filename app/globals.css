@@ -43,6 +43,7 @@
   --color-primary-dark: #0f3560;
   --color-surface: #ffffff;
   --color-surface-muted: #F8FAFC;
+  --color-surface-page: #F1F4F8;
   --color-border: #CBD5E1;
   --color-border-light: #E2E8F0;
   --color-text-secondary: #475569;
@@ -52,7 +53,7 @@
 }
 
 body {
-  background: var(--color-surface);
+  background: var(--color-surface-page);
   color: var(--color-foreground);
   font-family: var(--font-sans);
 }

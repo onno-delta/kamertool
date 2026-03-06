@@ -39,7 +39,7 @@ export default function RootLayout({
                 {children}
               </div>
             </main>
-            <footer className="shrink-0 border-t-4 border-primary bg-primary-dark py-6 text-white">
+            <footer className="shrink-0 border-t-[3px] border-primary bg-primary-dark py-5 text-white">
               <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-6 gap-y-2 px-6 text-center text-sm">
                 <span className="text-white">Kamertool — Debatvoorbereiding</span>
                 <a href="https://kamer.deltainstituut.nl" className="text-white/70 hover:text-white">
