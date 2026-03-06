@@ -10,14 +10,15 @@ import { ProgressSidebar } from "@/components/progress-sidebar"
 function VoorbereidenContent() {
   const searchParams = useSearchParams()
   const topic = searchParams.get("topic") ?? ""
+  const soort = searchParams.get("soort") ?? undefined
   const { state, startBriefing, downloadPDF } = useBriefing()
 
   // Start briefing if topic is set and no matching briefing is running/done
   useEffect(() => {
     if (!topic) return
     if (state?.topic === topic) return
-    startBriefing(topic)
-  }, [topic, state?.topic, startBriefing])
+    startBriefing(topic, soort)
+  }, [topic, soort, state?.topic, startBriefing])
 
   if (!topic) {
     return (

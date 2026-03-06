@@ -21,13 +21,14 @@ import {
   getRecenteKamervragen,
 } from "@/lib/tools"
 import { NextResponse } from "next/server"
+import { getDefaultSkill } from "@/lib/meeting-skills"
 
 export const maxDuration = 120
 
 export async function POST(req: Request) {
   try {
-    const { topic, partyId, partyName, organisationId, kamerleden } = await req.json()
-    console.log("[briefing] POST", { topic, partyId, partyName, kamerleden: kamerleden?.length })
+    const { topic, partyId, partyName, organisationId, kamerleden, soort, meetingSkill } = await req.json()
+    console.log("[briefing] POST", { topic, partyId, partyName, kamerleden: kamerleden?.length, soort })
 
     if (!topic) {
       return NextResponse.json({ error: "Topic is required" }, { status: 400 })
@@ -66,7 +67,10 @@ export async function POST(req: Request) {
       }
     }
 
-    const prompt = `Genereer een uitgebreide debriefing over het onderwerp: "${topic}"
+    // Resolve the meeting skill: user override > default for this soort > empty
+    const skillPrompt = meetingSkill || (soort ? getDefaultSkill(soort) : "")
+
+    const prompt = `Genereer een uitgebreide debriefing over het onderwerp: "${topic}"${soort ? ` (type vergadering: ${soort})` : ""}
 
 Aanpak:
 1. Zoek eerst via searchOpenTK (full-text search over alle parlementaire documenten) naar relevante stukken.
@@ -96,7 +100,12 @@ Overzicht van posities van de verschillende fracties op basis van stemmingen en 
 ## Suggestievragen voor het Debat
 Concrete vragen om aan de minister te stellen, met verwijzing naar specifieke documenten en bronnen.
 
-${partyName ? `Frame alles vanuit het perspectief van ${partyName}.` : "Geef een neutraal, gebalanceerd overzicht."}
+## Mogelijke Speech
+Schrijf een concept-speech voor gebruik in het debat.
+${Array.isArray(kamerleden) && kamerleden.length > 0 ? `Zoek eerst via searchOpenTK naar eerdere speeches en bijdragen van ${kamerleden[0]} in de Handelingen. Analyseer hun spreekstijl: toon, woordgebruik, lengte van zinnen, retorische patronen, hoe ze ministers aanspreken. Schrijf de concept-speech in diezelfde stijl.` : "Schrijf een zakelijke, neutrale speech die past bij een Kamerdebat."}
+De speech moet verwijzen naar concrete documenten en feiten uit de briefing hierboven.
+${skillPrompt ? `\n--- SPECIFIEKE INSTRUCTIES VOOR DIT TYPE VERGADERING (${soort}) ---\n${skillPrompt}\n--- EINDE SPECIFIEKE INSTRUCTIES ---` : ""}
+${partyName ? `\nFrame alles vanuit het perspectief van ${partyName}.` : "\nGeef een neutraal, gebalanceerd overzicht."}
 ${Array.isArray(kamerleden) && kamerleden.length > 0 ? `\nRelevante Kamerleden om specifiek aandacht aan te besteden: ${kamerleden.join(", ")}. Zoek hun standpunten, uitspraken en ingediende moties op over dit onderwerp. Vermeld hun positie in de sectie Standpunten per Fractie en betrek hun specifieke bijdragen in de suggestievragen.` : ""}
 
 BELANGRIJK: Zoek de daadwerkelijke inhoud van de relevante stukken op en vat samen wat erin staat. Noem altijd het documentnummer en de datum. Gebruik je tools om actuele informatie op te zoeken.`
@@ -112,7 +121,8 @@ Werkwijze:
 - Gebruik searchDocumenten en searchKamerstukken voor aanvullende gestructureerde zoekopdrachten via de TK API
 - Gebruik searchToezeggingen, searchStemmingen en searchHandelingen voor context
 - Gebruik getRecenteKamervragen om recente schriftelijke vragen te bekijken
-- Vat de inhoud van elk relevant stuk bondig maar volledig samen`,
+- Vat de inhoud van elk relevant stuk bondig maar volledig samen
+- Voor de concept-speech: zoek altijd eerst eerdere bijdragen van het Kamerlid op in de Handelingen via searchOpenTK om hun spreekstijl te analyseren en te imiteren`,
       prompt,
       stopWhen: stepCountIs(25),
       tools: {

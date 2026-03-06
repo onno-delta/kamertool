@@ -4,11 +4,9 @@ import { useChat } from "@ai-sdk/react"
 import { DefaultChatTransport } from "ai"
 import { useState, useEffect, useRef, useMemo, type FormEvent } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
 import { PartySelector } from "./party-selector"
 import { Message, extractToolSteps } from "./message"
 import { ProgressSidebar } from "./progress-sidebar"
-import { useBriefing } from "./briefing-context"
 
 type Party = { id: string; name: string; shortName: string }
 
@@ -19,8 +17,6 @@ const FREE_MODELS = [
 ]
 
 export function Chat() {
-  const router = useRouter()
-  const { startBriefing } = useBriefing()
   const [party, setParty] = useState<Party | null>(null)
   const [model, setModel] = useState("claude-haiku-4-5")
   const [input, setInput] = useState("")
@@ -140,16 +136,6 @@ export function Chat() {
                 </>
               )}
             </div>
-            <button
-              onClick={() => {
-                startBriefing(briefingTopic)
-                router.push(`/voorbereiden?topic=${encodeURIComponent(briefingTopic)}`)
-              }}
-              disabled={!briefingTopic}
-              className="shrink-0 rounded-xl border border-gray-200 bg-gray-50 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-40"
-            >
-              Genereer briefing
-            </button>
           </div>
 
           {/* Messages */}
@@ -169,7 +155,7 @@ export function Chat() {
                 </div>
               )}
               {messages.map((m) => (
-                <Message key={m.id} message={m} />
+                <Message key={m.id} message={m} topic={briefingTopic} />
               ))}
               {showThinking && (
                 <div className="flex justify-start mb-4">

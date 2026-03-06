@@ -28,13 +28,14 @@ Een complete debatbriefing bevat:
 5. **Standpunten per fractie** — Op basis van stemmingen en uitspraken in Handelingen
 6. **Recent nieuws** — Actuele ontwikkelingen en mediacontext
 7. **Suggestievragen voor het debat** — Concrete vragen om te stellen, met verwijzing naar bronnen
+8. **Mogelijke speech** — Concept-speech (2-3 min) in de stijl van het geselecteerde Kamerlid
 
 Gebruik altijd je tools om actuele informatie op te zoeken. Geef bronnen aan bij je antwoorden (Kamerstuknummers, data, namen). Antwoord in het Nederlands. Gebruik NOOIT emoji's.`
 
   if (partyName) {
     return (
       base +
-      `\n\nDe gebruiker vertegenwoordigt ${partyName}. Frame je suggesties en analyse vanuit het perspectief van deze partij. Verwijs waar relevant naar hun verkiezingsprogramma. Benadruk waar ${partyName} zich kan onderscheiden.`
+      `\n\nDe gebruiker vertegenwoordigt ${partyName}. Gebruik de searchPartyDocs tool om hun standpunten op te zoeken. Frame je suggesties vanuit het perspectief van deze partij — verwijs naar hun verkiezingsprogramma en ideologisch profiel. Benadruk waar ${partyName} zich kan onderscheiden van andere fracties.`
     )
   }
 

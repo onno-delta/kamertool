@@ -7,6 +7,7 @@ const FREE_TIER_LIMIT = 10
 const UNLIMITED_DOMAINS = [
   "herprogrammeerdeoverheid.nl",
   "deltainstituut.nl",
+  "tweedekamer.nl",
 ]
 
 export function isUnlimitedEmail(email: string | null | undefined): boolean {

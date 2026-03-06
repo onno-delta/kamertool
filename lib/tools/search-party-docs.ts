@@ -25,18 +25,24 @@ export function createSearchPartyDocs(
 
       // Search party programme
       if (partyId) {
-        const party = await db.query.parties.findFirst({
-          where: eq(parties.id, partyId),
-        })
-        if (
-          party &&
-          party.programme.toLowerCase().includes(query.toLowerCase())
-        ) {
+        const partyResults = await db
+          .select()
+          .from(parties)
+          .where(
+            and(
+              eq(parties.id, partyId),
+              sql`${parties.programme} ILIKE ${"%" + query + "%"}`
+            )
+          )
+          .limit(1)
+
+        if (partyResults.length > 0) {
+          const party = partyResults[0]
           const idx = party.programme
             .toLowerCase()
             .indexOf(query.toLowerCase())
-          const start = Math.max(0, idx - 250)
-          const end = Math.min(party.programme.length, idx + 250)
+          const start = Math.max(0, idx - 500)
+          const end = Math.min(party.programme.length, idx + 500)
           results.push({
             source: `Verkiezingsprogramma ${party.shortName}`,
             title: party.name,

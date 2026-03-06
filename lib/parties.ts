@@ -4,8 +4,7 @@ export const PARTIES = [
   { shortName: "PVV", name: "Partij voor de Vrijheid" },
   { shortName: "CDA", name: "Christen-Democratisch Appèl" },
   { shortName: "SP", name: "Socialistische Partij" },
-  { shortName: "PvdA", name: "Partij van de Arbeid" },
-  { shortName: "GL", name: "GroenLinks" },
+  { shortName: "PvdA-GL", name: "GroenLinks-PvdA" },
   { shortName: "PvdD", name: "Partij voor de Dieren" },
   { shortName: "CU", name: "ChristenUnie" },
   { shortName: "FVD", name: "Forum voor Democratie" },
@@ -14,5 +13,4 @@ export const PARTIES = [
   { shortName: "Volt", name: "Volt Nederland" },
   { shortName: "BBB", name: "BoerBurgerBeweging" },
   { shortName: "NSC", name: "Nieuw Sociaal Contract" },
-  { shortName: "PvdA-GL", name: "GroenLinks-PvdA" },
 ] as const

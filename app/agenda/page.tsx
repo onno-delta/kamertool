@@ -38,6 +38,7 @@ const TYPE_COLORS: Record<string, string> = {
   "Regeling van werkzaamheden": "bg-amber-100 text-amber-800",
   "Technische briefing": "bg-teal-100 text-teal-800",
   "Gesprek": "bg-orange-100 text-orange-800",
+  "Werkbezoek": "bg-lime-100 text-lime-800",
 }
 
 function formatTime(dateStr: string) {
@@ -279,7 +280,7 @@ export default function AgendaPage() {
                       </div>
 
                       <Link
-                        href={`/voorbereiden?topic=${encodeURIComponent(item.Onderwerp)}`}
+                        href={`/voorbereiden?topic=${encodeURIComponent(item.Onderwerp)}&soort=${encodeURIComponent(item.Soort)}`}
                         className="shrink-0 rounded-lg bg-blue-600 px-2.5 py-1.5 text-xs font-medium text-white hover:bg-blue-700"
                       >
                         Voorbereiden

@@ -128,6 +128,16 @@ function BriefingPDF({ topic, content }: { topic: string; content: string }) {
   )
 }
 
+export async function downloadBriefingPDF(content: string, topic: string) {
+  const blob = await pdf(<BriefingPDF topic={topic} content={content} />).toBlob()
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement("a")
+  a.href = url
+  a.download = `briefing-${topic.slice(0, 30).replace(/\s+/g, "-")}.pdf`
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
 export type BriefingState = {
   topic: string
   loading: boolean
@@ -139,7 +149,7 @@ export type BriefingState = {
 
 type BriefingContextType = {
   state: BriefingState | null
-  startBriefing: (topic: string) => void
+  startBriefing: (topic: string, soort?: string) => void
   downloadPDF: () => void
   dismiss: () => void
 }
@@ -169,7 +179,7 @@ export function BriefingProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const startBriefing = useCallback(
-    (topic: string) => {
+    (topic: string, soort?: string) => {
       setState({ topic, loading: true, content: null, error: null, partyName: null, steps: [] })
 
       // Load preferences then generate
@@ -197,10 +207,14 @@ export function BriefingProvider({ children }: { children: ReactNode }) {
               k.fractie ? `${k.naam} (${k.fractie})` : k.naam
           )
 
+          // Find the meeting skill for this soort (user override or default)
+          const userSkills: Record<string, string> = prefs?.meetingSkills ?? {}
+          const meetingSkill = soort ? (userSkills[soort] || undefined) : undefined
+
           const res = await fetch("/api/briefing", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ topic, partyId: pId, partyName: pName, kamerleden: kamerledenNames }),
+            body: JSON.stringify({ topic, partyId: pId, partyName: pName, kamerleden: kamerledenNames, soort, meetingSkill }),
           })
 
           if (!res.ok) {

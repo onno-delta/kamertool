@@ -173,6 +173,18 @@ export const userKamerleden = pgTable("user_kamerlid", {
   createdAt: timestamp("createdAt", { mode: "date" }).notNull().defaultNow(),
 })
 
+export const userMeetingSkills = pgTable("user_meeting_skill", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: text("userId")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  soort: text("soort").notNull(), // e.g. "Plenair debat", "Commissiedebat"
+  prompt: text("prompt").notNull(),
+  createdAt: timestamp("createdAt", { mode: "date" }).notNull().defaultNow(),
+})
+
 export const usageLog = pgTable("usage_log", {
   id: text("id")
     .primaryKey()

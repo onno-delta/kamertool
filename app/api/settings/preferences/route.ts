@@ -1,6 +1,6 @@
 import { auth } from "@/auth"
 import { db } from "@/lib/db"
-import { users, userDossiers, userKamerleden } from "@/lib/db/schema"
+import { users, userDossiers, userKamerleden, userMeetingSkills } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 import { NextResponse } from "next/server"
 
@@ -28,10 +28,16 @@ export async function GET() {
       .from(userKamerleden)
       .where(eq(userKamerleden.userId, session.user.id))
 
+    const meetingSkills = await db
+      .select({ soort: userMeetingSkills.soort, prompt: userMeetingSkills.prompt })
+      .from(userMeetingSkills)
+      .where(eq(userMeetingSkills.userId, session.user.id))
+
     return NextResponse.json({
       defaultPartyId: user?.defaultPartyId ?? null,
       dossiers: dossiers.map((d) => d.dossier),
       kamerleden: kamerleden.map((k) => ({ id: k.persoonId, naam: k.naam, fractie: k.fractie })),
+      meetingSkills: meetingSkills.reduce((acc, s) => ({ ...acc, [s.soort]: s.prompt }), {} as Record<string, string>),
     })
   } catch (error) {
     console.error("[settings/preferences] GET ERROR:", error)
@@ -49,8 +55,8 @@ export async function PUT(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { defaultPartyId, dossiers, kamerleden } = await req.json()
-    console.log("[settings/preferences] PUT", { userId: session.user.id, defaultPartyId, dossiers, kamerleden: kamerleden?.length })
+    const { defaultPartyId, dossiers, kamerleden, meetingSkills } = await req.json()
+    console.log("[settings/preferences] PUT", { userId: session.user.id, defaultPartyId, dossiers, kamerleden: kamerleden?.length, meetingSkills: meetingSkills ? Object.keys(meetingSkills).length : 0 })
 
     // Update default party
     await db
@@ -86,6 +92,26 @@ export async function PUT(req: Request) {
           fractie: k.fractie ?? null,
         }))
       )
+    }
+
+    // Replace meeting skills
+    if (meetingSkills && typeof meetingSkills === "object") {
+      await db
+        .delete(userMeetingSkills)
+        .where(eq(userMeetingSkills.userId, session.user.id))
+
+      const entries = Object.entries(meetingSkills as Record<string, string>).filter(
+        ([, prompt]) => prompt.trim().length > 0
+      )
+      if (entries.length > 0) {
+        await db.insert(userMeetingSkills).values(
+          entries.map(([soort, prompt]) => ({
+            userId: session.user.id,
+            soort,
+            prompt,
+          }))
+        )
+      }
     }
 
     return NextResponse.json({ ok: true })
