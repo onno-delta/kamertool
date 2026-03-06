@@ -70,7 +70,7 @@ const LINK_GROUPS: LinkGroup[] = [
     links: [
       { label: "NOS Politiek", url: "https://nos.nl/politiek" },
       { label: "RTL Politiek", url: "https://www.rtlnieuws.nl/politiek" },
-      { label: "De Hofvijver", url: "https://www.montesquieu-instituut.nl/hofvijver" },
+      { label: "De Hofvijver", url: "https://www.montesquieu-instituut.nl/id/vls9chl7s1w6/de_hofvijver" },
     ],
   },
 ]
