@@ -114,14 +114,21 @@ function normalizeToCQL(input: string): string {
     // Skip whitespace
     if (input[i] === " ") { i++; continue }
 
-    // Quoted phrase — keep as-is
+    // Quoted phrase
     if (input[i] === '"') {
       const end = input.indexOf('"', i + 1)
       if (end === -1) {
         tokens.push(input.slice(i))
         break
       }
-      tokens.push(input.slice(i, end + 1))
+      const phrase = input.slice(i + 1, end)
+      // Unquote date-like phrases (e.g. "17 maart 2026") — exact date
+      // phrases almost never appear as literal strings in the SRU index
+      if (/^\d{1,2}\s+\w+\s+\d{4}$/.test(phrase) || /^\w+\s+\d{4}$/.test(phrase)) {
+        tokens.push(...phrase.split(/\s+/))
+      } else {
+        tokens.push(input.slice(i, end + 1))
+      }
       i = end + 1
       continue
     }
