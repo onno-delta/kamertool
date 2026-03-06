@@ -38,7 +38,7 @@ export const searchParlement = tool({
         count: records.length,
         totalResults,
         results: records.map((r) => ({
-          nummer: r.identifier,
+          nummer: r.docId !== r.identifier ? r.docId : r.identifier,
           onderwerp: r.title,
           datum: r.date,
           type: r.subrubriek || r.type,

@@ -11,6 +11,7 @@ const parser = new XMLParser({
 
 export interface SRURecord {
   identifier: string
+  docId: string // dossier-format ID for XML fetch (e.g. kst-36848-80)
   title: string
   date: string
   type: string
@@ -70,12 +71,21 @@ export async function querySRU(
     const opmeta = meta?.opmeta as Record<string, unknown> | undefined
 
     const identifier = String(kern?.identifier ?? "")
-    const dossiernummer = opmeta?.dossiernummer
-      ? `${opmeta.dossiernummer}${opmeta.ondernummer ? `-${opmeta.ondernummer}` : ""}`
-      : ""
+    const dossNr = opmeta?.dossiernummer ? String(opmeta.dossiernummer) : ""
+    const onderNr = opmeta?.ondernummer ? String(opmeta.ondernummer) : ""
+    const dossiernummer = dossNr ? `${dossNr}${onderNr ? `-${onderNr}` : ""}` : ""
+
+    // Build dossier-format ID for XML fetch (e.g. kst-36848-80)
+    // The SRU identifier (kst-1237491) is a system ID that has no .xml
+    // The dossier-format ID does have .xml with full document content
+    const prefix = identifier.split("-")[0] // kst, blg, h-tk, kv, etc.
+    const docId = (prefix === "kst" && dossNr && onderNr)
+      ? `kst-${dossNr}-${onderNr}`
+      : identifier
 
     return {
       identifier,
+      docId,
       title: String(kern?.title ?? ""),
       date: String(kern?.modified ?? mantel?.date ?? ""),
       type: String(opmeta?.publicationname ?? ""),
@@ -191,39 +201,25 @@ export function buildSearchCQL(
   return parts.join(" AND ")
 }
 
-export async function fetchDocumentText(identifier: string): Promise<string> {
-  // Try XML first (structured, clean text)
-  const xmlRes = await fetch(`${DOC_BASE}/${identifier}.xml`, {
-    signal: AbortSignal.timeout(15000),
-  })
-
-  if (xmlRes.ok) {
-    const xml = await xmlRes.text()
-    // Extract text from <al> (alinea) elements - these contain the actual document text
-    const paragraphs = xml.match(/<al>([\s\S]*?)<\/al>/g) ?? []
-    if (paragraphs.length > 0) {
-      return paragraphs
-        .map((p) => p.replace(/<[^>]+>/g, "").trim())
-        .filter(Boolean)
-        .join("\n\n")
-    }
-    // Fallback: strip all XML tags
-    return xml
-      .replace(/<[^>]+>/g, " ")
-      .replace(/\s+/g, " ")
-      .trim()
+function extractTextFromXML(xml: string): string | null {
+  const paragraphs = xml.match(/<al>([\s\S]*?)<\/al>/g) ?? []
+  if (paragraphs.length > 0) {
+    return paragraphs
+      .map((p) => p.replace(/<[^>]+>/g, "").trim())
+      .filter(Boolean)
+      .join("\n\n")
   }
+  // Some XML documents use different element names
+  const stripped = xml
+    .replace(/<\?xml[^>]*>/g, "")
+    .replace(/<metadata>[\s\S]*?<\/metadata>/g, "")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+  return stripped.length > 100 ? stripped : null
+}
 
-  // Fallback to HTML page
-  const htmlRes = await fetch(`${DOC_BASE}/${identifier}`, {
-    signal: AbortSignal.timeout(15000),
-  })
-
-  if (!htmlRes.ok) {
-    throw new Error(`Document niet gevonden: ${identifier} (HTTP ${htmlRes.status})`)
-  }
-
-  const html = await htmlRes.text()
+function extractTextFromHTML(html: string): string {
   return html
     .replace(/<script[\s\S]*?<\/script>/gi, "")
     .replace(/<style[\s\S]*?<\/style>/gi, "")
@@ -239,4 +235,39 @@ export async function fetchDocumentText(identifier: string): Promise<string> {
     .replace(/\n[ \t]+/g, "\n")
     .replace(/\n{3,}/g, "\n\n")
     .trim()
+}
+
+export async function fetchDocumentText(identifier: string): Promise<string> {
+  // Try XML first (works for most finalized documents)
+  const xmlRes = await fetch(`${DOC_BASE}/${identifier}.xml`, {
+    signal: AbortSignal.timeout(15000),
+  })
+
+  if (xmlRes.ok) {
+    const contentType = xmlRes.headers.get("content-type") ?? ""
+    if (contentType.includes("xml")) {
+      const text = extractTextFromXML(await xmlRes.text())
+      if (text) return text
+    }
+  }
+
+  // Fallback to HTML page (follows redirects)
+  const htmlRes = await fetch(`${DOC_BASE}/${identifier}`, {
+    signal: AbortSignal.timeout(15000),
+    redirect: "follow",
+  })
+
+  if (htmlRes.ok) {
+    const html = await htmlRes.text()
+    // Check if the page says the document is not available as web version
+    if (html.includes("niet beschikbaar als Webversie")) {
+      throw new Error(
+        `Document ${identifier} is nog niet beschikbaar als tekst (status: onopgemaakt). Alleen de PDF is beschikbaar op ${DOC_BASE}/${identifier}.pdf`
+      )
+    }
+    const text = extractTextFromHTML(html)
+    if (text.length > 200) return text
+  }
+
+  throw new Error(`Document niet gevonden: ${identifier}`)
 }
