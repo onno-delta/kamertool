@@ -31,7 +31,8 @@ export async function GET(req: Request) {
       .$dynamic()
 
     if (search) {
-      query = query.where(and(eq(briefings.userId, session.user.id), like(briefings.topic, `%${search}%`)))
+      const escapedSearch = search.replace(/%/g, '\\%').replace(/_/g, '\\_')
+      query = query.where(and(eq(briefings.userId, session.user.id), like(briefings.topic, `%${escapedSearch}%`)))
     }
 
     const results = await query.limit(50)

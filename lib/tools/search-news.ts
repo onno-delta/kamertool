@@ -9,10 +9,14 @@ export const searchNews = tool({
     maxResults: z.number().int().min(1).max(10).optional().default(5),
   }),
   execute: async ({ query, maxResults }) => {
+    if (!process.env.SERPER_API_KEY) {
+      return { count: 0, results: [], error: "Nieuwszoeken is niet geconfigureerd (SERPER_API_KEY ontbreekt)" }
+    }
+
     const res = await fetch("https://google.serper.dev/news", {
       method: "POST",
       headers: {
-        "X-API-KEY": process.env.SERPER_API_KEY!,
+        "X-API-KEY": process.env.SERPER_API_KEY,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({

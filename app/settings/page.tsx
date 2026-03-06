@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
+import { Vote, FolderOpen, Users, Search, X, Check, Save } from "lucide-react"
 import { DOSSIERS } from "@/lib/dossiers"
 import { PartySelector } from "@/components/party-selector"
 
@@ -98,102 +99,132 @@ export default function SettingsPage() {
         <span className="text-primary font-medium">Instellingen</span>
       </nav>
 
-      <section className="mb-6">
+      <section className="mb-8">
         <h1 className="text-4xl font-bold tracking-tight text-primary">Instellingen</h1>
         <p className="mt-2 text-sm text-text-secondary">
           Beheer je standaardpartij, dossiers en Kamerleden.
         </p>
       </section>
 
-      {/* Party & Dossiers */}
-      <div className="mb-6 rounded-lg border border-border bg-white p-6">
-        <h2 className="mb-4 text-lg font-medium text-primary">
-          Partij en dossiers
-        </h2>
+      {/* Party selector card */}
+      <div className="mb-5 overflow-hidden rounded-xl border border-border-light bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.02)]">
+        <div className="flex items-center gap-3 border-b border-border-light bg-surface-muted px-5 py-3.5">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-15">
+            <Vote className="h-4 w-4 text-primary" />
+          </div>
+          <h2 className="text-sm font-semibold text-primary">Partij</h2>
+        </div>
 
-        <div className="space-y-5">
-          {/* Party selector */}
+        <div className="px-5 py-5">
+          <label className="mb-1.5 block text-sm font-medium text-primary">
+            Standaardpartij
+          </label>
+          <p className="mb-3 text-xs leading-relaxed text-text-muted">
+            De standaardpartij wordt automatisch geselecteerd in de chat en bij briefings.
+          </p>
+          <PartySelector
+            value={selectedParty}
+            onChange={(p) => {
+              setSelectedParty(p)
+              setPrefsSaved(false)
+            }}
+          />
+        </div>
+      </div>
+
+      {/* Dossier card */}
+      <div className="mb-5 overflow-hidden rounded-xl border border-border-light bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.02)]">
+        <div className="flex items-center gap-3 border-b border-border-light bg-surface-muted px-5 py-3.5">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-15">
+            <FolderOpen className="h-4 w-4 text-primary" />
+          </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-primary">
-              Partij
-            </label>
-            <PartySelector
-              value={selectedParty}
-              onChange={(p) => {
-                setSelectedParty(p)
-                setPrefsSaved(false)
-              }}
-            />
-            <p className="mt-1 text-xs text-text-muted">
-              De standaardpartij wordt automatisch geselecteerd in de chat.
+            <h2 className="text-sm font-semibold text-primary">Dossiers</h2>
+            <p className="text-xs text-text-muted">
+              {selectedDossiers.length} van {DOSSIERS.length} geselecteerd
             </p>
           </div>
+        </div>
 
-          {/* Dossier checkboxes */}
-          <div>
-            <label className="mb-2 block text-sm font-medium text-primary">
-              Dossiers
-            </label>
-            <p className="mb-3 text-xs text-text-muted">
-              Selecteer de beleidsterreinen die je volgt. Deze worden meegenomen in briefings.
-            </p>
-            <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
-              {DOSSIERS.map((d) => (
+        <div className="px-5 py-5">
+          <p className="mb-4 text-xs leading-relaxed text-text-muted">
+            Selecteer de beleidsterreinen die je volgt. Deze worden meegenomen in briefings.
+          </p>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            {DOSSIERS.map((d) => {
+              const isSelected = selectedDossiers.includes(d.id)
+              return (
                 <label
                   key={d.id}
-                  className={`flex cursor-pointer items-center gap-2.5 rounded px-3 py-2 text-sm ${
-                    selectedDossiers.includes(d.id)
-                      ? "bg-surface-muted text-primary"
-                      : "bg-surface-muted/50 text-primary hover:bg-surface-muted"
+                  className={`flex cursor-pointer items-center gap-3 rounded-lg border px-3.5 py-2.5 text-sm transition-colors ${
+                    isSelected
+                      ? "border-primary/20 bg-primary-15 font-medium text-primary"
+                      : "border-border-light bg-white text-primary hover:border-primary/10 hover:bg-surface-muted"
                   }`}
                 >
                   <input
                     type="checkbox"
-                    checked={selectedDossiers.includes(d.id)}
+                    checked={isSelected}
                     onChange={() => toggleDossier(d.id)}
-                    className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
+                    className="h-4 w-4 rounded border-border text-primary accent-primary focus:ring-primary"
                   />
                   {d.label}
                 </label>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Kamerleden card */}
+      <div className="mb-8 overflow-hidden rounded-xl border border-border-light bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.02)]">
+        <div className="flex items-center gap-3 border-b border-border-light bg-surface-muted px-5 py-3.5">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-15">
+            <Users className="h-4 w-4 text-primary" />
+          </div>
+          <div>
+            <h2 className="text-sm font-semibold text-primary">Relevante Kamerleden</h2>
+            {selectedKamerleden.length > 0 && (
+              <p className="text-xs text-text-muted">
+                {selectedKamerleden.length} geselecteerd
+              </p>
+            )}
+          </div>
+        </div>
+
+        <div className="px-5 py-5">
+          <p className="mb-4 text-xs leading-relaxed text-text-muted">
+            Selecteer Kamerleden die je volgt. Hun standpunten en uitspraken worden meegenomen in briefings.
+          </p>
+
+          {/* Selected kamerleden chips */}
+          {selectedKamerleden.length > 0 && (
+            <div className="mb-4 flex flex-wrap gap-2">
+              {selectedKamerleden.map((k) => (
+                <span
+                  key={k.id}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-border-light bg-surface-muted py-1 pl-3 pr-1.5 text-sm text-primary"
+                >
+                  {k.naam}
+                  {k.fractie && (
+                    <span className="text-text-muted">({k.fractie})</span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => removeKamerlid(k.id)}
+                    className="ml-0.5 flex h-5 w-5 items-center justify-center rounded-full text-text-muted transition-colors hover:bg-border-light hover:text-primary"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </span>
               ))}
             </div>
-          </div>
+          )}
 
-          {/* Kamerleden selector */}
-          <div>
-            <label className="mb-2 block text-sm font-medium text-primary">
-              Relevante Kamerleden
-            </label>
-            <p className="mb-3 text-xs text-text-muted">
-              Selecteer Kamerleden die je volgt. Hun standpunten en uitspraken worden meegenomen in briefings.
-            </p>
-
-            {/* Selected kamerleden chips */}
-            {selectedKamerleden.length > 0 && (
-              <div className="mb-3 flex flex-wrap gap-1.5">
-                {selectedKamerleden.map((k) => (
-                  <span
-                    key={k.id}
-                    className="inline-flex items-center gap-1 rounded-full bg-surface-muted py-1 pl-3 pr-1.5 text-sm text-primary"
-                  >
-                    {k.naam}
-                    {k.fractie && (
-                      <span className="text-primary">({k.fractie})</span>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => removeKamerlid(k.id)}
-                      className="ml-0.5 rounded-full p-0.5 text-text-muted hover:bg-border-light hover:text-primary"
-                    >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                    </button>
-                  </span>
-                ))}
-              </div>
-            )}
-
-            {/* Search input */}
-            <div className="relative">
+          {/* Search input */}
+          <div className="relative">
+            <div className="flex items-center gap-2 rounded-lg border border-border bg-surface-muted px-3 py-2 transition-[border-color,box-shadow] focus-within:border-primary focus-within:shadow-[0_0_0_2px_rgba(21,66,115,0.08)]">
+              <Search className="h-4 w-4 shrink-0 text-text-muted" />
               <input
                 type="text"
                 value={kamerleidSearch}
@@ -201,39 +232,55 @@ export default function SettingsPage() {
                 onFocus={() => setKamerleidFocused(true)}
                 onBlur={() => setTimeout(() => setKamerleidFocused(false), 200)}
                 placeholder="Zoek op naam..."
-                className="w-full rounded border border-border px-3 py-2 text-sm text-primary placeholder:text-text-muted"
+                className="w-full border-none bg-transparent text-sm text-primary placeholder:text-text-muted focus:outline-none"
               />
-
-              {/* Dropdown results */}
-              {kamerleidFocused && kamerleidResultsFiltered.length > 0 && (
-                <div className="absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-lg border border-border bg-white shadow-lg">
-                  {kamerleidResultsFiltered.map((k) => (
-                    <button
-                      key={k.id}
-                      type="button"
-                      onClick={() => addKamerlid(k)}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-primary hover:bg-surface-muted"
-                    >
-                      <span className="font-medium">{k.naam}</span>
-                      {k.fractie && (
-                        <span className="text-xs text-text-muted">{k.fractie}</span>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              )}
             </div>
-          </div>
 
-          <button
-            onClick={handleSavePrefs}
-            disabled={prefsSaving}
-            className="rounded bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark active:translate-y-px disabled:opacity-50"
-          >
-            {prefsSaving ? "Opslaan..." : prefsSaved ? "Opgeslagen" : "Voorkeuren opslaan"}
-          </button>
+            {/* Dropdown results */}
+            {kamerleidFocused && kamerleidResultsFiltered.length > 0 && (
+              <div className="absolute z-10 mt-1.5 max-h-48 w-full overflow-y-auto rounded-xl border border-border-light bg-white shadow-lg">
+                {kamerleidResultsFiltered.map((k) => (
+                  <button
+                    key={k.id}
+                    type="button"
+                    onClick={() => addKamerlid(k)}
+                    className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-primary transition-colors hover:bg-surface-muted"
+                  >
+                    <span className="font-medium">{k.naam}</span>
+                    {k.fractie && (
+                      <span className="text-xs text-text-muted">{k.fractie}</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
+
+      {/* Save button */}
+      <button
+        onClick={handleSavePrefs}
+        disabled={prefsSaving}
+        className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-dark active:translate-y-px disabled:opacity-50"
+      >
+        {prefsSaving ? (
+          <>
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+            Opslaan...
+          </>
+        ) : prefsSaved ? (
+          <>
+            <Check className="h-4 w-4" />
+            Opgeslagen
+          </>
+        ) : (
+          <>
+            <Save className="h-4 w-4" />
+            Voorkeuren opslaan
+          </>
+        )}
+      </button>
 
     </div>
   )
