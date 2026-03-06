@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { MEETING_SKILLS } from "@/lib/meeting-skills"
+import { MEETING_SKILLS, getDefaultSkill } from "@/lib/meeting-skills"
 
 export default function InstructiesPage() {
   const [meetingSkills, setMeetingSkills] = useState<Record<string, string>>({})
@@ -22,11 +22,19 @@ export default function InstructiesPage() {
 
   async function handleSave() {
     setSaving(true)
+    // Only save skills that differ from the default
+    const customOnly: Record<string, string> = {}
+    for (const [soort, prompt] of Object.entries(meetingSkills)) {
+      if (prompt.trim() && prompt.trim() !== getDefaultSkill(soort).trim()) {
+        customOnly[soort] = prompt
+      }
+    }
     await fetch("/api/settings/preferences", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ meetingSkills }),
+      body: JSON.stringify({ meetingSkills: customOnly }),
     })
+    setMeetingSkills(customOnly)
     setSaving(false)
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
@@ -50,7 +58,7 @@ export default function InstructiesPage() {
       <div className="space-y-2">
         {MEETING_SKILLS.map((skill) => {
           const isExpanded = expandedSkill === skill.soort
-          const hasCustom = (meetingSkills[skill.soort] ?? "").trim().length > 0
+          const hasCustom = skill.soort in meetingSkills && meetingSkills[skill.soort].trim() !== skill.prompt.trim()
           return (
             <div
               key={skill.soort}
@@ -90,7 +98,7 @@ export default function InstructiesPage() {
               {isExpanded && (
                 <div className="border-t border-gray-100 px-4 py-4">
                   <textarea
-                    value={meetingSkills[skill.soort] ?? ""}
+                    value={meetingSkills[skill.soort] ?? skill.prompt}
                     onChange={(e) => {
                       setMeetingSkills((prev) => ({
                         ...prev,
@@ -98,14 +106,10 @@ export default function InstructiesPage() {
                       }))
                       setSaved(false)
                     }}
-                    placeholder={skill.prompt}
                     rows={12}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-300"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900"
                   />
-                  <div className="mt-2 flex items-center justify-between">
-                    <p className="text-xs text-gray-400">
-                      Leeg = standaardinstructies worden gebruikt
-                    </p>
+                  <div className="mt-2 flex items-center justify-end">
                     {hasCustom && (
                       <button
                         type="button"
