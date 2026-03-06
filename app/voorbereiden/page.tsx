@@ -11,14 +11,15 @@ function VoorbereidenContent() {
   const searchParams = useSearchParams()
   const topic = searchParams.get("topic") ?? ""
   const soort = searchParams.get("soort") ?? undefined
-  const { state, startBriefing, downloadPDF } = useBriefing()
+  const { state, startBriefing, cancelBriefing, downloadPDF } = useBriefing()
 
   // Start briefing if topic is set and no matching briefing is running/done
   useEffect(() => {
     if (!topic) return
     if (state?.topic === topic) return
+    if (state?.cancelled) return
     startBriefing(topic, soort)
-  }, [topic, soort, state?.topic, startBriefing])
+  }, [topic, soort, state?.topic, state?.cancelled, startBriefing])
 
   if (!topic) {
     return (
@@ -34,6 +35,7 @@ function VoorbereidenContent() {
   }
 
   const loading = state?.topic === topic && state.loading
+  const cancelled = state?.topic === topic && !!state.cancelled
   const content = state?.topic === topic ? state.content : null
   const error = state?.topic === topic ? state.error : null
   const partyName = state?.topic === topic ? state.partyName : null
@@ -74,6 +76,26 @@ function VoorbereidenContent() {
                       De PDF wordt automatisch gedownload zodra hij klaar is.
                     </p>
                   </div>
+                  <button
+                    onClick={cancelBriefing}
+                    className="rounded border border-border px-4 py-1.5 text-sm font-medium text-text-secondary hover:text-red-600 hover:border-red-300"
+                  >
+                    Annuleren
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {cancelled && !loading && !content && !error && (
+              <div className="mt-6 rounded-lg border border-border bg-surface-muted px-6 py-6">
+                <div className="flex flex-col items-center gap-4">
+                  <p className="text-sm text-text-secondary">Briefing generatie geannuleerd.</p>
+                  <button
+                    onClick={() => startBriefing(topic, soort)}
+                    className="rounded bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark active:translate-y-px"
+                  >
+                    Opnieuw proberen
+                  </button>
                 </div>
               </div>
             )}

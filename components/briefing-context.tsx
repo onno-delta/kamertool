@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react"
+import { createContext, useContext, useState, useCallback, useRef, type ReactNode } from "react"
 import { Document, Page, Text, View, StyleSheet, pdf } from "@react-pdf/renderer"
 import type { ToolStep } from "./progress-sidebar"
 import { getStepLabel } from "./progress-sidebar"
@@ -145,11 +145,13 @@ export type BriefingState = {
   error: string | null
   partyName: string | null
   steps: ToolStep[]
+  cancelled?: boolean
 }
 
 type BriefingContextType = {
   state: BriefingState | null
   startBriefing: (topic: string, soort?: string) => void
+  cancelBriefing: () => void
   downloadPDF: () => void
   dismiss: () => void
 }
@@ -157,6 +159,7 @@ type BriefingContextType = {
 const BriefingContext = createContext<BriefingContextType>({
   state: null,
   startBriefing: () => {},
+  cancelBriefing: () => {},
   downloadPDF: () => {},
   dismiss: () => {},
 })
@@ -167,6 +170,7 @@ export function useBriefing() {
 
 export function BriefingProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<BriefingState | null>(null)
+  const abortRef = useRef<AbortController | null>(null)
 
   const triggerDownload = useCallback(async (text: string, title: string) => {
     const blob = await pdf(<BriefingPDF topic={title} content={text} />).toBlob()
@@ -180,16 +184,21 @@ export function BriefingProvider({ children }: { children: ReactNode }) {
 
   const startBriefing = useCallback(
     (topic: string, soort?: string) => {
+      // Abort any previous request
+      abortRef.current?.abort()
+      const controller = new AbortController()
+      abortRef.current = controller
+
       setState({ topic, loading: true, content: null, error: null, partyName: null, steps: [] })
 
       // Load preferences then generate
-      fetch("/api/settings/preferences")
+      fetch("/api/settings/preferences", { signal: controller.signal })
         .then((r) => (r.ok ? r.json() : null))
         .then(async (prefs) => {
           let pName: string | null = null
           let pId: string | null = null
           if (prefs?.defaultPartyId) {
-            const parties = await fetch("/api/parties").then((r) => r.json())
+            const parties = await fetch("/api/parties", { signal: controller.signal }).then((r) => r.json())
             const party = parties.find(
               (p: { id: string; shortName: string }) => p.id === prefs.defaultPartyId
             )
@@ -215,6 +224,7 @@ export function BriefingProvider({ children }: { children: ReactNode }) {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ topic, partyId: pId, partyName: pName, kamerleden: kamerledenNames, soort, meetingSkill }),
+            signal: controller.signal,
           })
 
           if (!res.ok) {
@@ -300,7 +310,8 @@ export function BriefingProvider({ children }: { children: ReactNode }) {
             }
           }
         })
-        .catch(() => {
+        .catch((err) => {
+          if (err instanceof DOMException && err.name === "AbortError") return
           setState((s) =>
             s?.topic === topic
               ? { ...s, loading: false, error: "Kon briefing niet genereren" }
@@ -317,10 +328,20 @@ export function BriefingProvider({ children }: { children: ReactNode }) {
     }
   }, [state, triggerDownload])
 
-  const dismiss = useCallback(() => setState(null), [])
+  const cancelBriefing = useCallback(() => {
+    abortRef.current?.abort()
+    abortRef.current = null
+    setState((s) => s ? { ...s, loading: false, cancelled: true } : s)
+  }, [])
+
+  const dismiss = useCallback(() => {
+    abortRef.current?.abort()
+    abortRef.current = null
+    setState(null)
+  }, [])
 
   return (
-    <BriefingContext.Provider value={{ state, startBriefing, downloadPDF, dismiss }}>
+    <BriefingContext.Provider value={{ state, startBriefing, cancelBriefing, downloadPDF, dismiss }}>
       {children}
     </BriefingContext.Provider>
   )

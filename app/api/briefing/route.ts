@@ -103,8 +103,11 @@ ${Array.isArray(kamerleden) && kamerleden.length > 0 ? `\nRelevante Kamerleden o
 
 BELANGRIJK: Zoek de daadwerkelijke inhoud van de relevante stukken op en vat samen wat erin staat. Noem altijd het documentnummer en de datum. Gebruik je tools om actuele informatie op te zoeken.`
 
+    const abortController = new AbortController()
+
     const result = streamText({
       model: getModel(),
+      abortSignal: abortController.signal,
       system: `Je bent een parlementair onderzoeksassistent die debatbriefings schrijft voor Kamerleden. Gebruik altijd je tools om informatie op te zoeken. Schrijf in het Nederlands. Verwijs naar specifieke documentnummers en Kamerstuknummers.
 
 Werkwijze:
@@ -138,6 +141,9 @@ Werkwijze:
 
     const encoder = new TextEncoder()
     const stream = new ReadableStream({
+      cancel() {
+        abortController.abort()
+      },
       async start(controller) {
         try {
           let fullText = ""

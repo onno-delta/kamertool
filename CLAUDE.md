@@ -56,6 +56,8 @@ Eleven tools the LLM can call during chat/briefing generation:
 
 The TK OData API base: `https://gegevensmagazijn.tweedekamer.nl/OData/v4/2.0` (wrapper in `lib/tk-api.ts`, 5-minute revalidation cache).
 
+For a complete inventory of all data sources, APIs, and what is/isn't integrated, see `docs/bronnen.md`.
+
 ### Two AI Endpoints with Different Protocols
 
 **`/api/chat`** — Uses AI SDK's `streamText` → `toUIMessageStreamResponse()`. Consumed by `useChat()` hook in `components/chat.tsx`. Max 10 tool-calling steps.

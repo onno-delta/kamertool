@@ -159,8 +159,8 @@ Voeg in Instellingen een eigen API-key toe (BYOK) voor onbeperkt gebruik, of wac
 **De briefing is te lang / te kort.**  
 Pas in **Instructies** de instructie voor het betreffende vergadertype aan (bijv. "Concept-speech maximaal 4 minuten" of "Uitgebreide technische analyse").
 
-**Hoe komt de AI aan Kamerinformatie?**  
-Kamertool gebruikt o.a. OpenTK (volledige-tekstzoeken in parlementaire documenten) en de officiële TK OData-API (Kamerstukken, handelingen, stemmingen, toezeggingen, agenda). Nieuws komt via een zoek-API; partijstandpunten uit de in de app gevoede partijprogramma’s.
+**Hoe komt de AI aan Kamerinformatie?**
+Kamertool gebruikt o.a. OpenTK (volledige-tekstzoeken in parlementaire documenten) en de officiele TK OData-API (Kamerstukken, handelingen, stemmingen, toezeggingen, agenda). Nieuws komt via een zoek-API; partijstandpunten uit de in de app gevoede partijprogramma’s. Zie [docs/bronnen.md](bronnen.md) voor een volledig overzicht van alle databronnen en integraties.
 
 **Kan ik de chat zonder account gebruiken?**  
 Ja, de chat is ook zonder inloggen te gebruiken, binnen de daglimiet. Voor opgeslagen briefings, instellingen, instructies en dashboard is inloggen nodig.

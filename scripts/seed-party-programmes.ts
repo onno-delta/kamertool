@@ -1,5 +1,7 @@
 import { db } from "../lib/db"
 import { parties } from "../lib/db/schema"
+import { PARTIES } from "../lib/parties"
+import { eq } from "drizzle-orm"
 import { readFileSync } from "fs"
 import { join } from "path"
 
@@ -9,18 +11,18 @@ async function seed() {
     "utf-8"
   )
 
-  // Split on party headers: ## SHORTNAME — Full Name
+  // Split on party headers: ## ...
   const sections = md.split(/^## /m).filter((s) => s.trim())
 
   let upserted = 0
   for (const section of sections) {
-    // Extract shortName and full name from header: "VVD — Volkspartij voor ..."
-    const headerMatch = section.match(/^(\S+)\s*[—-]\s*(.+)/)
-    if (!headerMatch) continue
-    const shortName = headerMatch[1]
-    const name = headerMatch[2].trim()
+    const headerLine = section.split("\n")[0]
 
-    // The full section content (including header) becomes the programme
+    // Match against known PARTIES by shortName prefix
+    const party = PARTIES.find((p) => headerLine.startsWith(p.shortName))
+    if (!party) continue
+
+    const { shortName, name } = party
     const programme = `## ${section}`.trim()
 
     await db
@@ -33,6 +35,14 @@ async function seed() {
 
     console.log(`Upserted: ${shortName} (${name})`)
     upserted++
+  }
+
+  // Clean up defunct parties
+  await db.delete(parties).where(eq(parties.shortName, "NSC"))
+  console.log("Deleted: NSC (if present)")
+
+  if (upserted !== PARTIES.length) {
+    console.warn(`\n⚠ Warning: upserted ${upserted} but expected ${PARTIES.length}`)
   }
 
   console.log(`\nDone — upserted ${upserted} parties`)

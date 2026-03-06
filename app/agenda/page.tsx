@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react"
 import Link from "next/link"
+import { Calendar, Search, ArrowRight, CalendarX2 } from "lucide-react"
 import { MultiSelect } from "@/components/multi-select"
 
 type Activiteit = {
@@ -155,15 +156,22 @@ export default function AgendaPage() {
     <div className="flex min-h-0 flex-1 flex-col">
       {/* Header */}
       <section className="mb-4 sm:mb-6">
-        <h1 className="text-4xl font-bold tracking-tight text-primary">Kameragenda</h1>
-        <p className="mt-2 text-sm text-text-secondary">
-          Bekijk de komende vergaderingen van de Tweede Kamer en ga direct door naar
-          de voorbereiding van jouw debatbriefing.
-        </p>
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
+            <Calendar className="h-5 w-5 text-white" />
+          </div>
+          <div>
+            <h1 className="text-4xl font-bold tracking-tight text-primary">Kameragenda</h1>
+            <p className="mt-1 text-sm text-text-secondary">
+              Bekijk de komende vergaderingen van de Tweede Kamer en ga direct door naar
+              de voorbereiding van jouw debatbriefing.
+            </p>
+          </div>
+        </div>
       </section>
 
       {/* Filters */}
-      <div className="shrink-0 rounded-lg border border-border bg-white px-4 py-3 sm:px-6">
+      <div className="shrink-0 rounded-xl border border-border-light bg-white px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.02)] sm:px-6">
         <div className="mx-auto flex max-w-4xl flex-wrap items-center gap-2">
           <MultiSelect
             label="Type"
@@ -202,13 +210,16 @@ export default function AgendaPage() {
           </div>
 
           <div className="ml-auto flex items-center gap-2">
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Zoek op onderwerp of commissie..."
-              className="w-52 rounded border border-border bg-white px-3 py-1.5 text-sm text-primary placeholder:text-text-muted"
-            />
+            <div className="relative">
+              <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-text-muted" />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Zoek op onderwerp of commissie..."
+                className="w-52 rounded border border-border bg-white py-1.5 pl-8 pr-3 text-sm text-primary placeholder:text-text-muted focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -217,29 +228,44 @@ export default function AgendaPage() {
       <div className="flex-1 overflow-y-auto">
         <div className="mx-auto max-w-4xl px-4 py-4 sm:px-6">
           {loading && (
-            <div className="flex items-center justify-center py-20">
-              <span className="h-5 w-5 animate-spin rounded-full border-2 border-border border-t-primary" />
-              <span className="ml-3 text-sm text-text-secondary">Agenda laden...</span>
+            <div className="space-y-6 py-4">
+              {[0, 1, 2].map((g) => (
+                <div key={g} className="space-y-2">
+                  <div className="h-4 w-40 animate-pulse rounded bg-border-light" />
+                  {[0, 1].map((c) => (
+                    <div key={c} className="h-20 animate-pulse rounded-xl bg-border-light/60" />
+                  ))}
+                </div>
+              ))}
             </div>
           )}
 
           {!loading && filtered.length === 0 && (
-            <div className="py-20 text-center text-sm text-text-secondary">
-              Geen vergaderingen gevonden.
+            <div className="mx-auto max-w-md py-16">
+              <div className="rounded-xl border border-border-light bg-white px-6 py-10 text-center shadow-[0_1px_3px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.02)]">
+                <CalendarX2 className="mx-auto h-10 w-10 text-text-muted" />
+                <p className="mt-3 font-medium text-primary">Geen vergaderingen gevonden</p>
+                <p className="mt-1 text-sm text-text-secondary">
+                  Pas de filters of datumbereik aan om resultaten te zien.
+                </p>
+              </div>
             </div>
           )}
 
           {!loading &&
             dates.map((date) => (
               <div key={date} className="mb-6">
-                <h2 className="mb-2 text-sm font-semibold text-primary capitalize">
-                  {formatDate(grouped[date][0].Datum)}
-                </h2>
+                <div className="mb-2 flex items-center gap-2">
+                  <h2 className="text-sm font-semibold text-primary capitalize">
+                    {formatDate(grouped[date][0].Datum)}
+                  </h2>
+                  <span className="h-px flex-1 bg-border-light" />
+                </div>
                 <div className="space-y-1.5">
                   {grouped[date].map((item) => (
                     <div
                       key={item.Id}
-                      className="flex items-start gap-3 rounded-lg border border-border border-l-3 border-l-primary bg-white px-4 py-3"
+                      className="flex items-start gap-3 rounded-xl border border-border-light border-l-3 border-l-primary bg-white px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.02)] transition-[border-color,box-shadow] hover:border-primary/30 hover:shadow-[0_2px_8px_rgba(0,0,0,0.06),0_1px_3px_rgba(0,0,0,0.04)]"
                     >
                       <div
                         className="shrink-0 pt-0.5 text-xs text-text-muted"
@@ -281,9 +307,10 @@ export default function AgendaPage() {
 
                       <Link
                         href={`/voorbereiden?topic=${encodeURIComponent(item.Onderwerp)}&soort=${encodeURIComponent(item.Soort)}`}
-                        className="shrink-0 rounded bg-primary px-2.5 py-1.5 text-xs font-medium text-white hover:bg-primary-dark active:translate-y-px"
+                        className="flex shrink-0 items-center gap-1 rounded bg-primary px-2.5 py-1.5 text-xs font-medium text-white hover:bg-primary-dark active:translate-y-px"
                       >
                         Voorbereiden
+                        <ArrowRight className="h-3 w-3" />
                       </Link>
                     </div>
                   ))}
