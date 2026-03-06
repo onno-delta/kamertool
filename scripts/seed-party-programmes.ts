@@ -1,6 +1,5 @@
 import { db } from "../lib/db"
 import { parties } from "../lib/db/schema"
-import { eq } from "drizzle-orm"
 import { readFileSync } from "fs"
 import { join } from "path"
 
@@ -13,28 +12,30 @@ async function seed() {
   // Split on party headers: ## SHORTNAME — Full Name
   const sections = md.split(/^## /m).filter((s) => s.trim())
 
-  let updated = 0
+  let upserted = 0
   for (const section of sections) {
-    // Extract shortName from header line: "VVD — Volkspartij voor ..."
-    const headerMatch = section.match(/^(\S+)\s*[—-]/)
+    // Extract shortName and full name from header: "VVD — Volkspartij voor ..."
+    const headerMatch = section.match(/^(\S+)\s*[—-]\s*(.+)/)
     if (!headerMatch) continue
     const shortName = headerMatch[1]
+    const name = headerMatch[2].trim()
 
     // The full section content (including header) becomes the programme
     const programme = `## ${section}`.trim()
 
-    const result = await db
-      .update(parties)
-      .set({ programme, updatedAt: new Date() })
-      .where(eq(parties.shortName, shortName))
+    await db
+      .insert(parties)
+      .values({ shortName, name, programme, updatedAt: new Date() })
+      .onConflictDoUpdate({
+        target: parties.shortName,
+        set: { name, programme, updatedAt: new Date() },
+      })
 
-    if (result.length !== undefined || result) {
-      console.log(`Updated: ${shortName}`)
-      updated++
-    }
+    console.log(`Upserted: ${shortName} (${name})`)
+    upserted++
   }
 
-  console.log(`\nDone — updated ${updated} parties`)
+  console.log(`\nDone — upserted ${upserted} parties`)
   process.exit(0)
 }
 

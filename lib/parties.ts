@@ -12,5 +12,4 @@ export const PARTIES = [
   { shortName: "DENK", name: "DENK" },
   { shortName: "Volt", name: "Volt Nederland" },
   { shortName: "BBB", name: "BoerBurgerBeweging" },
-  { shortName: "NSC", name: "Nieuw Sociaal Contract" },
 ] as const
