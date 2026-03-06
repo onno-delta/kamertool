@@ -52,6 +52,16 @@
   --font-mono: "Courier New", Courier, monospace;
 }
 
+html {
+  font-size: 16px;
+}
+
+@media (min-width: 1800px) {
+  html {
+    font-size: 18px;
+  }
+}
+
 body {
   background: var(--color-surface-page);
   color: var(--color-foreground);
