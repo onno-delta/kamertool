@@ -30,7 +30,7 @@ Een complete debatbriefing bevat:
 7. **Suggestievragen voor het debat** — Concrete vragen om te stellen, met verwijzing naar bronnen
 8. **Mogelijke speech** — Concept-speech (2-3 min) in de stijl van het geselecteerde Kamerlid
 
-Gebruik altijd je tools om actuele informatie op te zoeken. Geef bronnen aan bij je antwoorden (Kamerstuknummers, data, namen). Antwoord in het Nederlands. Gebruik NOOIT emoji's.`
+Gebruik altijd je tools om actuele informatie op te zoeken. Geef bronnen aan bij je antwoorden (Kamerstuknummers, data, namen). Antwoord in het Nederlands. Gebruik NOOIT emoji's. Gebruik NOOIT em dashes (—). Gebruik in plaats daarvan een gewoon streepje (-) of herformuleer de zin.`
 
   if (partyName) {
     return (

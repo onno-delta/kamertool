@@ -1,7 +1,7 @@
 "use client"
 
 import { createContext, useContext, useState, useCallback, useRef, type ReactNode } from "react"
-import { downloadBriefingPDF } from "@/lib/pdf-template"
+import { downloadBriefingPDF } from "@/lib/download-pdf"
 import type { ToolStep } from "./progress-sidebar"
 import { getStepLabel } from "./progress-sidebar"
 

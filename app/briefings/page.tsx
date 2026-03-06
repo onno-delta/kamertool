@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react"
 import Link from "next/link"
 import ReactMarkdown from "react-markdown"
 import { Search, FileText, Download, ExternalLink, ArrowLeft, Inbox } from "lucide-react"
-import { createBriefingBlob, downloadBriefingPDF } from "@/lib/pdf-template"
+import { downloadBriefingPDF } from "@/lib/download-pdf"
 
 type Briefing = {
   id: string
@@ -38,14 +38,18 @@ export default function BriefingsPage() {
 
   const handleDownload = useCallback(async () => {
     if (!selected) return
-    const date = new Date(selected.createdAt).toLocaleDateString("nl-NL")
-    downloadBriefingPDF(selected.content, selected.topic, { date })
+    downloadBriefingPDF(selected.content, selected.topic)
   }, [selected])
 
   const handleOpenPdf = useCallback(async () => {
     if (!selected) return
-    const date = new Date(selected.createdAt).toLocaleDateString("nl-NL")
-    const blob = await createBriefingBlob(selected.content, selected.topic, { date })
+    const res = await fetch("/api/briefings/pdf", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content: selected.content, topic: selected.topic }),
+    })
+    if (!res.ok) return
+    const blob = await res.blob()
     const url = URL.createObjectURL(blob)
     window.open(url, "_blank")
   }, [selected])

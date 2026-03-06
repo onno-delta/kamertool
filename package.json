@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --webpack --hostname localhost",
+    "prebuild": "bash scripts/download-fonts.sh",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"

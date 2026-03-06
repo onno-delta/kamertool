@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { downloadBriefingPDF } from "@/lib/pdf-template"
+import { downloadBriefingPDF } from "@/lib/download-pdf"
 
 type Props = {
   topic: string

@@ -1,18 +1,24 @@
 import { Document, Page, Text, View, Image, Font, StyleSheet, pdf } from "@react-pdf/renderer"
 import { DELTA_LOGO_URI, TK_LOGO_URI } from "./pdf-assets"
 
-// Register Fira Sans fonts
-// In browser (Next.js): /fonts/ resolves to public/fonts/
-// In Node.js (scripts): resolve from cwd
-const isBrowser = typeof window !== "undefined"
-const fontBase = isBrowser ? "/fonts" : (process.cwd() + "/public/fonts")
+// PDF generation is server-side only — fonts loaded from project root
+const fontBase = process.cwd() + "/fonts"
+const publicFontBase = process.cwd() + "/public/fonts"
+
+// Rijksoverheid fonts for PDF only (not served on website, not in git)
+Font.register({
+  family: "RijksoverheidSansText",
+  fonts: [
+    { src: `${fontBase}/rijksoverheidsanstext-regular.ttf`, fontWeight: 400 },
+    { src: `${publicFontBase}/fira-sans-bold.ttf`, fontWeight: 700 },
+    { src: `${publicFontBase}/fira-sans-italic.ttf`, fontWeight: 400, fontStyle: "italic" },
+  ],
+})
 
 Font.register({
-  family: "Fira Sans",
+  family: "RijksoverheidSansHeading",
   fonts: [
-    { src: `${fontBase}/fira-sans-regular.ttf`, fontWeight: 400 },
-    { src: `${fontBase}/fira-sans-bold.ttf`, fontWeight: 700 },
-    { src: `${fontBase}/fira-sans-italic.ttf`, fontWeight: 400, fontStyle: "italic" },
+    { src: `${fontBase}/rijksoverheidsansheading-bold.ttf`, fontWeight: 700 },
   ],
 })
 
@@ -31,7 +37,7 @@ const s = StyleSheet.create({
     paddingTop: 80,
     paddingBottom: 60,
     paddingHorizontal: 50,
-    fontFamily: "Fira Sans",
+    fontFamily: "RijksoverheidSansText",
     fontSize: 10.5,
     lineHeight: 1.55,
     color: C.body,
@@ -55,7 +61,7 @@ const s = StyleSheet.create({
   },
   headerCenter: {
     fontSize: 9,
-    fontFamily: "Fira Sans",
+    fontFamily: "RijksoverheidSansHeading",
     fontWeight: 700,
     color: C.primary,
     letterSpacing: 2,
@@ -80,27 +86,27 @@ const s = StyleSheet.create({
   footerText: {
     fontSize: 7.5,
     color: C.footer,
-    fontFamily: "Fira Sans",
+    fontFamily: "RijksoverheidSansText",
     fontWeight: 400,
   },
   // Content styles
   title: {
     fontSize: 18,
-    fontFamily: "Fira Sans",
+    fontFamily: "RijksoverheidSansHeading",
     fontWeight: 700,
     marginBottom: 4,
     color: C.primary,
   },
   subtitle: {
     fontSize: 10,
-    fontFamily: "Fira Sans",
+    fontFamily: "RijksoverheidSansText",
     fontWeight: 400,
     color: C.subtitle,
     marginBottom: 20,
   },
   h1: {
     fontSize: 14,
-    fontFamily: "Fira Sans",
+    fontFamily: "RijksoverheidSansHeading",
     fontWeight: 700,
     color: C.primary,
     marginTop: 20,
@@ -111,7 +117,7 @@ const s = StyleSheet.create({
   },
   h2: {
     fontSize: 13,
-    fontFamily: "Fira Sans",
+    fontFamily: "RijksoverheidSansHeading",
     fontWeight: 700,
     color: C.primary,
     marginTop: 16,
@@ -119,7 +125,7 @@ const s = StyleSheet.create({
   },
   h3: {
     fontSize: 11.5,
-    fontFamily: "Fira Sans",
+    fontFamily: "RijksoverheidSansHeading",
     fontWeight: 700,
     color: "#2a5a8c",
     marginTop: 14,
@@ -127,7 +133,7 @@ const s = StyleSheet.create({
   },
   h4: {
     fontSize: 10.5,
-    fontFamily: "Fira Sans",
+    fontFamily: "RijksoverheidSansHeading",
     fontWeight: 700,
     color: C.primaryDark,
     marginTop: 12,
@@ -139,11 +145,11 @@ const s = StyleSheet.create({
     marginBottom: 6,
   },
   bold: {
-    fontFamily: "Fira Sans",
+    fontFamily: "RijksoverheidSansText",
     fontWeight: 700,
   },
   italic: {
-    fontFamily: "Fira Sans",
+    fontFamily: "RijksoverheidSansText",
     fontStyle: "italic",
   },
   hr: {

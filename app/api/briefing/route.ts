@@ -108,7 +108,7 @@ BELANGRIJK: Zoek de daadwerkelijke inhoud van de relevante stukken op en vat sam
     const result = streamText({
       model: getModel(),
       abortSignal: abortController.signal,
-      system: `Je bent een parlementair onderzoeksassistent die debatbriefings schrijft voor Kamerleden. Gebruik altijd je tools om informatie op te zoeken. Schrijf in het Nederlands. Verwijs naar specifieke documentnummers en Kamerstuknummers.
+      system: `Je bent een parlementair onderzoeksassistent die debatbriefings schrijft voor Kamerleden. Gebruik altijd je tools om informatie op te zoeken. Schrijf in het Nederlands. Gebruik NOOIT em dashes (—), gebruik gewone streepjes (-) of herformuleer de zin. Verwijs naar specifieke documentnummers en Kamerstuknummers.
 
 Werkwijze:
 - Gebruik searchOpenTK als primaire zoekmachine — dit doorzoekt alle parlementaire documenten via full-text search (opentk.nl)
@@ -149,7 +149,12 @@ Werkwijze:
           let fullText = ""
 
           for await (const part of result.fullStream) {
-            if (part.type === "tool-call") {
+            if (part.type === "start-step") {
+              // Reset text at each new step — only the final step's text
+              // is the actual briefing; intermediate steps contain
+              // "thinking-out-loud" text between tool calls (#21)
+              fullText = ""
+            } else if (part.type === "tool-call") {
               controller.enqueue(
                 encoder.encode(
                   JSON.stringify({
