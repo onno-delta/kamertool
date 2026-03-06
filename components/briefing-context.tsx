@@ -17,7 +17,7 @@ export type BriefingState = {
 
 type BriefingContextType = {
   state: BriefingState | null
-  startBriefing: (topic: string, soort?: string) => void
+  startBriefing: (topic: string, soort?: string, partyOverride?: { id: string; name: string } | null) => void
   cancelBriefing: () => void
   downloadPDF: () => void
   dismiss: () => void
@@ -44,7 +44,7 @@ export function BriefingProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const startBriefing = useCallback(
-    (topic: string, soort?: string) => {
+    (topic: string, soort?: string, partyOverride?: { id: string; name: string } | null) => {
       // Abort any previous request
       abortRef.current?.abort()
       const controller = new AbortController()
@@ -58,7 +58,13 @@ export function BriefingProvider({ children }: { children: ReactNode }) {
         .then(async (prefs) => {
           let pName: string | null = null
           let pId: string | null = null
-          if (prefs?.defaultPartyId) {
+
+          // Use explicit party override if provided, otherwise fall back to user's default
+          if (partyOverride) {
+            pId = partyOverride.id
+            pName = partyOverride.name
+          } else if (partyOverride === undefined && prefs?.defaultPartyId) {
+            // Only auto-resolve from preferences when no override was passed at all
             const parties = await fetch("/api/parties", { signal: controller.signal }).then((r) => r.json())
             const party = parties.find(
               (p: { id: string; shortName: string }) => p.id === prefs.defaultPartyId
@@ -68,6 +74,7 @@ export function BriefingProvider({ children }: { children: ReactNode }) {
               pId = party.id
             }
           }
+          // partyOverride === null means explicitly "no party"
 
           setState((s) => (s ? { ...s, partyName: pName } : s))
 

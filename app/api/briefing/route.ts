@@ -190,6 +190,7 @@ Werkwijze:
             await db.insert(briefings).values({
               userId,
               organisationId: organisationId ?? null,
+              partyId: partyId ?? null,
               topic,
               content: fullText,
             })

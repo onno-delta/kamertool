@@ -116,6 +116,7 @@ export const briefings = pgTable("briefing", {
   userId: text("userId").references(() => users.id),
   organisationId: text("organisationId").references(() => organisations.id),
   topic: text("topic").notNull(),
+  partyId: text("partyId").references(() => parties.id),
   content: text("content").notNull(),
   createdAt: timestamp("createdAt", { mode: "date" }).notNull().defaultNow(),
 })

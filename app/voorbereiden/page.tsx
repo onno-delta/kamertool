@@ -6,6 +6,9 @@ import Link from "next/link"
 import ReactMarkdown from "react-markdown"
 import { useBriefing } from "@/components/briefing-context"
 import { ProgressSidebar } from "@/components/progress-sidebar"
+import { PartySelector } from "@/components/party-selector"
+
+type Party = { id: string; name: string; shortName: string }
 
 function VoorbereidenContent() {
   const searchParams = useSearchParams()
@@ -13,13 +16,35 @@ function VoorbereidenContent() {
   const soort = searchParams.get("soort") ?? undefined
   const { state, startBriefing, cancelBriefing, downloadPDF } = useBriefing()
 
-  // Start briefing if topic is set and no matching briefing is running/done
+  const [selectedParty, setSelectedParty] = useState<Party | null>(null)
+  const [partyLoaded, setPartyLoaded] = useState(false)
+  const [started, setStarted] = useState(false)
+
+  // Load user's default party on mount
   useEffect(() => {
+    fetch("/api/settings/preferences")
+      .then((r) => (r.ok ? r.json() : null))
+      .then(async (prefs) => {
+        if (prefs?.defaultPartyId) {
+          const parties = await fetch("/api/parties").then((r) => r.json())
+          const party = parties.find(
+            (p: Party) => p.id === prefs.defaultPartyId
+          )
+          if (party) setSelectedParty(party)
+        }
+        setPartyLoaded(true)
+      })
+      .catch(() => setPartyLoaded(true))
+  }, [])
+
+  function handleStart() {
     if (!topic) return
-    if (state?.topic === topic) return
-    if (state?.cancelled) return
-    startBriefing(topic, soort)
-  }, [topic, soort, state?.topic, state?.cancelled, startBriefing])
+    setStarted(true)
+    const partyOverride = selectedParty
+      ? { id: selectedParty.id, name: selectedParty.shortName }
+      : null
+    startBriefing(topic, soort, partyOverride)
+  }
 
   if (!topic) {
     return (
@@ -30,6 +55,63 @@ function VoorbereidenContent() {
             Terug naar agenda
           </Link>
         </div>
+      </div>
+    )
+  }
+
+  // Show start screen before briefing is kicked off
+  const briefingActive = started && state?.topic === topic
+  if (!briefingActive) {
+    return (
+      <div className="mx-auto w-full max-w-3xl px-0 py-2 sm:py-3">
+        <nav aria-label="Kruimelpad" className="mb-4 text-sm text-text-muted">
+          <Link href="/" className="hover:text-primary hover:underline">Home</Link>
+          <span className="mx-1.5">&rsaquo;</span>
+          <Link href="/agenda" className="hover:text-primary hover:underline">Agenda</Link>
+          <span className="mx-1.5">&rsaquo;</span>
+          <span className="text-primary font-medium">Voorbereiding</span>
+        </nav>
+
+        <section className="rounded-lg border border-border bg-white px-6 py-6">
+          <h1 className="text-2xl font-semibold text-primary">{topic}</h1>
+          {soort && (
+            <p className="mt-1 text-sm text-text-secondary">{soort}</p>
+          )}
+
+          <div className="mt-6 rounded-lg border border-border-light bg-surface-muted px-6 py-6">
+            <div className="flex flex-col gap-4">
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-primary">
+                  Partijperspectief
+                </label>
+                <p className="mb-2 text-xs text-text-muted">
+                  De briefing wordt geschreven vanuit het perspectief van de gekozen partij. Laat leeg voor een neutraal overzicht.
+                </p>
+                {partyLoaded ? (
+                  <PartySelector value={selectedParty} onChange={setSelectedParty} />
+                ) : (
+                  <div className="h-8 w-24 animate-pulse rounded bg-border-light" />
+                )}
+              </div>
+
+              <div className="flex items-center gap-3 pt-2">
+                <button
+                  onClick={handleStart}
+                  disabled={!partyLoaded}
+                  className="rounded bg-primary px-5 py-2 text-sm font-medium text-white hover:bg-primary-dark active:translate-y-px disabled:opacity-50"
+                >
+                  Briefing genereren
+                </button>
+                <Link
+                  href="/agenda"
+                  className="text-sm text-text-secondary hover:text-primary hover:underline"
+                >
+                  Terug naar agenda
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
     )
   }
@@ -91,7 +173,7 @@ function VoorbereidenContent() {
                 <div className="flex flex-col items-center gap-4">
                   <p className="text-sm text-text-secondary">Briefing generatie geannuleerd.</p>
                   <button
-                    onClick={() => startBriefing(topic, soort)}
+                    onClick={handleStart}
                     className="rounded bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark active:translate-y-px"
                   >
                     Opnieuw proberen
@@ -159,7 +241,7 @@ function BriefingResult({
               </p>
               <p className="text-xs text-text-muted">
                 Gegenereerd op {new Date().toLocaleDateString("nl-NL")}
-                {partyName && <> — {partyName}</>}
+                {partyName && <> - {partyName}</>}
               </p>
             </div>
           </div>

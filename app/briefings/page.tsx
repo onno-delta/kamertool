@@ -10,6 +10,7 @@ type Briefing = {
   id: string
   topic: string
   content: string
+  partyName: string | null
   createdAt: string
 }
 
@@ -138,6 +139,11 @@ export default function BriefingsPage() {
                   <div className="flex items-center gap-2.5">
                     <FileText className="h-4 w-4 shrink-0 text-primary/60" />
                     <h3 className="font-medium text-primary">{b.topic}</h3>
+                    {b.partyName && (
+                      <span className="rounded-full bg-surface-muted px-2 py-0.5 text-[10px] font-medium text-text-secondary">
+                        {b.partyName}
+                      </span>
+                    )}
                   </div>
                   <span className="text-sm text-text-muted">
                     {new Date(b.createdAt).toLocaleDateString("nl-NL")}
@@ -183,6 +189,7 @@ export default function BriefingsPage() {
               <h2 className="mb-1 text-xl font-semibold text-primary">{selected.topic}</h2>
               <p className="mb-4 text-sm text-text-muted">
                 {new Date(selected.createdAt).toLocaleDateString("nl-NL")}
+                {selected.partyName && <> - {selected.partyName}</>}
               </p>
               <div className="prose prose-sm max-w-none prose-headings:mt-4 prose-headings:mb-2 prose-p:my-1.5 prose-li:my-0.5 prose-ul:my-1.5 prose-ol:my-1.5 prose-a:text-primary prose-a:underline">
                 <ReactMarkdown>{selected.content}</ReactMarkdown>

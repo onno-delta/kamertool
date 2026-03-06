@@ -1,6 +1,6 @@
 import { auth } from "@/auth"
 import { db } from "@/lib/db"
-import { briefings } from "@/lib/db/schema"
+import { briefings, parties } from "@/lib/db/schema"
 import { eq, desc, like, and } from "drizzle-orm"
 import { NextResponse } from "next/server"
 
@@ -20,9 +20,12 @@ export async function GET(req: Request) {
         id: briefings.id,
         topic: briefings.topic,
         content: briefings.content,
+        partyId: briefings.partyId,
+        partyName: parties.shortName,
         createdAt: briefings.createdAt,
       })
       .from(briefings)
+      .leftJoin(parties, eq(briefings.partyId, parties.id))
       .where(eq(briefings.userId, session.user.id))
       .orderBy(desc(briefings.createdAt))
       .$dynamic()
