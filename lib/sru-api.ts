@@ -116,28 +116,30 @@ const SOORT_MAP: Record<string, string> = {
  * Preserves existing AND/OR/NOT operators and quoted phrases.
  */
 function normalizeToCQL(input: string): string {
+  // Strip characters that could break CQL syntax
+  const sanitized = input.replace(/[=<>()\\]/g, " ")
   const tokens: string[] = []
   const operators = new Set(["AND", "OR", "NOT"])
   let i = 0
 
-  while (i < input.length) {
+  while (i < sanitized.length) {
     // Skip whitespace
-    if (input[i] === " ") { i++; continue }
+    if (sanitized[i] === " ") { i++; continue }
 
     // Quoted phrase
-    if (input[i] === '"') {
-      const end = input.indexOf('"', i + 1)
+    if (sanitized[i] === '"') {
+      const end = sanitized.indexOf('"', i + 1)
       if (end === -1) {
-        tokens.push(input.slice(i))
+        tokens.push(...sanitized.slice(i + 1).split(/\s+/).filter(Boolean))
         break
       }
-      const phrase = input.slice(i + 1, end)
+      const phrase = sanitized.slice(i + 1, end)
       // Unquote date-like phrases (e.g. "17 maart 2026") — exact date
       // phrases almost never appear as literal strings in the SRU index
       if (/^\d{1,2}\s+\w+\s+\d{4}$/.test(phrase) || /^\w+\s+\d{4}$/.test(phrase)) {
         tokens.push(...phrase.split(/\s+/))
       } else {
-        tokens.push(input.slice(i, end + 1))
+        tokens.push(sanitized.slice(i, end + 1))
       }
       i = end + 1
       continue
@@ -145,8 +147,8 @@ function normalizeToCQL(input: string): string {
 
     // Word
     let end = i
-    while (end < input.length && input[end] !== " " && input[end] !== '"') end++
-    tokens.push(input.slice(i, end))
+    while (end < sanitized.length && sanitized[end] !== " " && sanitized[end] !== '"') end++
+    tokens.push(sanitized.slice(i, end))
     i = end
   }
 

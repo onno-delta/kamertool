@@ -1,6 +1,6 @@
 import { tool } from "ai"
 import { z } from "zod"
-import { queryTK } from "@/lib/tk-api"
+import { queryTK, buildContainsFilter } from "@/lib/tk-api"
 
 export const searchKamerstukken = tool({
   description:
@@ -25,7 +25,8 @@ export const searchKamerstukken = tool({
     maxResults: z.number().int().min(1).max(50).optional().default(20),
   }),
   execute: async ({ query, type, maxResults }) => {
-    let filter = `(contains(Onderwerp,'${query}') or contains(Titel,'${query}')) and Verwijderd eq false`
+    const textFilter = buildContainsFilter(query, ["Onderwerp", "Titel"])
+    let filter = textFilter ? `${textFilter} and Verwijderd eq false` : "Verwijderd eq false"
     if (type) filter += ` and Soort eq '${type}'`
 
     const results = await queryTK("Zaak", {

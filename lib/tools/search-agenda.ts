@@ -1,6 +1,6 @@
 import { tool } from "ai"
 import { z } from "zod"
-import { queryTK } from "@/lib/tk-api"
+import { queryTK, buildContainsFilter } from "@/lib/tk-api"
 
 const DEBATE_TYPES = [
   "Plenair debat",
@@ -49,7 +49,8 @@ export const searchAgenda = tool({
     }
 
     if (query) {
-      filter += ` and contains(Onderwerp,'${query}')`
+      const textFilter = buildContainsFilter(query, ["Onderwerp"])
+      if (textFilter) filter += ` and ${textFilter}`
     }
 
     const results = await queryTK("Activiteit", {

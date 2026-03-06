@@ -1,6 +1,6 @@
 import { tool } from "ai"
 import { z } from "zod"
-import { queryTK, queryTKSingle } from "@/lib/tk-api"
+import { queryTK, queryTKSingle, buildContainsFilter } from "@/lib/tk-api"
 
 export const searchHandelingen = tool({
   description:
@@ -10,8 +10,13 @@ export const searchHandelingen = tool({
     maxResults: z.number().int().min(1).max(25).optional().default(10),
   }),
   execute: async ({ query, maxResults }) => {
+    const textFilter = buildContainsFilter(query, ["Onderwerp"])
+    const filter = textFilter
+      ? `${textFilter} and Verwijderd eq false`
+      : "Verwijderd eq false"
+
     const agendapunten = await queryTK("Agendapunt", {
-      $filter: `contains(Onderwerp,'${query}') and Verwijderd eq false`,
+      $filter: filter,
       $select: "Id,Onderwerp,Nummer,Volgorde,Activiteit_Id",
       $orderby: "GewijzigdOp desc",
       $top: String(maxResults),
