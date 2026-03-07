@@ -111,13 +111,37 @@ const SOORT_MAP: Record<string, string> = {
   "kamervragen": "__kamervragen__",
 }
 
+// Dutch stopwords that cause SRU parse errors when sent as bare CQL terms
+const STOPWORDS = new Set([
+  "de", "het", "een", "van", "in", "op", "aan", "met", "voor", "naar",
+  "door", "om", "bij", "uit", "tot", "over", "na", "te", "er", "ook",
+  "als", "dan", "maar", "nog", "al", "wel", "geen", "niet", "meer",
+  "zo", "wat", "die", "dat", "dit", "deze", "den", "des", "der",
+  "en", "is", "was", "zijn", "worden", "wordt", "werd", "heeft", "had",
+  "kan", "zal", "zou", "moet", "mag", "wil",
+])
+
 /**
  * Convert user search terms to valid CQL by inserting AND between bare words.
- * Preserves existing AND/OR/NOT operators and quoted phrases.
+ * Handles: quoted phrases, boolean operators (AND/OR/NOT), stopwords,
+ * special characters, curly quotes, newlines, em/en-dashes, wildcards.
  */
 function normalizeToCQL(input: string): string {
-  // Strip characters that could break CQL syntax
-  const sanitized = input.replace(/[=<>()\\]/g, " ")
+  let sanitized = input
+    // Normalize newlines/tabs to spaces
+    .replace(/[\n\r\t]/g, " ")
+    // Normalize curly quotes to straight quotes
+    .replace(/[\u201C\u201D\u201E\u201F\u00AB\u00BB]/g, '"')
+    .replace(/[\u2018\u2019\u201A\u201B]/g, "'")
+    // Normalize em-dash/en-dash to space
+    .replace(/[\u2014\u2013]/g, " ")
+    // Strip characters that break CQL syntax (/, &, :, etc. cause parse errors)
+    // Also strip ? ^ which are CQL wildcards/anchors that cause unexpected behavior
+    .replace(/[=<>()\\\/&:,;!@#%+?^]/g, " ")
+    // Collapse multiple spaces
+    .replace(/\s+/g, " ")
+    .trim()
+
   const tokens: string[] = []
   const operators = new Set(["AND", "OR", "NOT"])
   let i = 0
@@ -126,18 +150,18 @@ function normalizeToCQL(input: string): string {
     // Skip whitespace
     if (sanitized[i] === " ") { i++; continue }
 
-    // Quoted phrase
+    // Quoted phrase — keep as-is (stopwords inside quotes are fine)
     if (sanitized[i] === '"') {
       const end = sanitized.indexOf('"', i + 1)
       if (end === -1) {
-        tokens.push(...sanitized.slice(i + 1).split(/\s+/).filter(Boolean))
+        tokens.push(...sanitized.slice(i + 1).split(/\s+/).filter(Boolean).filter(w => !STOPWORDS.has(w.toLowerCase())))
         break
       }
       const phrase = sanitized.slice(i + 1, end)
       // Unquote date-like phrases (e.g. "17 maart 2026") — exact date
       // phrases almost never appear as literal strings in the SRU index
       if (/^\d{1,2}\s+\w+\s+\d{4}$/.test(phrase) || /^\w+\s+\d{4}$/.test(phrase)) {
-        tokens.push(...phrase.split(/\s+/))
+        tokens.push(...phrase.split(/\s+/).filter(w => !STOPWORDS.has(w.toLowerCase())))
       } else {
         tokens.push(sanitized.slice(i, end + 1))
       }
@@ -148,15 +172,38 @@ function normalizeToCQL(input: string): string {
     // Word
     let end = i
     while (end < sanitized.length && sanitized[end] !== " " && sanitized[end] !== '"') end++
-    tokens.push(sanitized.slice(i, end))
+    const word = sanitized.slice(i, end)
+
+    if (operators.has(word)) {
+      // Preserve boolean operators (AND/OR/NOT)
+      tokens.push(word)
+    } else if (!STOPWORDS.has(word.toLowerCase())) {
+      // Quote words containing dots to prevent index.name interpretation (e.g. "nr." "art.")
+      if (word.includes(".")) {
+        tokens.push(`"${word}"`)
+      } else {
+        tokens.push(word)
+      }
+    }
     i = end
   }
 
-  // Insert AND between consecutive non-operator tokens
+  // Clean up operator sequence: remove dangling/leading operators, fix NOT semantics
   const result: string[] = []
   for (let j = 0; j < tokens.length; j++) {
     const token = tokens[j]
-    if (j > 0 && !operators.has(token) && !operators.has(tokens[j - 1])) {
+    const isOp = operators.has(token)
+
+    if (isOp) {
+      // Skip leading operators or consecutive operators
+      if (result.length === 0) continue
+      if (operators.has(result[result.length - 1])) continue
+      // Skip trailing operators (peek ahead)
+      if (j === tokens.length - 1) continue
+    }
+
+    // Insert AND between consecutive non-operator tokens
+    if (!isOp && result.length > 0 && !operators.has(result[result.length - 1])) {
       result.push("AND")
     }
     result.push(token)
@@ -197,7 +244,10 @@ export function buildSearchCQL(
 
   // Search terms - SRU requires explicit AND between words
   if (terms.trim()) {
-    parts.push(normalizeToCQL(terms.trim()))
+    const normalized = normalizeToCQL(terms.trim())
+    if (normalized) {
+      parts.push(normalized)
+    }
   }
 
   return parts.join(" AND ")

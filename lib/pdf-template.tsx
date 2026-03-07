@@ -1,17 +1,16 @@
 import { Document, Page, Text, View, Image, Font, StyleSheet, pdf } from "@react-pdf/renderer"
 import { DELTA_LOGO_URI, TK_LOGO_URI } from "./pdf-assets"
 
-// Rijksoverheid fonts embedded as base64 data URIs — works on Vercel without file system access
+// Fonts embedded as base64 data URIs — works on Vercel without file system access
 import { RIJKS_SANS_TEXT_REGULAR, RIJKS_SANS_HEADING_BOLD } from "./pdf-fonts-rijks"
-
-const publicFontBase = process.cwd() + "/public/fonts"
+import { FIRA_SANS_BOLD, FIRA_SANS_ITALIC } from "./pdf-fonts-fira"
 
 Font.register({
   family: "RijksoverheidSansText",
   fonts: [
     { src: RIJKS_SANS_TEXT_REGULAR, fontWeight: 400 },
-    { src: `${publicFontBase}/fira-sans-bold.ttf`, fontWeight: 700 },
-    { src: `${publicFontBase}/fira-sans-italic.ttf`, fontWeight: 400, fontStyle: "italic" },
+    { src: FIRA_SANS_BOLD, fontWeight: 700 },
+    { src: FIRA_SANS_ITALIC, fontWeight: 400, fontStyle: "italic" },
   ],
 })
 
