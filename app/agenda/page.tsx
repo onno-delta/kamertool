@@ -71,8 +71,7 @@ function groupByDate(items: Activiteit[]): Record<string, Activiteit[]> {
 }
 
 export default function AgendaPage() {
-  const { preferences, refreshPreferences } = useDataContext()
-  const kamerleden = preferences?.kamerleden ?? []
+  const { sessionKamerleden, addSessionKamerlid, removeSessionKamerlid } = useDataContext()
 
   const [allItems, setAllItems] = useState<Activiteit[]>([])
   const [loading, setLoading] = useState(true)
@@ -95,30 +94,10 @@ export default function AgendaPage() {
 
   const kamerleidResults = kamerleidSearch.trim().length >= 2
     ? allKamerleden
-        .filter((k) => !kamerleden.some((s) => s.id === k.id))
+        .filter((k) => !sessionKamerleden.some((s) => s.id === k.id))
         .filter((k) => k.naam.toLowerCase().includes(kamerleidSearch.toLowerCase()))
         .slice(0, 10)
     : []
-
-  async function addKamerlid(k: Kamerlid) {
-    const updated = [...kamerleden, k]
-    await fetch("/api/settings/preferences", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ kamerleden: updated }),
-    })
-    await refreshPreferences()
-  }
-
-  async function removeKamerlid(id: string) {
-    const updated = kamerleden.filter((k) => k.id !== id)
-    await fetch("/api/settings/preferences", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ kamerleden: updated }),
-    })
-    await refreshPreferences()
-  }
 
   // Fetch the last available date from the TK API
   useEffect(() => {
@@ -237,7 +216,7 @@ export default function AgendaPage() {
           {/* Kamerleden picker */}
           <div className="relative">
             <div className="flex items-center gap-1.5 rounded border border-border bg-white px-2.5 py-1.5 transition-[border-color] focus-within:border-primary">
-              {kamerleden.map((k) => (
+              {sessionKamerleden.map((k) => (
                 <span
                   key={k.id}
                   className="inline-flex items-center gap-1 rounded-full border border-border-light bg-surface-muted py-0.5 pl-2 pr-1 text-[11px] text-primary"
@@ -246,7 +225,7 @@ export default function AgendaPage() {
                   {k.fractie && <span className="text-text-muted">({k.fractie})</span>}
                   <button
                     type="button"
-                    onClick={() => removeKamerlid(k.id)}
+                    onClick={() => removeSessionKamerlid(k.id)}
                     className="flex h-3.5 w-3.5 items-center justify-center rounded-full text-text-muted hover:bg-border-light hover:text-primary"
                   >
                     <X className="h-2 w-2" />
@@ -270,7 +249,7 @@ export default function AgendaPage() {
                   <button
                     key={k.id}
                     type="button"
-                    onClick={() => { addKamerlid(k); setKamerleidSearch("") }}
+                    onClick={() => { addSessionKamerlid(k); setKamerleidSearch("") }}
                     className="flex w-full items-center gap-1.5 px-3 py-1.5 text-left text-xs text-primary transition-colors hover:bg-surface-muted"
                   >
                     <span className="font-medium">{k.naam}</span>

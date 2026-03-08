@@ -98,8 +98,7 @@ function KamerlidPicker({ onSelect }: { onSelect: (k: Kamerlid) => void }) {
 }
 
 export function AgendaSidebar({ onPrepare }: { onPrepare?: (text: string) => void }) {
-  const { preferences, refreshPreferences } = useDataContext()
-  const kamerleden = preferences?.kamerleden ?? []
+  const { sessionKamerleden, addSessionKamerlid, removeSessionKamerlid } = useDataContext()
 
   const [events, setEvents] = useState<Activiteit[]>([])
   const [loading, setLoading] = useState(true)
@@ -117,26 +116,6 @@ export function AgendaSidebar({ onPrepare }: { onPrepare?: (text: string) => voi
       .catch(() => setLoading(false))
   }, [])
 
-  async function addKamerlid(k: Kamerlid) {
-    const updated = [...kamerleden, k]
-    await fetch("/api/settings/preferences", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ kamerleden: updated }),
-    })
-    await refreshPreferences()
-  }
-
-  async function removeKamerlid(id: string) {
-    const updated = kamerleden.filter((k) => k.id !== id)
-    await fetch("/api/settings/preferences", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ kamerleden: updated }),
-    })
-    await refreshPreferences()
-  }
-
   return (
     <div className="sticky top-4">
       <div className="rounded-xl border border-border-light bg-white p-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
@@ -146,9 +125,9 @@ export function AgendaSidebar({ onPrepare }: { onPrepare?: (text: string) => voi
         </h3>
 
         {/* Kamerleden chips + picker */}
-        {kamerleden.length > 0 && (
+        {sessionKamerleden.length > 0 && (
           <div className="mb-3 flex flex-wrap gap-1.5">
-            {kamerleden.map((k) => (
+            {sessionKamerleden.map((k) => (
               <span
                 key={k.id}
                 className="inline-flex items-center gap-1 rounded-full border border-border-light bg-surface-muted py-0.5 pl-2 pr-1 text-[11px] text-primary"
@@ -157,7 +136,7 @@ export function AgendaSidebar({ onPrepare }: { onPrepare?: (text: string) => voi
                 {k.fractie && <span className="text-text-muted">({k.fractie})</span>}
                 <button
                   type="button"
-                  onClick={() => removeKamerlid(k.id)}
+                  onClick={() => removeSessionKamerlid(k.id)}
                   className="flex h-3.5 w-3.5 items-center justify-center rounded-full text-text-muted hover:bg-border-light hover:text-primary"
                 >
                   <X className="h-2 w-2" />
@@ -167,7 +146,7 @@ export function AgendaSidebar({ onPrepare }: { onPrepare?: (text: string) => voi
           </div>
         )}
         <div className="mb-3">
-          <KamerlidPicker onSelect={addKamerlid} />
+          <KamerlidPicker onSelect={addSessionKamerlid} />
         </div>
 
         {loading && (
