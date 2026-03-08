@@ -8,7 +8,7 @@ import { querySRU } from "@/lib/sru-api"
 export async function getPersonDocuments(personId: string, top = 10) {
   const records = await queryTK("ZaakActor", {
     $filter: `Persoon_Id eq ${personId} and Verwijderd eq false`,
-    $expand: "Zaak($select=Id,Nummer,Soort,Onderwerp,Titel,GestartOp;$filter=Verwijderd eq false)",
+    $expand: "Zaak($select=Id,Nummer,Soort,Onderwerp,Titel,GestartOp;$filter=Verwijderd eq false;$expand=Document($select=DocumentNummer;$top=1))",
     $orderby: "GewijzigdOp desc",
     $top: String(top),
   })
@@ -17,6 +17,8 @@ export async function getPersonDocuments(personId: string, top = 10) {
     .filter((r: Record<string, unknown>) => r.Zaak)
     .map((r: Record<string, unknown>) => {
       const z = r.Zaak as Record<string, unknown>
+      const docs = z.Document as Array<Record<string, unknown>> | undefined
+      const docNummer = docs?.[0]?.DocumentNummer as string | undefined
       return {
         id: z.Id,
         nummer: z.Nummer,
@@ -24,6 +26,9 @@ export async function getPersonDocuments(personId: string, top = 10) {
         onderwerp: z.Onderwerp || z.Titel,
         datum: z.GestartOp,
         relatie: r.Relatie,
+        url: docNummer
+          ? `https://www.tweedekamer.nl/kamerstukken/detail?id=${docNummer}&did=${docNummer}`
+          : undefined,
       }
     })
 }
@@ -37,7 +42,7 @@ export async function getFractieStemmingen(fractie: string, top = 10) {
   const besluiten = await queryTK("Besluit", {
     $filter: `StemmingsSoort ne null and Verwijderd eq false`,
     $select: "Id,BesluitSoort,BesluitTekst,StemmingsSoort",
-    $expand: `Stemming($filter=ActorFractie eq '${escapedFractie}';$select=Soort,ActorFractie,FractieGrootte),Zaak($select=Onderwerp,Titel,Nummer)`,
+    $expand: `Stemming($filter=ActorFractie eq '${escapedFractie}';$select=Soort,ActorFractie,FractieGrootte),Zaak($select=Onderwerp,Titel,Nummer;$expand=Document($select=DocumentNummer;$top=1))`,
     $orderby: "GewijzigdOp desc",
     $top: String(top),
   })
@@ -52,13 +57,17 @@ export async function getFractieStemmingen(fractie: string, top = 10) {
       const zaken = b.Zaak as Array<Record<string, unknown>> | undefined
       const zaak = zaken?.[0]
       const stemming = stemmingen[0]
+      const docs = zaak?.Document as Array<Record<string, unknown>> | undefined
+      const docNummer = docs?.[0]?.DocumentNummer as string | undefined
       return {
         fractie: stemming.ActorFractie,
         stem: stemming.Soort,
         zetels: stemming.FractieGrootte,
         besluit: (zaak?.Onderwerp || zaak?.Titel || b.BesluitTekst) as string,
         besluitSoort: b.BesluitSoort,
-        zaakNummer: zaak?.Nummer as string | undefined,
+        url: docNummer
+          ? `https://www.tweedekamer.nl/kamerstukken/detail?id=${docNummer}&did=${docNummer}`
+          : undefined,
       }
     })
 }

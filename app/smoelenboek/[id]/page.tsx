@@ -75,7 +75,7 @@ type StemItem = {
   zetels: number
   besluit: string
   besluitSoort: string
-  zaakNummer?: string
+  url?: string
 }
 
 type ToezeggingItem = {
@@ -230,9 +230,7 @@ function ActivitySection({
               (data as StemItem[]).map((s, i) => (
                 <a
                   key={i}
-                  href={s.zaakNummer
-                    ? `https://www.tweedekamer.nl/zoeken?qry=${encodeURIComponent(s.zaakNummer)}`
-                    : `https://www.tweedekamer.nl/zoeken?qry=${encodeURIComponent(s.besluit)}`}
+                  href={s.url || `https://www.tweedekamer.nl/zoeken?qry=${encodeURIComponent(s.besluit)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="block rounded-lg border border-border-light px-3 py-2 transition-colors hover:border-primary/30"
