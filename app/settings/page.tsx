@@ -16,6 +16,14 @@ const BUILTIN_SOURCES = [
   { name: "Tweede Kamer OData API", desc: "Kamerstukken, moties, stemmingen, toezeggingen, agenda" },
   { name: "Google Nieuws", desc: "Actueel nieuws via Serper" },
   { name: "Partijprogramma's", desc: "Verkiezingsprogramma's van 13 partijen" },
+  { name: "CBS", desc: "Centraal Bureau voor de Statistiek - cbs.nl" },
+  { name: "CPB", desc: "Centraal Planbureau - cpb.nl" },
+  { name: "PBL", desc: "Planbureau voor de Leefomgeving - pbl.nl" },
+  { name: "SCP", desc: "Sociaal en Cultureel Planbureau - scp.nl" },
+  { name: "WRR", desc: "Wetenschappelijke Raad voor het Regeringsbeleid - wrr.nl" },
+  { name: "Raad van State", desc: "Adviezen en uitspraken - raadvanstate.nl" },
+  { name: "Algemene Rekenkamer", desc: "Controle op rijksuitgaven - rekenkamer.nl" },
+  { name: "Rijksoverheid.nl", desc: "Beleidsinformatie en regelgeving" },
 ]
 
 export default function SettingsPage() {
@@ -337,17 +345,15 @@ export default function SettingsPage() {
         <div className="px-5 py-5">
           {/* Built-in sources */}
           <p className="mb-3 text-xs font-medium uppercase tracking-wide text-text-muted">Geintegreerde bronnen</p>
-          <div className="mb-5 grid grid-cols-1 gap-2 sm:grid-cols-2">
+          <div className="mb-5 space-y-1.5">
             {BUILTIN_SOURCES.map((s) => (
               <div
                 key={s.name}
-                className="flex items-start gap-2.5 rounded-lg border border-border-light bg-surface-muted px-3.5 py-2.5"
+                className="flex items-center gap-2.5 rounded-lg border border-border-light bg-surface-muted px-3.5 py-2"
               >
-                <Globe className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
-                <div className="min-w-0">
-                  <div className="text-sm font-medium text-primary">{s.name}</div>
-                  <div className="text-xs text-text-muted">{s.desc}</div>
-                </div>
+                <Globe className="h-3.5 w-3.5 shrink-0 text-primary" />
+                <span className="text-sm font-medium text-primary">{s.name}</span>
+                <span className="text-xs text-text-muted">{s.desc}</span>
               </div>
             ))}
           </div>
