@@ -82,7 +82,7 @@ export default function SettingsPage() {
   useEffect(() => {
     if (selectedKamerleden.length === 0) return
     const ids = selectedKamerleden.map((k) => k.id).join(",")
-    fetch(`/api/kamerleden/commissies?ids=${ids}`)
+    fetch(`/api/kamerleden/commissies?ids=${ids}&vast=true`)
       .then((r) => r.ok ? r.json() : { commissies: [] })
       .then((data) => {
         const dossierIds = (data.commissies as string[])

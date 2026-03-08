@@ -8,7 +8,8 @@ export async function GET(req: Request) {
     if (!idsParam) return NextResponse.json({ commissies: [] })
 
     const ids = idsParam.split(",").map((s) => s.trim()).filter(Boolean)
-    const map = await getCommissionMap()
+    const vastOnly = url.searchParams.get("vast") === "true"
+    const map = await getCommissionMap({ vastOnly })
 
     const all = new Set<string>()
     for (const id of ids) {
