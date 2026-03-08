@@ -2,8 +2,11 @@
 
 import { useState, useEffect, useMemo } from "react"
 import Link from "next/link"
-import { Calendar, Search, ArrowRight, CalendarX2 } from "lucide-react"
+import { Calendar, Search, ArrowRight, CalendarX2, X } from "lucide-react"
 import { MultiSelect } from "@/components/multi-select"
+import { useDataContext } from "@/components/data-context"
+
+type Kamerlid = { id: string; naam: string; fractie?: string }
 
 type Activiteit = {
   Id: string
@@ -68,6 +71,9 @@ function groupByDate(items: Activiteit[]): Record<string, Activiteit[]> {
 }
 
 export default function AgendaPage() {
+  const { preferences, refreshPreferences } = useDataContext()
+  const kamerleden = preferences?.kamerleden ?? []
+
   const [allItems, setAllItems] = useState<Activiteit[]>([])
   const [loading, setLoading] = useState(true)
   const [fromDate, setFromDate] = useState(defaultFrom)
@@ -76,6 +82,43 @@ export default function AgendaPage() {
   const [selectedTypes, setSelectedTypes] = useState<Set<string>>(new Set())
   const [selectedCommissies, setSelectedCommissies] = useState<Set<string>>(new Set())
   const [search, setSearch] = useState("")
+  const [kamerleidSearch, setKamerleidSearch] = useState("")
+  const [kamerleidFocused, setKamerleidFocused] = useState(false)
+  const [allKamerleden, setAllKamerleden] = useState<Kamerlid[]>([])
+
+  useEffect(() => {
+    fetch("/api/kamerleden")
+      .then((r) => r.ok ? r.json() : [])
+      .then(setAllKamerleden)
+      .catch(() => {})
+  }, [])
+
+  const kamerleidResults = kamerleidSearch.trim().length >= 2
+    ? allKamerleden
+        .filter((k) => !kamerleden.some((s) => s.id === k.id))
+        .filter((k) => k.naam.toLowerCase().includes(kamerleidSearch.toLowerCase()))
+        .slice(0, 10)
+    : []
+
+  async function addKamerlid(k: Kamerlid) {
+    const updated = [...kamerleden, k]
+    await fetch("/api/settings/preferences", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ kamerleden: updated }),
+    })
+    await refreshPreferences()
+  }
+
+  async function removeKamerlid(id: string) {
+    const updated = kamerleden.filter((k) => k.id !== id)
+    await fetch("/api/settings/preferences", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ kamerleden: updated }),
+    })
+    await refreshPreferences()
+  }
 
   // Fetch the last available date from the TK API
   useEffect(() => {
@@ -190,6 +233,53 @@ export default function AgendaPage() {
             selected={selectedCommissies}
             onChange={setSelectedCommissies}
           />
+
+          {/* Kamerleden picker */}
+          <div className="relative">
+            <div className="flex items-center gap-1.5 rounded border border-border bg-white px-2.5 py-1.5 transition-[border-color] focus-within:border-primary">
+              {kamerleden.map((k) => (
+                <span
+                  key={k.id}
+                  className="inline-flex items-center gap-1 rounded-full border border-border-light bg-surface-muted py-0.5 pl-2 pr-1 text-[11px] text-primary"
+                >
+                  {k.naam}
+                  {k.fractie && <span className="text-text-muted">({k.fractie})</span>}
+                  <button
+                    type="button"
+                    onClick={() => removeKamerlid(k.id)}
+                    className="flex h-3.5 w-3.5 items-center justify-center rounded-full text-text-muted hover:bg-border-light hover:text-primary"
+                  >
+                    <X className="h-2 w-2" />
+                  </button>
+                </span>
+              ))}
+              <Search className="h-3 w-3 shrink-0 text-text-muted" />
+              <input
+                type="text"
+                value={kamerleidSearch}
+                onChange={(e) => setKamerleidSearch(e.target.value)}
+                onFocus={() => setKamerleidFocused(true)}
+                onBlur={() => setTimeout(() => setKamerleidFocused(false), 200)}
+                placeholder="Zoek Kamerlid..."
+                className="w-28 border-none bg-transparent text-sm text-primary placeholder:text-text-muted focus:outline-none"
+              />
+            </div>
+            {kamerleidFocused && kamerleidResults.length > 0 && (
+              <div className="absolute z-10 mt-1 max-h-40 w-56 overflow-y-auto rounded-lg border border-border-light bg-white shadow-lg">
+                {kamerleidResults.map((k) => (
+                  <button
+                    key={k.id}
+                    type="button"
+                    onClick={() => { addKamerlid(k); setKamerleidSearch("") }}
+                    className="flex w-full items-center gap-1.5 px-3 py-1.5 text-left text-xs text-primary transition-colors hover:bg-surface-muted"
+                  >
+                    <span className="font-medium">{k.naam}</span>
+                    {k.fractie && <span className="text-text-muted">{k.fractie}</span>}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
           <div className="flex items-center gap-1.5 rounded border border-border bg-white px-2.5 py-1.5">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-text-muted">
