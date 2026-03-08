@@ -15,7 +15,7 @@ export const MEETING_SKILLS: MeetingSkill[] = [
     label: "Plenair debat",
     prompt: `Dit is een plenair debat — het meest zichtbare format in de Tweede Kamer, met veel media-aandacht.
 
-Context: neem de geselecteerde partij, Kamerleden en dossiers mee. Frame de analyse vanuit het partijperspectief, zoek standpunten en bijdragen van de geselecteerde Kamerleden op, en focus op de relevante beleidsdossiers.
+Context: neem de geselecteerde partij, Kamerleden, dossiers en eigen bronnen mee. Frame de analyse vanuit het partijperspectief, zoek standpunten en bijdragen van de geselecteerde Kamerleden op, raadpleeg de eigen bronnen van de gebruiker, en focus op de relevante beleidsdossiers.
 
 Aanpak:
 - Zoek de aanleiding: welke brief, nota of gebeurtenis heeft tot dit debat geleid?
@@ -38,7 +38,7 @@ De concept-speech moet 3-5 minuten zijn (600-800 woorden) en retorisch sterk, ge
     label: "Commissiedebat",
     prompt: `Dit is een commissiedebat — technisch, inhoudelijk en met meer ruimte voor detail dan een plenair debat.
 
-Context: neem de geselecteerde partij, Kamerleden en dossiers mee. Frame de analyse vanuit het partijperspectief, zoek standpunten en bijdragen van de geselecteerde Kamerleden op, en focus op de relevante beleidsdossiers.
+Context: neem de geselecteerde partij, Kamerleden, dossiers en eigen bronnen mee. Frame de analyse vanuit het partijperspectief, zoek standpunten en bijdragen van de geselecteerde Kamerleden op, raadpleeg de eigen bronnen van de gebruiker, en focus op de relevante beleidsdossiers.
 
 Aanpak:
 - Analyseer alle relevante Kamerbrieven en beleidsnota's die op de agenda staan.
@@ -61,7 +61,7 @@ De concept-speech moet 4-6 minuten zijn (700-1000 woorden) en inhoudelijk sterk,
     label: "Wetgevingsoverleg",
     prompt: `Dit is een wetgevingsoverleg — gericht op een specifiek wetsvoorstel dat artikel voor artikel wordt besproken.
 
-Context: neem de geselecteerde partij, Kamerleden en dossiers mee. Frame de analyse vanuit het partijperspectief, zoek standpunten en bijdragen van de geselecteerde Kamerleden op, en focus op de relevante beleidsdossiers.
+Context: neem de geselecteerde partij, Kamerleden, dossiers en eigen bronnen mee. Frame de analyse vanuit het partijperspectief, zoek standpunten en bijdragen van de geselecteerde Kamerleden op, raadpleeg de eigen bronnen van de gebruiker, en focus op de relevante beleidsdossiers.
 
 Aanpak:
 - Zoek het wetsvoorstel, de memorie van toelichting en het advies van de Raad van State op.
@@ -87,7 +87,7 @@ De concept-speech moet gericht zijn op de hoofdlijnen van het wetsvoorstel (3-4 
     label: "Tweeminutendebat",
     prompt: `Dit is een tweeminutendebat — extreem kort (max 2 minuten), bedoeld om moties in te dienen na een eerder commissiedebat.
 
-Context: neem de geselecteerde partij, Kamerleden en dossiers mee. Frame de analyse vanuit het partijperspectief, zoek standpunten en bijdragen van de geselecteerde Kamerleden op, en focus op de relevante beleidsdossiers.
+Context: neem de geselecteerde partij, Kamerleden, dossiers en eigen bronnen mee. Frame de analyse vanuit het partijperspectief, zoek standpunten en bijdragen van de geselecteerde Kamerleden op, raadpleeg de eigen bronnen van de gebruiker, en focus op de relevante beleidsdossiers.
 
 Aanpak:
 - Zoek het voorafgaande commissiedebat op en analyseer welke punten onopgelost bleven.
@@ -110,7 +110,7 @@ De concept-speech moet MAXIMAAL 2 minuten zijn (250-300 woorden). Elke zin telt.
     label: "Notaoverleg",
     prompt: `Dit is een notaoverleg — een debat over een specifieke beleidsnota of beleidsbrief van de minister.
 
-Context: neem de geselecteerde partij, Kamerleden en dossiers mee. Frame de analyse vanuit het partijperspectief, zoek standpunten en bijdragen van de geselecteerde Kamerleden op, en focus op de relevante beleidsdossiers.
+Context: neem de geselecteerde partij, Kamerleden, dossiers en eigen bronnen mee. Frame de analyse vanuit het partijperspectief, zoek standpunten en bijdragen van de geselecteerde Kamerleden op, raadpleeg de eigen bronnen van de gebruiker, en focus op de relevante beleidsdossiers.
 
 Aanpak:
 - Zoek de nota/beleidsbrief op die centraal staat en vat de hoofdpunten samen.
@@ -133,7 +133,7 @@ De concept-speech moet 3-5 minuten zijn (500-800 woorden) en beleidsinhoudelijk,
     label: "Begrotingsoverleg",
     prompt: `Dit is een begrotingsoverleg — gericht op de begroting van een specifiek ministerie.
 
-Context: neem de geselecteerde partij, Kamerleden en dossiers mee. Frame de analyse vanuit het partijperspectief, zoek standpunten en bijdragen van de geselecteerde Kamerleden op, en focus op de relevante beleidsdossiers.
+Context: neem de geselecteerde partij, Kamerleden, dossiers en eigen bronnen mee. Frame de analyse vanuit het partijperspectief, zoek standpunten en bijdragen van de geselecteerde Kamerleden op, raadpleeg de eigen bronnen van de gebruiker, en focus op de relevante beleidsdossiers.
 
 Aanpak:
 - Zoek de begrotingsstukken op en analyseer de belangrijkste posten en verschuivingen.
@@ -159,7 +159,7 @@ De concept-speech moet 4-6 minuten zijn (700-1000 woorden) en financieel onderbo
     label: "Rondetafelgesprek",
     prompt: `Dit is een rondetafelgesprek — een informatief gesprek met experts en belanghebbenden, geen debat met de minister.
 
-Context: neem de geselecteerde partij, Kamerleden en dossiers mee. Frame de analyse vanuit het partijperspectief, zoek standpunten en bijdragen van de geselecteerde Kamerleden op, en focus op de relevante beleidsdossiers.
+Context: neem de geselecteerde partij, Kamerleden, dossiers en eigen bronnen mee. Frame de analyse vanuit het partijperspectief, zoek standpunten en bijdragen van de geselecteerde Kamerleden op, raadpleeg de eigen bronnen van de gebruiker, en focus op de relevante beleidsdossiers.
 
 Aanpak:
 - Zoek op welke experts en organisaties zijn uitgenodigd (via de agendastukken).
@@ -182,7 +182,7 @@ Er is GEEN concept-speech nodig voor een rondetafelgesprek. Schrijf in plaats da
     label: "Procedurevergadering",
     prompt: `Dit is een procedurevergadering — hier wordt de agenda van de commissie bepaald: welke debatten worden ingepland, welke brieven worden geagendeerd, welke rapporteurs worden benoemd.
 
-Context: neem de geselecteerde partij, Kamerleden en dossiers mee. Frame de analyse vanuit het partijperspectief, zoek standpunten en bijdragen van de geselecteerde Kamerleden op, en focus op de relevante beleidsdossiers.
+Context: neem de geselecteerde partij, Kamerleden, dossiers en eigen bronnen mee. Frame de analyse vanuit het partijperspectief, zoek standpunten en bijdragen van de geselecteerde Kamerleden op, raadpleeg de eigen bronnen van de gebruiker, en focus op de relevante beleidsdossiers.
 
 Aanpak:
 - Zoek de conceptagenda/besluitenlijst van deze procedurevergadering op.
@@ -208,7 +208,7 @@ Er is GEEN concept-speech nodig voor een procedurevergadering. Geef in plaats da
     label: "Technische briefing",
     prompt: `Dit is een technische briefing — ambtenaren of externe experts informeren de commissie over een technisch of complex onderwerp, zonder politiek debat.
 
-Context: neem de geselecteerde partij, Kamerleden en dossiers mee. Frame de analyse vanuit het partijperspectief, zoek standpunten en bijdragen van de geselecteerde Kamerleden op, en focus op de relevante beleidsdossiers.
+Context: neem de geselecteerde partij, Kamerleden, dossiers en eigen bronnen mee. Frame de analyse vanuit het partijperspectief, zoek standpunten en bijdragen van de geselecteerde Kamerleden op, raadpleeg de eigen bronnen van de gebruiker, en focus op de relevante beleidsdossiers.
 
 Aanpak:
 - Zoek op welk onderwerp de briefing gaat en welke organisatie of experts presenteren.
@@ -234,7 +234,7 @@ Er is GEEN concept-speech nodig. Lever een gestructureerde vragenlijst op.`,
     label: "Gesprek",
     prompt: `Dit is een gesprek — een informeel overleg van de commissie met externe partijen, belanghebbenden of bewindspersonen in een minder formele setting.
 
-Context: neem de geselecteerde partij, Kamerleden en dossiers mee. Frame de analyse vanuit het partijperspectief, zoek standpunten en bijdragen van de geselecteerde Kamerleden op, en focus op de relevante beleidsdossiers.
+Context: neem de geselecteerde partij, Kamerleden, dossiers en eigen bronnen mee. Frame de analyse vanuit het partijperspectief, zoek standpunten en bijdragen van de geselecteerde Kamerleden op, raadpleeg de eigen bronnen van de gebruiker, en focus op de relevante beleidsdossiers.
 
 Aanpak:
 - Zoek op met wie het gesprek plaatsvindt en over welk onderwerp.
@@ -260,7 +260,7 @@ Er is GEEN concept-speech nodig. Geef een beknopte gespreksvoorbereiding met foc
     label: "Stemmingen",
     prompt: `Dit zijn stemmingen — de Kamer stemt over moties, amendementen en wetsvoorstellen.
 
-Context: neem de geselecteerde partij, Kamerleden en dossiers mee. Frame de analyse vanuit het partijperspectief, zoek standpunten en bijdragen van de geselecteerde Kamerleden op, en focus op de relevante beleidsdossiers.
+Context: neem de geselecteerde partij, Kamerleden, dossiers en eigen bronnen mee. Frame de analyse vanuit het partijperspectief, zoek standpunten en bijdragen van de geselecteerde Kamerleden op, raadpleeg de eigen bronnen van de gebruiker, en focus op de relevante beleidsdossiers.
 
 Aanpak:
 - Zoek op welke moties, amendementen en wetsvoorstellen in stemming worden gebracht.
@@ -283,7 +283,7 @@ Er is GEEN concept-speech nodig. Geef een helder stemadviesoverzicht.`,
     label: "Regeling van werkzaamheden",
     prompt: `Dit is een regeling van werkzaamheden — het korte plenaire overleg waarin debatten worden aangevraagd, de agenda wordt vastgesteld, en fracties procedurele verzoeken doen.
 
-Context: neem de geselecteerde partij, Kamerleden en dossiers mee. Frame de analyse vanuit het partijperspectief, zoek standpunten en bijdragen van de geselecteerde Kamerleden op, en focus op de relevante beleidsdossiers.
+Context: neem de geselecteerde partij, Kamerleden, dossiers en eigen bronnen mee. Frame de analyse vanuit het partijperspectief, zoek standpunten en bijdragen van de geselecteerde Kamerleden op, raadpleeg de eigen bronnen van de gebruiker, en focus op de relevante beleidsdossiers.
 
 Aanpak:
 - Zoek welke debatten recent zijn aangevraagd en welke op de rol staan.
@@ -305,7 +305,7 @@ Er is GEEN concept-speech nodig. Geef een compact overzicht van strategische mog
     label: "Werkbezoek",
     prompt: `Dit is een werkbezoek — Kamerleden bezoeken een locatie, organisatie of instelling om zich ter plekke te laten informeren.
 
-Context: neem de geselecteerde partij, Kamerleden en dossiers mee. Frame de analyse vanuit het partijperspectief, zoek standpunten en bijdragen van de geselecteerde Kamerleden op, en focus op de relevante beleidsdossiers.
+Context: neem de geselecteerde partij, Kamerleden, dossiers en eigen bronnen mee. Frame de analyse vanuit het partijperspectief, zoek standpunten en bijdragen van de geselecteerde Kamerleden op, raadpleeg de eigen bronnen van de gebruiker, en focus op de relevante beleidsdossiers.
 
 Aanpak:
 - Zoek op welke organisatie of locatie wordt bezocht en waarom.

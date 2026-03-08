@@ -64,15 +64,35 @@ export async function POST(req: Request) {
     // Resolve the meeting skill: user override > default for this soort > empty
     const skillPrompt = meetingSkill || (soort ? getDefaultSkill(soort) : "")
 
+    const hasKamerleden = Array.isArray(kamerleden) && kamerleden.length > 0
+
+    // Fetch user's priority sources + search-beyond preference
+    const sources = userId
+      ? await db.select({ url: userSources.url, title: userSources.title }).from(userSources).where(eq(userSources.userId, userId))
+      : []
+    let searchBeyondSources = true
+    if (userId) {
+      const [user] = await db.select({ searchBeyondSources: users.searchBeyondSources }).from(users).where(eq(users.id, userId)).limit(1)
+      if (user) searchBeyondSources = user.searchBeyondSources
+    }
+
+    const beyondPrompt = !searchBeyondSources
+
     const prompt = `Genereer een uitgebreide debriefing over het onderwerp: "${topic}"${soort ? ` (type vergadering: ${soort})` : ""}
 
-Aanpak:
+## Context
+${partyName ? `**Partij:** ${partyName} - frame de gehele briefing vanuit het perspectief van deze partij. Zoek hun verkiezingsprogramma en eerdere standpunten op via searchPartyDocs. Vergelijk het kabinetsbeleid met de partijpositie.` : "Geen partij geselecteerd - geef een neutraal, gebalanceerd overzicht."}
+${hasKamerleden ? `**Kamerleden:** ${kamerleden.join(", ")} - zoek hun standpunten, uitspraken, ingediende moties en schriftelijke vragen op over dit onderwerp. Vermeld hun positie in Standpunten per Fractie en betrek hun specifieke bijdragen in de suggestievragen. Analyseer hun spreekstijl uit eerdere Handelingen voor de concept-speech.` : "Geen Kamerleden geselecteerd."}
+${sources.length > 0 ? `**Eigen bronnen:** De gebruiker heeft de volgende bronnen als prioriteit ingesteld. Raadpleeg deze actief met fetchWebPage wanneer ze relevant zijn voor het onderwerp:\n${sources.map((s) => s.title ? `- ${s.title}: ${s.url}` : `- ${s.url}`).join("\n")}` : "Geen eigen bronnen ingesteld."}
+
+## Aanpak
 1. Zoek eerst via searchParlement (full-text search over alle parlementaire documenten) naar relevante stukken.
 2. Haal voor de belangrijkste documenten de volledige tekst op via getDocumentText en vat samen wat erin staat.
 3. Zoek aanvullend via searchKamerstukken en searchDocumenten voor gestructureerde resultaten.
 4. Zoek toezeggingen, stemmingen, handelingen en nieuws.
+${sources.length > 0 ? "5. Raadpleeg de eigen bronnen van de gebruiker via fetchWebPage voor aanvullende context." : ""}
 
-Structuur:
+## Structuur
 ## Samenvatting
 Korte samenvatting van het onderwerp en de huidige stand van zaken.
 
@@ -96,29 +116,11 @@ Concrete vragen om aan de minister te stellen, met verwijzing naar specifieke do
 
 ## Mogelijke Speech
 Schrijf een concept-speech voor gebruik in het debat.
-${Array.isArray(kamerleden) && kamerleden.length > 0 ? `Zoek eerst via searchParlement naar eerdere speeches en bijdragen van ${kamerleden[0]} in de Handelingen. Analyseer hun spreekstijl: toon, woordgebruik, lengte van zinnen, retorische patronen, hoe ze ministers aanspreken. Schrijf de concept-speech in diezelfde stijl.` : "Schrijf een zakelijke, neutrale speech die past bij een Kamerdebat."}
+${hasKamerleden ? `Zoek eerst via searchParlement naar eerdere speeches en bijdragen van ${kamerleden[0]} in de Handelingen. Analyseer hun spreekstijl: toon, woordgebruik, lengte van zinnen, retorische patronen, hoe ze ministers aanspreken. Schrijf de concept-speech in diezelfde stijl.` : "Schrijf een zakelijke, neutrale speech die past bij een Kamerdebat."}
 De speech moet verwijzen naar concrete documenten en feiten uit de briefing hierboven.
 ${skillPrompt ? `\n--- SPECIFIEKE INSTRUCTIES VOOR DIT TYPE VERGADERING (${soort}) ---\n${skillPrompt}\n--- EINDE SPECIFIEKE INSTRUCTIES ---` : ""}
-${partyName ? `\nFrame alles vanuit het perspectief van ${partyName}.` : "\nGeef een neutraal, gebalanceerd overzicht."}
-${Array.isArray(kamerleden) && kamerleden.length > 0 ? `\nRelevante Kamerleden om specifiek aandacht aan te besteden: ${kamerleden.join(", ")}. Zoek hun standpunten, uitspraken en ingediende moties op over dit onderwerp. Vermeld hun positie in de sectie Standpunten per Fractie en betrek hun specifieke bijdragen in de suggestievragen.` : ""}
 
 BELANGRIJK: Zoek de daadwerkelijke inhoud van de relevante stukken op en vat samen wat erin staat. Noem altijd het documentnummer en de datum. Gebruik je tools om actuele informatie op te zoeken.`
-
-    // Fetch user's priority sources + search-beyond preference
-    const sources = userId
-      ? await db.select({ url: userSources.url, title: userSources.title }).from(userSources).where(eq(userSources.userId, userId))
-      : []
-    let searchBeyondSources = true
-    if (userId) {
-      const [user] = await db.select({ searchBeyondSources: users.searchBeyondSources }).from(users).where(eq(users.id, userId)).limit(1)
-      if (user) searchBeyondSources = user.searchBeyondSources
-    }
-
-    const sourcesPrompt = sources.length > 0
-      ? `\n\nDe gebruiker heeft de volgende bronnen als prioriteit ingesteld. Raadpleeg deze actief met fetchWebPage wanneer ze relevant zijn voor het onderwerp:\n${sources.map((s) => s.title ? `- ${s.title}: ${s.url}` : `- ${s.url}`).join("\n")}`
-      : ""
-
-    const beyondPrompt = !searchBeyondSources
       ? `\n\nBELANGRIJK: Gebruik ALLEEN de geïntegreerde bronnen (parlementaire databases, partijprogramma's, nieuwszoekmachine) en de eigen websites hierboven. Gebruik fetchWebPage NIET om andere websites te raadplegen.`
       : ""
 
@@ -136,7 +138,7 @@ Werkwijze:
 - Gebruik searchToezeggingen, searchStemmingen en searchHandelingen voor context
 - Gebruik getRecenteKamervragen om recente schriftelijke vragen te bekijken
 - Vat de inhoud van elk relevant stuk bondig maar volledig samen
-- Voor de concept-speech: zoek altijd eerst eerdere bijdragen van het Kamerlid op in de Handelingen via searchParlement om hun spreekstijl te analyseren en te imiteren${sourcesPrompt}${beyondPrompt}`,
+- Voor de concept-speech: zoek altijd eerst eerdere bijdragen van het Kamerlid op in de Handelingen via searchParlement om hun spreekstijl te analyseren en te imiteren${beyondPrompt}`,
       prompt,
       stopWhen: stepCountIs(25),
       tools: {
