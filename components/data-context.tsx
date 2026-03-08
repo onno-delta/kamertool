@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useState, useEffect, useCallback, useRef } from "react"
+import { createContext, useContext, useState, useEffect, useCallback } from "react"
 
 type Party = { id: string; name: string; shortName: string }
 
@@ -39,24 +39,17 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [parties, setParties] = useState<Party[]>([])
   const [preferences, setPreferences] = useState<Preferences | null>(null)
   const [sessionKamerleden, setSessionKamerleden] = useState<Kamerlid[]>([])
-  const initializedRef = useRef(false)
 
   const fetchPreferences = useCallback(async () => {
     try {
       const res = await fetch("/api/settings/preferences")
       if (res.ok) {
-        setPreferences(await res.json())
+        const data = await res.json()
+        setPreferences(data)
+        setSessionKamerleden(data.kamerleden ?? [])
       }
     } catch { /* unauthenticated or network error */ }
   }, [])
-
-  // Initialize sessionKamerleden from preferences on first load only
-  useEffect(() => {
-    if (preferences?.kamerleden && !initializedRef.current) {
-      setSessionKamerleden(preferences.kamerleden)
-      initializedRef.current = true
-    }
-  }, [preferences])
 
   const addSessionKamerlid = useCallback((k: Kamerlid) => {
     setSessionKamerleden((prev) =>

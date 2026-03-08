@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { Vote, FolderOpen, Users, Search, X, Check, Save } from "lucide-react"
-import { DOSSIERS } from "@/lib/dossiers"
+import { DOSSIERS, COMMISSIE_DOSSIER_MAP } from "@/lib/dossiers"
 import { PartySelector } from "@/components/party-selector"
 import { useDataContext } from "@/components/data-context"
 
@@ -66,6 +66,10 @@ export default function SettingsPage() {
   function addKamerlid(k: Kamerlid) {
     setSelectedKamerleden((prev) => [...prev, k])
     setKamerleidSearch("")
+    if (k.fractie) {
+      const match = parties.find((p) => p.shortName === k.fractie)
+      if (match) setSelectedParty(match)
+    }
     setPrefsSaved(false)
   }
 
@@ -74,21 +78,46 @@ export default function SettingsPage() {
     setPrefsSaved(false)
   }
 
+  // Auto-select dossiers based on kamerlid committee memberships
+  useEffect(() => {
+    if (selectedKamerleden.length === 0) return
+    const ids = selectedKamerleden.map((k) => k.id).join(",")
+    fetch(`/api/kamerleden/commissies?ids=${ids}`)
+      .then((r) => r.ok ? r.json() : { commissies: [] })
+      .then((data) => {
+        const dossierIds = (data.commissies as string[])
+          .map((afk) => {
+            const mapped = COMMISSIE_DOSSIER_MAP[afk]
+            if (!mapped) console.log(`[settings] Unknown commissie abbreviation: ${afk}`)
+            return mapped
+          })
+          .filter(Boolean)
+        if (dossierIds.length > 0) setSelectedDossiers(dossierIds)
+      })
+      .catch(() => {})
+  }, [selectedKamerleden])
+
   async function handleSavePrefs() {
     setPrefsSaving(true)
-    await fetch("/api/settings/preferences", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        defaultPartyId: selectedParty?.id ?? null,
-        dossiers: selectedDossiers,
-        kamerleden: selectedKamerleden,
-      }),
-    })
-    await refreshPreferences()
-    setPrefsSaving(false)
-    setPrefsSaved(true)
-    setTimeout(() => setPrefsSaved(false), 2000)
+    try {
+      const res = await fetch("/api/settings/preferences", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          defaultPartyId: selectedParty?.id ?? null,
+          dossiers: selectedDossiers,
+          kamerleden: selectedKamerleden,
+        }),
+      })
+      if (!res.ok) throw new Error()
+      await refreshPreferences()
+      setPrefsSaved(true)
+      setTimeout(() => setPrefsSaved(false), 2000)
+    } catch {
+      // silent fail — user sees button revert to "Opslaan"
+    } finally {
+      setPrefsSaving(false)
+    }
   }
 
   return (
@@ -106,78 +135,8 @@ export default function SettingsPage() {
         </p>
       </section>
 
-      {/* Party selector card */}
-      <div className="mb-5 rounded-xl border border-border-light bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.02)]">
-        <div className="flex items-center gap-3 border-b border-border-light bg-surface-muted px-5 py-3.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-15">
-            <Vote className="h-4 w-4 text-primary" />
-          </div>
-          <h2 className="text-sm font-semibold text-primary">Partij</h2>
-        </div>
-
-        <div className="px-5 py-5">
-          <label className="mb-1.5 block text-sm font-medium text-primary">
-            Standaardpartij
-          </label>
-          <p className="mb-3 text-xs leading-relaxed text-text-muted">
-            De standaardpartij wordt automatisch geselecteerd in de chat en bij briefings.
-          </p>
-          <PartySelector
-            value={selectedParty}
-            onChange={(p) => {
-              setSelectedParty(p)
-              setPrefsSaved(false)
-            }}
-          />
-        </div>
-      </div>
-
-      {/* Dossier card */}
-      <div className="mb-5 overflow-hidden rounded-xl border border-border-light bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.02)]">
-        <div className="flex items-center gap-3 border-b border-border-light bg-surface-muted px-5 py-3.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-15">
-            <FolderOpen className="h-4 w-4 text-primary" />
-          </div>
-          <div>
-            <h2 className="text-sm font-semibold text-primary">Dossiers</h2>
-            <p className="text-xs text-text-muted">
-              {selectedDossiers.length} van {DOSSIERS.length} geselecteerd
-            </p>
-          </div>
-        </div>
-
-        <div className="px-5 py-5">
-          <p className="mb-4 text-xs leading-relaxed text-text-muted">
-            Selecteer de beleidsterreinen die je volgt. Deze worden meegenomen in briefings.
-          </p>
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            {DOSSIERS.map((d) => {
-              const isSelected = selectedDossiers.includes(d.id)
-              return (
-                <label
-                  key={d.id}
-                  className={`flex cursor-pointer items-center gap-3 rounded-lg border px-3.5 py-2.5 text-sm transition-colors ${
-                    isSelected
-                      ? "border-primary/20 bg-primary-15 font-medium text-primary"
-                      : "border-border-light bg-white text-primary hover:border-primary/10 hover:bg-surface-muted"
-                  }`}
-                >
-                  <input
-                    type="checkbox"
-                    checked={isSelected}
-                    onChange={() => toggleDossier(d.id)}
-                    className="h-4 w-4 rounded border-border text-primary accent-primary focus:ring-primary"
-                  />
-                  {d.label}
-                </label>
-              )
-            })}
-          </div>
-        </div>
-      </div>
-
       {/* Kamerleden card */}
-      <div className="mb-8 overflow-hidden rounded-xl border border-border-light bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.02)]">
+      <div className="mb-5 overflow-hidden rounded-xl border border-border-light bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.02)]">
         <div className="flex items-center gap-3 border-b border-border-light bg-surface-muted px-5 py-3.5">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-15">
             <Users className="h-4 w-4 text-primary" />
@@ -254,6 +213,76 @@ export default function SettingsPage() {
                 ))}
               </div>
             )}
+          </div>
+        </div>
+      </div>
+
+      {/* Party selector card */}
+      <div className="mb-5 rounded-xl border border-border-light bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.02)]">
+        <div className="flex items-center gap-3 border-b border-border-light bg-surface-muted px-5 py-3.5">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-15">
+            <Vote className="h-4 w-4 text-primary" />
+          </div>
+          <h2 className="text-sm font-semibold text-primary">Partij</h2>
+        </div>
+
+        <div className="px-5 py-5">
+          <label className="mb-1.5 block text-sm font-medium text-primary">
+            Standaardpartij
+          </label>
+          <p className="mb-3 text-xs leading-relaxed text-text-muted">
+            De standaardpartij wordt automatisch geselecteerd in de chat en bij briefings.
+          </p>
+          <PartySelector
+            value={selectedParty}
+            onChange={(p) => {
+              setSelectedParty(p)
+              setPrefsSaved(false)
+            }}
+          />
+        </div>
+      </div>
+
+      {/* Dossier card */}
+      <div className="mb-8 overflow-hidden rounded-xl border border-border-light bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.02)]">
+        <div className="flex items-center gap-3 border-b border-border-light bg-surface-muted px-5 py-3.5">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-15">
+            <FolderOpen className="h-4 w-4 text-primary" />
+          </div>
+          <div>
+            <h2 className="text-sm font-semibold text-primary">Dossiers</h2>
+            <p className="text-xs text-text-muted">
+              {selectedDossiers.length} van {DOSSIERS.length} geselecteerd
+            </p>
+          </div>
+        </div>
+
+        <div className="px-5 py-5">
+          <p className="mb-4 text-xs leading-relaxed text-text-muted">
+            Selecteer de beleidsterreinen die je volgt. Deze worden meegenomen in briefings.
+          </p>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            {DOSSIERS.map((d) => {
+              const isSelected = selectedDossiers.includes(d.id)
+              return (
+                <label
+                  key={d.id}
+                  className={`flex cursor-pointer items-center gap-3 rounded-lg border px-3.5 py-2.5 text-sm transition-colors ${
+                    isSelected
+                      ? "border-primary/20 bg-primary-15 font-medium text-primary"
+                      : "border-border-light bg-white text-primary hover:border-primary/10 hover:bg-surface-muted"
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={() => toggleDossier(d.id)}
+                    className="h-4 w-4 rounded border-border text-primary accent-primary focus:ring-primary"
+                  />
+                  {d.label}
+                </label>
+              )
+            })}
           </div>
         </div>
       </div>

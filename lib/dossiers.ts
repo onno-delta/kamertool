@@ -21,3 +21,24 @@ export const DOSSIERS = [
 ] as const
 
 export type DossierId = (typeof DOSSIERS)[number]["id"]
+
+// Maps TK committee abbreviations (from /api/kamerleden/commissies) to dossier IDs
+export const COMMISSIE_DOSSIER_MAP: Record<string, string> = {
+  "BZK": "binnenlandse-zaken",
+  "BUZA": "buitenlandse-zaken",
+  "DEF": "defensie",
+  "EZK": "economische-zaken",
+  "EU": "eu-zaken",
+  "FIN": "financien",
+  "I&W": "infrastructuur-waterstaat",
+  "J&V": "justitie-veiligheid",
+  "KGG": "klimaat-energie",
+  "LVV": "landbouw-visserij",
+  "OCW": "onderwijs",
+  "SZW": "sociale-zaken",
+  "VRO": "volkshuisvesting",
+  "VWS": "vws",
+  "KR": "koninkrijksrelaties",
+  "DiZa": "digitale-zaken",
+  "BHOS": "buitenlandse-handel",
+}
