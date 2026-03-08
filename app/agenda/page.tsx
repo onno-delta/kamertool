@@ -84,6 +84,7 @@ export default function AgendaPage() {
   const [kamerleidSearch, setKamerleidSearch] = useState("")
   const [kamerleidFocused, setKamerleidFocused] = useState(false)
   const [allKamerleden, setAllKamerleden] = useState<Kamerlid[]>([])
+  const [kamerleidCommissies, setKamerleidCommissies] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     fetch("/api/kamerleden")
@@ -91,6 +92,18 @@ export default function AgendaPage() {
       .then(setAllKamerleden)
       .catch(() => {})
   }, [])
+
+  useEffect(() => {
+    if (sessionKamerleden.length === 0) {
+      setKamerleidCommissies(new Set())
+      return
+    }
+    const ids = sessionKamerleden.map((k) => k.id).join(",")
+    fetch(`/api/kamerleden/commissies?ids=${ids}`)
+      .then((r) => r.ok ? r.json() : { commissies: [] })
+      .then((data) => setKamerleidCommissies(new Set(data.commissies)))
+      .catch(() => setKamerleidCommissies(new Set()))
+  }, [sessionKamerleden])
 
   const kamerleidResults = kamerleidSearch.trim().length >= 2
     ? allKamerleden
@@ -136,12 +149,13 @@ export default function AgendaPage() {
       .map(([type, count]) => ({ value: type, label: type, count }))
   }, [allItems])
 
-  // Available commissies from (type-filtered) data
+  // Available commissies from (type-filtered + kamerlid-filtered) data
   const availableCommissies = useMemo(() => {
     const counts: Record<string, number> = {}
     for (const item of allItems) {
       if (!item.Voortouwnaam) continue
       if (selectedTypes.size > 0 && !selectedTypes.has(item.Soort)) continue
+      if (kamerleidCommissies.size > 0 && item.Voortouwafkorting && !kamerleidCommissies.has(item.Voortouwafkorting)) continue
       counts[item.Voortouwnaam] = (counts[item.Voortouwnaam] ?? 0) + 1
     }
     return Object.entries(counts)
@@ -153,13 +167,18 @@ export default function AgendaPage() {
           .replace(/^tijdelijke commissie /, ""),
         count,
       }))
-  }, [allItems, selectedTypes])
+  }, [allItems, selectedTypes, kamerleidCommissies])
 
   // Filter items
   const filtered = useMemo(() => {
     let items = allItems
     if (selectedTypes.size > 0) {
       items = items.filter((i) => selectedTypes.has(i.Soort))
+    }
+    if (kamerleidCommissies.size > 0) {
+      items = items.filter(
+        (i) => !i.Voortouwafkorting || kamerleidCommissies.has(i.Voortouwafkorting)
+      )
     }
     if (selectedCommissies.size > 0) {
       items = items.filter((i) => selectedCommissies.has(i.Voortouwnaam))
@@ -173,7 +192,7 @@ export default function AgendaPage() {
       )
     }
     return items
-  }, [allItems, selectedTypes, selectedCommissies, search])
+  }, [allItems, selectedTypes, kamerleidCommissies, selectedCommissies, search])
 
   const grouped = groupByDate(filtered)
   const dates = Object.keys(grouped).sort()
