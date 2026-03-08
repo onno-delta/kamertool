@@ -201,7 +201,7 @@ function ActivitySection({
               (data as DocItem[]).map((doc) => (
                 <a
                   key={doc.id}
-                  href={doc.url || `https://zoek.officielebekendmakingen.nl/resultaten?q=${encodeURIComponent(doc.nummer)}`}
+                  href={doc.url || `https://www.tweedekamer.nl/zoeken?qry=${encodeURIComponent(doc.nummer)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="block rounded-lg border border-border-light px-3 py-2 transition-colors hover:border-primary/30"
