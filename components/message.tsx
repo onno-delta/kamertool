@@ -79,12 +79,12 @@ export function Message({ message, topic }: { message: UIMessage; topic?: string
   const isUser = role === "user"
   const [pdfBusy, setPdfBusy] = useState(false)
 
-  // Check if there's any visible content (text, reasoning, or tool parts)
+  // Check if there's any visible content (text, reasoning, or currently running tools)
   const hasVisibleContent = parts.some((p) => {
     if (p.type === "text" && p.text) return true
     if (p.type === "reasoning" && p.text) return true
     const tp = p as unknown as ToolPart
-    if (isToolPart(tp) && isVisibleToolState(tp.state)) return true
+    if (isToolPart(tp) && (tp.state === "input-streaming" || tp.state === "input-available")) return true
     return false
   })
 
@@ -159,9 +159,12 @@ export function Message({ message, topic }: { message: UIMessage; topic?: string
               </div>
             )
           }
-          // Render tool parts inline
+          // Only render currently running tool parts inline (completed ones live in the sidebar)
           const tp = part as unknown as ToolPart
-          if (isToolPart(tp) && isVisibleToolState(tp.state)) {
+          if (
+            isToolPart(tp) &&
+            (tp.state === "input-streaming" || tp.state === "input-available")
+          ) {
             return (
               <InlineToolStep
                 key={tp.toolCallId ?? i}
