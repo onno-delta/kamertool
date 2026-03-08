@@ -91,7 +91,7 @@ function VoorbereidenContent() {
   const briefingActive = started && state?.topic === topic
   if (!briefingActive) {
     return (
-      <div className="mx-auto w-full max-w-3xl px-0 py-2 sm:py-3">
+      <div className="mx-auto w-full max-w-3xl px-0 py-2 pb-10 sm:py-3">
         <nav aria-label="Kruimelpad" className="mb-4 text-sm text-text-muted">
           <Link href="/" className="hover:text-primary hover:underline">Home</Link>
           <span className="mx-1.5">&rsaquo;</span>
