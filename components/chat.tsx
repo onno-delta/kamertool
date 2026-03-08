@@ -336,7 +336,7 @@ export function Chat() {
           {toolSteps.length > 0 ? (
             <ProgressSidebar steps={toolSteps} />
           ) : (
-            <AgendaSidebar />
+            <AgendaSidebar onPrepare={handleSuggestion} />
           )}
         </aside>
       </div>

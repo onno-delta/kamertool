@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { Calendar, ArrowRight, Search, X, Users } from "lucide-react"
+import { Calendar, Search, X, Users, Play } from "lucide-react"
 import { useDataContext } from "./data-context"
 
 type Kamerlid = { id: string; naam: string; fractie?: string }
@@ -96,7 +96,7 @@ function KamerlidPicker({ onSelect }: { onSelect: (k: Kamerlid) => void }) {
   )
 }
 
-export function AgendaSidebar() {
+export function AgendaSidebar({ onPrepare }: { onPrepare?: (text: string) => void }) {
   const { preferences, refreshPreferences } = useDataContext()
   const kamerleden = preferences?.kamerleden ?? []
 
@@ -110,7 +110,7 @@ export function AgendaSidebar() {
     fetch(`/api/agenda?from=${from}&to=${to}`)
       .then((r) => r.ok ? r.json() : [])
       .then((data) => {
-        setEvents(Array.isArray(data) ? data.slice(0, 8) : [])
+        setEvents(Array.isArray(data) ? data.slice(0, 3) : [])
         setLoading(false)
       })
       .catch(() => setLoading(false))
@@ -195,10 +195,9 @@ export function AgendaSidebar() {
         {!loading && events.length > 0 && (
           <div className="space-y-1.5">
             {events.map((item) => (
-              <Link
+              <div
                 key={item.Id}
-                href={`/voorbereiden?topic=${encodeURIComponent(item.Onderwerp)}&soort=${encodeURIComponent(item.Soort)}`}
-                className="group block rounded-lg border border-border-light p-2.5 transition-[border-color,box-shadow] hover:border-primary/30 hover:shadow-sm"
+                className="group rounded-lg border border-border-light p-2.5 transition-[border-color,box-shadow] hover:border-primary/30 hover:shadow-sm"
               >
                 <div className="mb-1 flex items-center gap-1.5">
                   <span
@@ -214,16 +213,23 @@ export function AgendaSidebar() {
                     </span>
                   )}
                 </div>
-                <p className="text-xs font-medium leading-snug text-primary line-clamp-2 group-hover:text-primary-dark">
+                <p className="text-xs font-medium leading-snug text-primary line-clamp-2">
                   {item.Onderwerp}
                 </p>
-                <div className="mt-1 flex items-center justify-between">
+                <div className="mt-1.5 flex items-center justify-between">
                   <span className="text-[10px] text-text-muted">
                     {formatDateShort(item.Datum)} {formatTime(item.Aanvangstijd)}
                   </span>
-                  <ArrowRight className="h-3 w-3 text-text-muted opacity-0 transition-opacity group-hover:opacity-100" />
+                  <button
+                    type="button"
+                    onClick={() => onPrepare?.(`Bereid me voor op het ${item.Soort.toLowerCase()}: ${item.Onderwerp}`)}
+                    className="inline-flex items-center gap-1 rounded-md bg-primary px-2 py-0.5 text-[10px] font-medium text-white transition-colors hover:bg-primary-dark"
+                  >
+                    <Play className="h-2.5 w-2.5" />
+                    Bereid voor
+                  </button>
                 </div>
-              </Link>
+              </div>
             ))}
           </div>
         )}
