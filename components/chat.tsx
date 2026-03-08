@@ -110,7 +110,7 @@ export function Chat() {
   const [input, setInput] = useState("")
   const [usage, setUsage] = useState<{ used: number; limit: number; unlimited?: boolean } | null>(null)
   const [rateLimitError, setRateLimitError] = useState<string | null>(null)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const [userScrolled, setUserScrolled] = useState(false)
   const defaultPartyApplied = useRef(false)
 
   useEffect(() => {
@@ -158,9 +158,10 @@ export function Chat() {
 
   const isLoading = status === "submitted" || status === "streaming"
 
+  // Reset scroll tracking when a new streaming session starts
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [messages, status])
+    if (isLoading) setUserScrolled(false)
+  }, [isLoading])
 
   const firstUserMessage = messages.find((m) => m.role === "user")
   const briefingTopic = firstUserMessage
@@ -195,7 +196,7 @@ export function Chat() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="grid min-h-0 w-full gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+      <div className="grid min-h-0 flex-1 w-full gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
         {/* Main chat card */}
         <section className="flex min-h-0 min-w-0 flex-col overflow-hidden rounded-xl border border-border-light bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.02)]">
           {/* Toolbar */}
@@ -213,7 +214,10 @@ export function Chat() {
           </header>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto">
+          <div
+            className={`flex-1 overflow-y-auto${isLoading && !userScrolled ? " hide-scrollbar" : ""}`}
+            onScroll={() => { if (isLoading && !userScrolled) setUserScrolled(true) }}
+          >
             <div className="mx-auto max-w-[42rem] px-6 py-5">
               {messages.length === 0 && (
                 <div className="py-6">
@@ -289,7 +293,6 @@ export function Chat() {
                   </div>
                 </div>
               )}
-              <div ref={messagesEndRef} />
             </div>
           </div>
 
