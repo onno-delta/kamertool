@@ -1,6 +1,7 @@
 "use client"
 
-import { Activity, CheckCircle2 } from "lucide-react"
+import { useState } from "react"
+import { Activity, CheckCircle2, ChevronDown } from "lucide-react"
 
 export type ToolStep = {
   id: string
@@ -94,7 +95,10 @@ type PhaseItem = {
   label: string
   detail?: string
   status: "running" | "done" | "idle"
+  steps: ToolStep[]
 }
+
+const PREVIEW_COUNT = 3
 
 function processPhases(
   steps: ToolStep[],
@@ -120,6 +124,7 @@ function processPhases(
       label: config.label,
       status: anyRunning ? "running" : allSettled ? "done" : "running",
       detail: allSettled ? config.doneLabel(byPhase.search.length) : undefined,
+      steps: byPhase.search,
     })
   }
 
@@ -133,6 +138,7 @@ function processPhases(
       label: config.label,
       status: anyRunning ? "running" : allSettled ? "done" : "running",
       detail: allSettled ? config.doneLabel(byPhase.fetch.length) : undefined,
+      steps: byPhase.fetch,
     })
   }
 
@@ -143,6 +149,7 @@ function processPhases(
       key: "summarize",
       label: PHASE_CONFIG.summarize.label,
       status: "running",
+      steps: [],
     })
   } else if (!isStreaming && steps.length > 0 && hasAssistantText) {
     phases.push({
@@ -150,6 +157,7 @@ function processPhases(
       label: PHASE_CONFIG.summarize.label,
       status: "done",
       detail: PHASE_CONFIG.summarize.doneLabel(0),
+      steps: [],
     })
   }
 
@@ -163,6 +171,7 @@ type ProgressSidebarProps = {
 }
 
 export function ProgressSidebar({ steps, isStreaming = false, hasAssistantText = false }: ProgressSidebarProps) {
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({})
   if (steps.length === 0) return null
 
   const phases = processPhases(steps, isStreaming, hasAssistantText)
@@ -201,38 +210,90 @@ export function ProgressSidebar({ steps, isStreaming = false, hasAssistantText =
           </div>
         ) : (
           <div className="space-y-0">
-            {phases.map((phase, idx) => (
-              <div
-                key={phase.key}
-                className={`flex items-start gap-2.5 py-2.5 animate-[fadeIn_0.3s_ease-out] ${idx > 0 ? "border-t border-border-light" : ""}`}
-              >
-                <div className="mt-0.5 shrink-0">
-                  {phase.status === "running" ? (
-                    <span className="block h-5 w-5 animate-spin rounded-full border-2 border-border border-t-primary" />
-                  ) : phase.status === "done" ? (
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-green-100">
-                      <svg className="h-[11px] w-[11px] text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                      </svg>
-                    </span>
-                  ) : (
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gray-100">
-                      <span className="h-1.5 w-1.5 rounded-full bg-gray-300" />
-                    </span>
+            {phases.map((phase, idx) => {
+              const isExpanded = !!expanded[phase.key]
+              const hasSubSteps = phase.steps.length > 0
+              const visibleSteps = isExpanded ? phase.steps : phase.steps.slice(0, PREVIEW_COUNT)
+              const hiddenCount = phase.steps.length - PREVIEW_COUNT
+
+              return (
+                <div
+                  key={phase.key}
+                  className={`py-2.5 animate-[fadeIn_0.3s_ease-out] ${idx > 0 ? "border-t border-border-light" : ""}`}
+                >
+                  <div className="flex items-start gap-2.5">
+                    <div className="mt-0.5 shrink-0">
+                      {phase.status === "running" ? (
+                        <span className="block h-5 w-5 animate-spin rounded-full border-2 border-border border-t-primary" />
+                      ) : phase.status === "done" ? (
+                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-green-100">
+                          <svg className="h-[11px] w-[11px] text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                          </svg>
+                        </span>
+                      ) : (
+                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gray-100">
+                          <span className="h-1.5 w-1.5 rounded-full bg-gray-300" />
+                        </span>
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className={`text-[0.8125rem] font-medium ${
+                        phase.status === "running" ? "text-primary" : "text-text-muted"
+                      }`}>
+                        {phase.label}
+                      </p>
+                      {phase.detail && (
+                        <p className="text-xs text-text-muted">{phase.detail}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Sub-steps: show first 3 by default */}
+                  {hasSubSteps && (
+                    <div className="ml-[30px] mt-1.5">
+                      {visibleSteps.map((step) => (
+                        <div key={step.id} className="flex items-center gap-1.5 py-0.5">
+                          {step.status === "running" ? (
+                            <span className="block h-3 w-3 shrink-0 animate-spin rounded-full border-[1.5px] border-border border-t-primary" />
+                          ) : step.status === "error" ? (
+                            <span className="flex h-3 w-3 shrink-0 items-center justify-center rounded-full bg-red-100">
+                              <svg className="h-1.5 w-1.5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </span>
+                          ) : (
+                            <span className="flex h-3 w-3 shrink-0 items-center justify-center rounded-full bg-green-100">
+                              <svg className="h-2 w-2 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                              </svg>
+                            </span>
+                          )}
+                          <span className="truncate text-[0.6875rem] text-text-muted">
+                            {step.label}
+                          </span>
+                          {step.detail && (
+                            <span className="shrink-0 text-[0.625rem] text-text-muted/60">
+                              {step.detail}
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                      {hiddenCount > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => setExpanded((prev) => ({ ...prev, [phase.key]: !prev[phase.key] }))}
+                          className="mt-0.5 flex items-center gap-0.5 text-[0.6875rem] text-text-muted hover:text-primary"
+                        >
+                          <ChevronDown className={`h-3 w-3 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+                          {isExpanded ? "Minder tonen" : `${hiddenCount} meer`}
+                        </button>
+                      )}
+                    </div>
                   )}
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p className={`text-[0.8125rem] font-medium ${
-                    phase.status === "running" ? "text-primary" : "text-text-muted"
-                  }`}>
-                    {phase.label}
-                  </p>
-                  {phase.detail && (
-                    <p className="text-xs text-text-muted">{phase.detail}</p>
-                  )}
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
       </div>
