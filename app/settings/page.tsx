@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
-import { Vote, FolderOpen, Users, Search, X, Check, Save, Globe, Plus, Database } from "lucide-react"
+import { Vote, FolderOpen, Users, Search, X, Check, Save, Globe, Plus, Database, ChevronDown } from "lucide-react"
 import { DOSSIERS, COMMISSIE_DOSSIER_MAP } from "@/lib/dossiers"
 import { PartySelector } from "@/components/party-selector"
 import { useDataContext } from "@/components/data-context"
@@ -70,6 +70,7 @@ export default function SettingsPage() {
   const [userSources, setUserSources] = useState<Source[]>([])
   const [newSourceUrl, setNewSourceUrl] = useState("")
   const [newSourceTitle, setNewSourceTitle] = useState("")
+  const [sourcesExpanded, setSourcesExpanded] = useState(false)
 
   // Apply cached preferences + parties
   useEffect(() => {
@@ -370,20 +371,29 @@ export default function SettingsPage() {
         </div>
 
         <div className="px-5 py-5">
-          {/* Built-in sources */}
-          <p className="mb-3 text-xs font-medium uppercase tracking-wide text-text-muted">Geintegreerde bronnen</p>
-          <div className="mb-5 space-y-1.5">
-            {BUILTIN_SOURCES.map((s) => (
-              <div
-                key={s.name}
-                className="flex items-center gap-2.5 rounded-lg border border-border-light bg-surface-muted px-3.5 py-2"
-              >
-                <Globe className="h-3.5 w-3.5 shrink-0 text-primary" />
-                <span className="text-sm font-medium text-primary">{s.name}</span>
-                <span className="text-xs text-text-muted">{s.desc}</span>
-              </div>
-            ))}
-          </div>
+          {/* Built-in sources (collapsible) */}
+          <button
+            type="button"
+            onClick={() => setSourcesExpanded((v) => !v)}
+            className="mb-3 flex w-full items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-text-muted hover:text-primary transition-colors"
+          >
+            <ChevronDown className={`h-3.5 w-3.5 transition-transform ${sourcesExpanded ? "" : "-rotate-90"}`} />
+            Geïntegreerde bronnen ({BUILTIN_SOURCES.length})
+          </button>
+          {sourcesExpanded && (
+            <div className="mb-5 space-y-1.5">
+              {BUILTIN_SOURCES.map((s) => (
+                <div
+                  key={s.name}
+                  className="flex items-center gap-2.5 rounded-lg border border-border-light bg-surface-muted px-3.5 py-2"
+                >
+                  <Globe className="h-3.5 w-3.5 shrink-0 text-primary" />
+                  <span className="text-sm font-medium text-primary">{s.name}</span>
+                  <span className="text-xs text-text-muted">{s.desc}</span>
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* User sources */}
           <p className="mb-3 text-xs font-medium uppercase tracking-wide text-text-muted">Eigen websites</p>
