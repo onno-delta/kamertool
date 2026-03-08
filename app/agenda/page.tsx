@@ -99,7 +99,7 @@ export default function AgendaPage() {
       return
     }
     const ids = sessionKamerleden.map((k) => k.id).join(",")
-    fetch(`/api/kamerleden/commissies?ids=${ids}`)
+    fetch(`/api/kamerleden/commissies?ids=${ids}&vast=true`)
       .then((r) => r.ok ? r.json() : { commissies: [] })
       .then((data) => setKamerleidCommissies(new Set(data.commissies)))
       .catch(() => setKamerleidCommissies(new Set()))
