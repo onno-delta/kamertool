@@ -18,7 +18,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="nl">
-      <body className="antialiased">
+      <body className="bg-primary-dark antialiased">
         {/* Skip links — Rijkshuisstijl/toegankelijkheid: direct naar inhoud/nav */}
         <a
           href="#main-content"
@@ -35,7 +35,7 @@ export default function RootLayout({
         <Providers>
           <div className="flex h-dvh flex-col">
             <Nav />
-            <main id="main-content" className="flex min-h-0 flex-1 flex-col overflow-y-auto" role="main">
+            <main id="main-content" className="flex min-h-0 flex-1 flex-col overflow-y-auto bg-surface" role="main">
               <div className="mx-auto flex w-full max-w-6xl min-h-0 flex-1 flex-col px-4 pt-8 pb-6 sm:px-6 sm:pt-10 sm:pb-8">
                 {children}
               </div>
