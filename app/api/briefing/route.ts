@@ -2,7 +2,8 @@ import { streamText, stepCountIs } from "ai"
 import { getModel } from "@/lib/ai"
 import { auth } from "@/auth"
 import { db } from "@/lib/db"
-import { briefings } from "@/lib/db/schema"
+import { briefings, userSources } from "@/lib/db/schema"
+import { eq } from "drizzle-orm"
 import { checkAndIncrementUsage, isUnlimitedEmail } from "@/lib/rate-limit"
 import { cookies } from "next/headers"
 import {
@@ -103,6 +104,15 @@ ${Array.isArray(kamerleden) && kamerleden.length > 0 ? `\nRelevante Kamerleden o
 
 BELANGRIJK: Zoek de daadwerkelijke inhoud van de relevante stukken op en vat samen wat erin staat. Noem altijd het documentnummer en de datum. Gebruik je tools om actuele informatie op te zoeken.`
 
+    // Fetch user's priority sources
+    const sources = userId
+      ? await db.select({ url: userSources.url, title: userSources.title }).from(userSources).where(eq(userSources.userId, userId))
+      : []
+
+    const sourcesPrompt = sources.length > 0
+      ? `\n\nDe gebruiker heeft de volgende bronnen als prioriteit ingesteld. Raadpleeg deze actief met fetchWebPage wanneer ze relevant zijn voor het onderwerp:\n${sources.map((s) => s.title ? `- ${s.title}: ${s.url}` : `- ${s.url}`).join("\n")}`
+      : ""
+
     const abortController = new AbortController()
 
     const result = streamText({
@@ -117,7 +127,7 @@ Werkwijze:
 - Gebruik searchToezeggingen, searchStemmingen en searchHandelingen voor context
 - Gebruik getRecenteKamervragen om recente schriftelijke vragen te bekijken
 - Vat de inhoud van elk relevant stuk bondig maar volledig samen
-- Voor de concept-speech: zoek altijd eerst eerdere bijdragen van het Kamerlid op in de Handelingen via searchParlement om hun spreekstijl te analyseren en te imiteren`,
+- Voor de concept-speech: zoek altijd eerst eerdere bijdragen van het Kamerlid op in de Handelingen via searchParlement om hun spreekstijl te analyseren en te imiteren${sourcesPrompt}`,
       prompt,
       stopWhen: stepCountIs(25),
       tools: {

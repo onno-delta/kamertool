@@ -1,6 +1,6 @@
 import { auth } from "@/auth"
 import { db } from "@/lib/db"
-import { users, userDossiers, userKamerleden, userMeetingSkills } from "@/lib/db/schema"
+import { users, userDossiers, userKamerleden, userMeetingSkills, userSources } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 import { NextResponse } from "next/server"
 
@@ -33,11 +33,17 @@ export async function GET() {
       .from(userMeetingSkills)
       .where(eq(userMeetingSkills.userId, session.user.id))
 
+    const sources = await db
+      .select({ id: userSources.id, url: userSources.url, title: userSources.title })
+      .from(userSources)
+      .where(eq(userSources.userId, session.user.id))
+
     return NextResponse.json({
       defaultPartyId: user?.defaultPartyId ?? null,
       dossiers: dossiers.map((d) => d.dossier),
       kamerleden: kamerleden.map((k) => ({ id: k.persoonId, naam: k.naam, fractie: k.fractie })),
       meetingSkills: meetingSkills.reduce((acc, s) => ({ ...acc, [s.soort]: s.prompt }), {} as Record<string, string>),
+      sources: sources.map((s) => ({ id: s.id, url: s.url, title: s.title })),
     })
   } catch (error) {
     console.error("[settings/preferences] GET ERROR:", error)
@@ -55,8 +61,8 @@ export async function PUT(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { defaultPartyId, dossiers, kamerleden, meetingSkills } = await req.json()
-    console.log("[settings/preferences] PUT", { userId: session.user.id, defaultPartyId, dossiers, kamerleden: kamerleden?.length, meetingSkills: meetingSkills ? Object.keys(meetingSkills).length : 0 })
+    const { defaultPartyId, dossiers, kamerleden, meetingSkills, sources } = await req.json()
+    console.log("[settings/preferences] PUT", { userId: session.user.id, defaultPartyId, dossiers, kamerleden: kamerleden?.length, meetingSkills: meetingSkills ? Object.keys(meetingSkills).length : 0, sources: sources?.length })
 
     // Update default party
     await db
@@ -109,6 +115,23 @@ export async function PUT(req: Request) {
             userId: session.user.id,
             soort,
             prompt,
+          }))
+        )
+      }
+    }
+
+    // Replace sources
+    if (Array.isArray(sources)) {
+      await db
+        .delete(userSources)
+        .where(eq(userSources.userId, session.user.id))
+
+      if (sources.length > 0) {
+        await db.insert(userSources).values(
+          sources.map((s: { url: string; title?: string }) => ({
+            userId: session.user.id,
+            url: s.url,
+            title: s.title ?? null,
           }))
         )
       }

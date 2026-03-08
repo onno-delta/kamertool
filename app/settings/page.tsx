@@ -2,13 +2,21 @@
 
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
-import { Vote, FolderOpen, Users, Search, X, Check, Save } from "lucide-react"
+import { Vote, FolderOpen, Users, Search, X, Check, Save, Globe, Plus, Database } from "lucide-react"
 import { DOSSIERS, COMMISSIE_DOSSIER_MAP } from "@/lib/dossiers"
 import { PartySelector } from "@/components/party-selector"
 import { useDataContext } from "@/components/data-context"
 
 type Party = { id: string; name: string; shortName: string }
 type Kamerlid = { id: string; naam: string; fractie?: string }
+type Source = { url: string; title?: string }
+
+const BUILTIN_SOURCES = [
+  { name: "Overheid.nl (SRU)", desc: "Full-text parlementaire documenten" },
+  { name: "Tweede Kamer OData API", desc: "Kamerstukken, moties, stemmingen, toezeggingen, agenda" },
+  { name: "Google Nieuws", desc: "Actueel nieuws via Serper" },
+  { name: "Partijprogramma's", desc: "Verkiezingsprogramma's van 13 partijen" },
+]
 
 export default function SettingsPage() {
   const { parties, preferences, refreshPreferences } = useDataContext()
@@ -23,11 +31,17 @@ export default function SettingsPage() {
   const [prefsSaved, setPrefsSaved] = useState(false)
   const prefsApplied = useRef(false)
 
+  // Sources state
+  const [userSources, setUserSources] = useState<Source[]>([])
+  const [newSourceUrl, setNewSourceUrl] = useState("")
+  const [newSourceTitle, setNewSourceTitle] = useState("")
+
   // Apply cached preferences + parties
   useEffect(() => {
     if (prefsApplied.current || !preferences) return
     setSelectedDossiers(preferences.dossiers ?? [])
     setSelectedKamerleden(preferences.kamerleden ?? [])
+    setUserSources((preferences.sources ?? []).map((s) => ({ url: s.url, title: s.title ?? undefined })))
     if (preferences.defaultPartyId && parties.length > 0) {
       const match = parties.find((p) => p.id === preferences.defaultPartyId)
       if (match) setSelectedParty(match)
@@ -97,6 +111,24 @@ export default function SettingsPage() {
       .catch(() => {})
   }, [selectedKamerleden])
 
+  function addSource() {
+    const url = newSourceUrl.trim()
+    if (!url) return
+    // Basic URL validation
+    try { new URL(url.startsWith("http") ? url : `https://${url}`) } catch { return }
+    const normalized = url.startsWith("http") ? url : `https://${url}`
+    if (userSources.some((s) => s.url === normalized)) return
+    setUserSources((prev) => [...prev, { url: normalized, title: newSourceTitle.trim() || undefined }])
+    setNewSourceUrl("")
+    setNewSourceTitle("")
+    setPrefsSaved(false)
+  }
+
+  function removeSource(url: string) {
+    setUserSources((prev) => prev.filter((s) => s.url !== url))
+    setPrefsSaved(false)
+  }
+
   async function handleSavePrefs() {
     setPrefsSaving(true)
     try {
@@ -107,6 +139,7 @@ export default function SettingsPage() {
           defaultPartyId: selectedParty?.id ?? null,
           dossiers: selectedDossiers,
           kamerleden: selectedKamerleden,
+          sources: userSources,
         }),
       })
       if (!res.ok) throw new Error()
@@ -131,7 +164,7 @@ export default function SettingsPage() {
       <section className="mb-8">
         <h1 className="text-4xl font-bold tracking-tight text-primary">Instellingen</h1>
         <p className="mt-2 text-sm text-text-secondary">
-          Beheer je standaardpartij, commissies en Kamerleden.
+          Beheer je standaardpartij, commissies, bronnen en Kamerleden.
         </p>
       </section>
 
@@ -244,7 +277,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Commissies card */}
-      <div className="mb-8 overflow-hidden rounded-xl border border-border-light bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.02)]">
+      <div className="mb-5 overflow-hidden rounded-xl border border-border-light bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.02)]">
         <div className="flex items-center gap-3 border-b border-border-light bg-surface-muted px-5 py-3.5">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-15">
             <FolderOpen className="h-4 w-4 text-primary" />
@@ -283,6 +316,100 @@ export default function SettingsPage() {
                 </label>
               )
             })}
+          </div>
+        </div>
+      </div>
+
+      {/* Bronnen card */}
+      <div className="mb-8 rounded-xl border border-border-light bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.02)]">
+        <div className="flex items-center gap-3 border-b border-border-light bg-surface-muted rounded-t-xl px-5 py-3.5">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-15">
+            <Database className="h-4 w-4 text-primary" />
+          </div>
+          <div>
+            <h2 className="text-sm font-semibold text-primary">Bronnen</h2>
+            <p className="text-xs text-text-muted">
+              Databases en websites die worden geraadpleegd
+            </p>
+          </div>
+        </div>
+
+        <div className="px-5 py-5">
+          {/* Built-in sources */}
+          <p className="mb-3 text-xs font-medium uppercase tracking-wide text-text-muted">Geintegreerde bronnen</p>
+          <div className="mb-5 grid grid-cols-1 gap-2 sm:grid-cols-2">
+            {BUILTIN_SOURCES.map((s) => (
+              <div
+                key={s.name}
+                className="flex items-start gap-2.5 rounded-lg border border-border-light bg-surface-muted px-3.5 py-2.5"
+              >
+                <Globe className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
+                <div className="min-w-0">
+                  <div className="text-sm font-medium text-primary">{s.name}</div>
+                  <div className="text-xs text-text-muted">{s.desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* User sources */}
+          <p className="mb-3 text-xs font-medium uppercase tracking-wide text-text-muted">Eigen websites</p>
+          <p className="mb-3 text-xs leading-relaxed text-text-muted">
+            Voeg websites toe die de AI actief raadpleegt bij het maken van briefings en het beantwoorden van vragen.
+          </p>
+
+          {userSources.length > 0 && (
+            <div className="mb-4 space-y-2">
+              {userSources.map((s) => (
+                <div
+                  key={s.url}
+                  className="flex items-center gap-2 rounded-lg border border-border-light bg-white px-3.5 py-2.5"
+                >
+                  <Globe className="h-3.5 w-3.5 shrink-0 text-text-muted" />
+                  <div className="min-w-0 flex-1">
+                    {s.title && <div className="text-sm font-medium text-primary">{s.title}</div>}
+                    <div className="truncate text-xs text-text-muted">{s.url}</div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeSource(s.url)}
+                    className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-text-muted transition-colors hover:bg-border-light hover:text-primary"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Add source form */}
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <input
+              type="text"
+              value={newSourceTitle}
+              onChange={(e) => setNewSourceTitle(e.target.value)}
+              placeholder="Naam (optioneel)"
+              className="w-full rounded-lg border border-border bg-surface-muted px-3 py-2 text-sm text-primary placeholder:text-text-muted focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 sm:w-40"
+            />
+            <div className="flex flex-1 gap-2">
+              <input
+                type="url"
+                value={newSourceUrl}
+                onChange={(e) => setNewSourceUrl(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addSource() } }}
+                placeholder="https://..."
+                className="min-w-0 flex-1 rounded-lg border border-border bg-surface-muted px-3 py-2 text-sm text-primary placeholder:text-text-muted focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20"
+              />
+              <button
+                type="button"
+                onClick={addSource}
+                disabled={!newSourceUrl.trim()}
+                className="flex shrink-0 items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-dark active:translate-y-px disabled:opacity-40"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                Toevoegen
+              </button>
+            </div>
           </div>
         </div>
       </div>

@@ -1,4 +1,4 @@
-export function buildSystemPrompt(partyName?: string | null) {
+export function buildSystemPrompt(partyName?: string | null, userSources?: { url: string; title?: string | null }[]) {
   const base = `Je bent een AI-assistent die Kamerleden helpt bij het voorbereiden van debatten in de Tweede Kamer der Staten-Generaal.
 
 Je hebt toegang tot:
@@ -32,15 +32,22 @@ Een complete debatbriefing bevat:
 
 Gebruik altijd je tools om actuele informatie op te zoeken. Geef bronnen aan bij je antwoorden (Kamerstuknummers, data, namen). Antwoord in het Nederlands. Gebruik NOOIT emoji's. Gebruik NOOIT em dashes (—). Gebruik in plaats daarvan een gewoon streepje (-) of herformuleer de zin.`
 
+  let prompt = base
+
+  if (userSources && userSources.length > 0) {
+    const list = userSources.map((s) => s.title ? `- ${s.title}: ${s.url}` : `- ${s.url}`).join("\n")
+    prompt += `\n\nDe gebruiker heeft de volgende bronnen als prioriteit ingesteld. Raadpleeg deze actief met fetchWebPage wanneer ze relevant zijn voor het onderwerp:\n${list}`
+  }
+
   if (partyName) {
     return (
-      base +
+      prompt +
       `\n\nDe gebruiker vertegenwoordigt ${partyName}. Gebruik de searchPartyDocs tool om hun standpunten op te zoeken. Frame je suggesties vanuit het perspectief van deze partij — verwijs naar hun verkiezingsprogramma en ideologisch profiel. Benadruk waar ${partyName} zich kan onderscheiden van andere fracties.`
     )
   }
 
   return (
-    base +
+    prompt +
     `\n\nDe gebruiker heeft geen partij geselecteerd. Geef neutrale, gebalanceerde context. Toon standpunten van alle relevante fracties zonder partij te kiezen.`
   )
 }

@@ -2,6 +2,9 @@ import { streamText, stepCountIs, convertToModelMessages } from "ai"
 import { getModel } from "@/lib/ai"
 import { buildSystemPrompt } from "@/lib/system-prompt"
 import { auth } from "@/auth"
+import { db } from "@/lib/db"
+import { userSources } from "@/lib/db/schema"
+import { eq } from "drizzle-orm"
 import { checkAndIncrementUsage, isUnlimitedEmail } from "@/lib/rate-limit"
 import { cookies } from "next/headers"
 import {
@@ -80,11 +83,16 @@ export async function POST(req: Request) {
       ),
     }
 
+    // Fetch user's priority sources
+    const sources = userId
+      ? await db.select({ url: userSources.url, title: userSources.title }).from(userSources).where(eq(userSources.userId, userId))
+      : []
+
     const modelMessages = await convertToModelMessages(messages, { tools })
 
     const result = streamText({
       model: getModel(modelOpts),
-      system: buildSystemPrompt(partyName),
+      system: buildSystemPrompt(partyName, sources),
       messages: modelMessages,
       stopWhen: stepCountIs(10),
       tools,

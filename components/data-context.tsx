@@ -6,11 +6,14 @@ type Party = { id: string; name: string; shortName: string }
 
 type Kamerlid = { id: string; naam: string; fractie?: string }
 
+type Source = { id: string; url: string; title?: string | null }
+
 type Preferences = {
   defaultPartyId: string | null
   dossiers: string[]
   kamerleden: Kamerlid[]
   meetingSkills: Record<string, string>
+  sources: Source[]
 }
 
 type DataContextType = {

@@ -185,6 +185,18 @@ export const userMeetingSkills = pgTable("user_meeting_skill", {
   createdAt: timestamp("createdAt", { mode: "date" }).notNull().defaultNow(),
 })
 
+export const userSources = pgTable("user_source", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: text("userId")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  url: text("url").notNull(),
+  title: text("title"),
+  createdAt: timestamp("createdAt", { mode: "date" }).notNull().defaultNow(),
+})
+
 export const usageLog = pgTable("usage_log", {
   id: text("id")
     .primaryKey()
