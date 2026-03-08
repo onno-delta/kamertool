@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { queryTKSingle } from "@/lib/tk-api"
 import { getCommissionMap } from "@/lib/tk-commissions"
+import { getCurrentMembers } from "@/lib/tk-members"
 import { KABINET } from "@/data/kabinet"
 
 export async function GET(
@@ -46,13 +47,19 @@ export async function GET(
       .filter(Boolean)
       .join(" ")
 
-    // Get their commissions
-    const commissionMap = await getCommissionMap()
+    // Get their fractie and commissions
+    const [members, commissionMap] = await Promise.all([
+      getCurrentMembers(),
+      getCommissionMap(),
+    ])
+    const member = members.find((m) => m.id === id)
+    const fractie = member?.fractie ?? undefined
     const commissies = commissionMap.get(id) ?? []
 
     return NextResponse.json({
       id: persoon.Id,
       naam,
+      fractie,
       roepnaam: persoon.Roepnaam,
       achternaam: persoon.Achternaam,
       geboortedatum: persoon.Geboortedatum,
