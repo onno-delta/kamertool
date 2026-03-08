@@ -11,7 +11,6 @@ import {
   Calendar,
   ExternalLink,
   Mail,
-  Phone,
   AtSign,
   Linkedin,
   Globe,
@@ -56,7 +55,6 @@ type MedewerkerItem = {
   naam: string
   rol: string
   email?: string | null
-  telefoon?: string | null
   submittedBy: string
   createdAt: string
 }
@@ -68,6 +66,7 @@ type DocItem = {
   onderwerp: string
   datum: string
   relatie: string
+  url?: string
 }
 
 type StemItem = {
@@ -114,7 +113,6 @@ function formatDate(dateStr: string) {
 
 const CONTACT_TYPE_ICONS: Record<string, typeof Mail> = {
   email: Mail,
-  telefoon: Phone,
   twitter: AtSign,
   linkedin: Linkedin,
   website: Globe,
@@ -122,7 +120,6 @@ const CONTACT_TYPE_ICONS: Record<string, typeof Mail> = {
 
 const CONTACT_TYPE_LABELS: Record<string, string> = {
   email: "E-mail",
-  telefoon: "Telefoon",
   twitter: "Twitter/X",
   linkedin: "LinkedIn",
   website: "Website",
@@ -202,9 +199,12 @@ function ActivitySection({
           <div className="space-y-2">
             {type === "documenten" &&
               (data as DocItem[]).map((doc) => (
-                <div
+                <a
                   key={doc.id}
-                  className="rounded-lg border border-border-light px-3 py-2"
+                  href={doc.url || `https://zoek.officielebekendmakingen.nl/resultaten?q=${encodeURIComponent(doc.nummer)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block rounded-lg border border-border-light px-3 py-2 transition-colors hover:border-primary/30"
                 >
                   <div className="flex items-start gap-2">
                     <span className="shrink-0 rounded-full bg-surface-muted px-2 py-0.5 text-[10px] font-medium text-text-secondary">
@@ -219,8 +219,9 @@ function ActivitySection({
                         </p>
                       )}
                     </div>
+                    <ExternalLink className="mt-0.5 h-3 w-3 shrink-0 text-text-muted" />
                   </div>
-                </div>
+                </a>
               ))}
 
             {type === "stemmingen" &&
@@ -518,7 +519,6 @@ function MedewerkersSection({
   const [naam, setNaam] = useState("")
   const [rol, setRol] = useState("Persoonlijk medewerker")
   const [email, setEmail] = useState("")
-  const [telefoon, setTelefoon] = useState("")
   const [submitting, setSubmitting] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
@@ -533,13 +533,11 @@ function MedewerkersSection({
           naam: naam.trim(),
           rol,
           email: email.trim() || undefined,
-          telefoon: telefoon.trim() || undefined,
         }),
       })
       if (res.ok) {
         setNaam("")
         setEmail("")
-        setTelefoon("")
         setShowForm(false)
         onUpdate()
       }
@@ -588,8 +586,8 @@ function MedewerkersSection({
                         {mw.rol}
                       </span>
                     </div>
-                    <div className="mt-1 flex flex-wrap gap-3">
-                      {mw.email && (
+                    {mw.email && (
+                      <div className="mt-1">
                         <a
                           href={`mailto:${mw.email}`}
                           className="inline-flex items-center gap-1 text-xs text-text-muted hover:text-primary"
@@ -597,14 +595,8 @@ function MedewerkersSection({
                           <Mail className="h-3 w-3" />
                           {mw.email}
                         </a>
-                      )}
-                      {mw.telefoon && (
-                        <span className="inline-flex items-center gap-1 text-xs text-text-muted">
-                          <Phone className="h-3 w-3" />
-                          {mw.telefoon}
-                        </span>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </div>
                   {userId && mw.submittedBy === userId && (
                     <button
@@ -651,22 +643,13 @@ function MedewerkersSection({
                 <option>Beleidsmedewerker</option>
               </select>
             </div>
-            <div className="flex flex-wrap gap-2">
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="E-mail (optioneel)"
-                className="min-w-0 flex-1 rounded border border-border bg-white px-2 py-1.5 text-sm text-primary placeholder:text-text-muted"
-              />
-              <input
-                type="tel"
-                value={telefoon}
-                onChange={(e) => setTelefoon(e.target.value)}
-                placeholder="Telefoon (optioneel)"
-                className="w-40 rounded border border-border bg-white px-2 py-1.5 text-sm text-primary placeholder:text-text-muted"
-              />
-            </div>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="E-mail (optioneel)"
+              className="w-full rounded border border-border bg-white px-2 py-1.5 text-sm text-primary placeholder:text-text-muted"
+            />
             <div className="flex gap-2">
               <button
                 type="submit"

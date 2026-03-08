@@ -30,27 +30,36 @@ export async function getPersonDocuments(personId: string, top = 10) {
 
 /**
  * Get recent stemmingen (votes) for a fractie.
- * Shows what the party voted on recently.
+ * Queries Besluit → expands Stemming (filtered by fractie) + Zaak (for subject).
  */
 export async function getFractieStemmingen(fractie: string, top = 10) {
-  const stemmingen = await queryTK("Stemming", {
-    $filter: `ActorFractie eq '${fractie}' and Verwijderd eq false`,
-    $expand: "Besluit($select=Id,BesluitSoort,BesluitTekst,StemmingsSoort,Zaak_Id)",
+  const escapedFractie = fractie.replace(/'/g, "''")
+  const besluiten = await queryTK("Besluit", {
+    $filter: `StemmingsSoort ne null and Verwijderd eq false`,
+    $select: "Id,BesluitSoort,BesluitTekst,StemmingsSoort",
+    $expand: `Stemming($filter=ActorFractie eq '${escapedFractie}';$select=Soort,ActorFractie,FractieGrootte),Zaak($select=Onderwerp,Titel,Nummer)`,
     $orderby: "GewijzigdOp desc",
     $top: String(top),
   })
 
-  return stemmingen.map((s: Record<string, unknown>) => {
-    const b = s.Besluit as Record<string, unknown> | undefined
-    return {
-      fractie: s.ActorFractie,
-      stem: s.Soort,
-      zetels: s.FractieGrootte,
-      besluit: b?.BesluitTekst,
-      besluitSoort: b?.StemmingsSoort,
-      zaakId: b?.Zaak_Id,
-    }
-  })
+  return besluiten
+    .filter((b: Record<string, unknown>) => {
+      const stemmingen = b.Stemming as Array<Record<string, unknown>> | undefined
+      return stemmingen && stemmingen.length > 0
+    })
+    .map((b: Record<string, unknown>) => {
+      const stemmingen = b.Stemming as Array<Record<string, unknown>>
+      const zaken = b.Zaak as Array<Record<string, unknown>> | undefined
+      const zaak = zaken?.[0]
+      const stemming = stemmingen[0]
+      return {
+        fractie: stemming.ActorFractie,
+        stem: stemming.Soort,
+        zetels: stemming.FractieGrootte,
+        besluit: (zaak?.Onderwerp || zaak?.Titel || b.BesluitTekst) as string,
+        besluitSoort: b.BesluitSoort,
+      }
+    })
 }
 
 /**

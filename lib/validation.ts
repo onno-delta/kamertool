@@ -21,7 +21,7 @@ export const briefingBodySchema = z.object({
 })
 
 export const smoelenboekContactSchema = z.object({
-  type: z.enum(["email", "telefoon", "twitter", "linkedin", "website"]),
+  type: z.enum(["email", "twitter", "linkedin", "website"]),
   value: z.string().min(1).max(500).trim(),
   label: z.string().max(100).trim().optional(),
 })
@@ -30,7 +30,6 @@ export const smoelenboekMedewerkerSchema = z.object({
   naam: z.string().min(1).max(200).trim(),
   rol: z.enum(["Persoonlijk medewerker", "Politiek assistent", "Beleidsmedewerker"]),
   email: z.string().max(200).trim().optional().or(z.literal("")),
-  telefoon: z.string().max(50).trim().optional().or(z.literal("")),
 })
 
 export const organisationSchema = z.object({
