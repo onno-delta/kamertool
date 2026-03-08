@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
+import { Search, X } from "lucide-react"
 import { useBriefing } from "@/components/briefing-context"
 import { copyAsRichText } from "@/lib/copy-rich-text"
 import { ProgressSidebar } from "@/components/progress-sidebar"
@@ -10,6 +11,7 @@ import { PartySelector } from "@/components/party-selector"
 import { useDataContext } from "@/components/data-context"
 
 type Party = { id: string; name: string; shortName: string }
+type Kamerlid = { id: string; naam: string; fractie?: string }
 
 function VoorbereidenContent() {
   const searchParams = useSearchParams()
@@ -19,22 +21,48 @@ function VoorbereidenContent() {
   const { parties, preferences } = useDataContext()
 
   const [selectedParty, setSelectedParty] = useState<Party | null>(null)
+  const [selectedKamerleden, setSelectedKamerleden] = useState<Kamerlid[]>([])
   const [partyLoaded, setPartyLoaded] = useState(false)
   const [started, setStarted] = useState(false)
-  const defaultPartyApplied = useRef(false)
+  const defaultsApplied = useRef(false)
 
-  // Apply default party from cached context
+  // Kamerleden search state
+  const [allKamerleden, setAllKamerleden] = useState<Kamerlid[]>([])
+  const [kamerleidSearch, setKamerleidSearch] = useState("")
+  const [kamerleidFocused, setKamerleidFocused] = useState(false)
+
+  // Fetch all kamerleden once for search
   useEffect(() => {
-    if (defaultPartyApplied.current) return
+    fetch("/api/kamerleden")
+      .then((r) => r.ok ? r.json() : [])
+      .then(setAllKamerleden)
+      .catch(() => {})
+  }, [])
+
+  // Apply defaults from cached context (party + kamerleden)
+  useEffect(() => {
+    if (defaultsApplied.current) return
     if (preferences && parties.length > 0) {
       if (preferences.defaultPartyId) {
         const match = parties.find((p) => p.id === preferences.defaultPartyId)
         if (match) setSelectedParty(match)
       }
-      defaultPartyApplied.current = true
+      if (preferences.kamerleden?.length > 0) {
+        setSelectedKamerleden(preferences.kamerleden)
+      }
+      defaultsApplied.current = true
       setPartyLoaded(true)
     }
   }, [preferences, parties])
+
+  // Filter kamerleden search results
+  const kamerleidResults = (() => {
+    const selectedIds = new Set(selectedKamerleden.map((k) => k.id))
+    const available = allKamerleden.filter((k) => !selectedIds.has(k.id))
+    if (!kamerleidSearch.trim()) return available
+    const q = kamerleidSearch.toLowerCase()
+    return available.filter((k) => k.naam.toLowerCase().includes(q))
+  })()
 
   function handleStart() {
     if (!topic) return
@@ -42,7 +70,7 @@ function VoorbereidenContent() {
     const partyOverride = selectedParty
       ? { id: selectedParty.id, name: selectedParty.shortName }
       : null
-    startBriefing(topic, soort, partyOverride)
+    startBriefing(topic, soort, partyOverride, selectedKamerleden)
   }
 
   if (!topic) {
@@ -91,6 +119,77 @@ function VoorbereidenContent() {
                 ) : (
                   <div className="h-8 w-24 animate-pulse rounded bg-border-light" />
                 )}
+              </div>
+
+              {/* Kamerleden selector */}
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-primary">
+                  Relevante Kamerleden
+                </label>
+                <p className="mb-2 text-xs text-text-muted">
+                  De briefing besteedt extra aandacht aan standpunten en bijdragen van deze Kamerleden.
+                </p>
+
+                {/* Selected chips */}
+                {selectedKamerleden.length > 0 && (
+                  <div className="mb-2.5 flex flex-wrap gap-1.5">
+                    {selectedKamerleden.map((k) => (
+                      <span
+                        key={k.id}
+                        className="inline-flex items-center gap-1 rounded-full border border-border-light bg-white py-0.5 pl-2.5 pr-1 text-xs text-primary"
+                      >
+                        {k.naam}
+                        {k.fractie && (
+                          <span className="text-text-muted">({k.fractie})</span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => setSelectedKamerleden((prev) => prev.filter((x) => x.id !== k.id))}
+                          className="ml-0.5 flex h-4 w-4 items-center justify-center rounded-full text-text-muted hover:bg-border-light hover:text-primary"
+                        >
+                          <X className="h-2.5 w-2.5" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Search input */}
+                <div className="relative">
+                  <div className="flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-1.5 transition-[border-color,box-shadow] focus-within:border-primary focus-within:shadow-[0_0_0_2px_rgba(21,66,115,0.08)]">
+                    <Search className="h-3.5 w-3.5 shrink-0 text-text-muted" />
+                    <input
+                      type="text"
+                      value={kamerleidSearch}
+                      onChange={(e) => setKamerleidSearch(e.target.value)}
+                      onFocus={() => setKamerleidFocused(true)}
+                      onBlur={() => setTimeout(() => setKamerleidFocused(false), 200)}
+                      placeholder="Zoek op naam..."
+                      className="w-full border-none bg-transparent text-sm text-primary placeholder:text-text-muted focus:outline-none"
+                    />
+                  </div>
+
+                  {kamerleidFocused && kamerleidResults.length > 0 && (
+                    <div className="absolute z-10 mt-1 max-h-40 w-full overflow-y-auto rounded-xl border border-border-light bg-white shadow-lg">
+                      {kamerleidResults.slice(0, 20).map((k) => (
+                        <button
+                          key={k.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedKamerleden((prev) => [...prev, k])
+                            setKamerleidSearch("")
+                          }}
+                          className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-primary transition-colors hover:bg-surface-muted"
+                        >
+                          <span className="font-medium">{k.naam}</span>
+                          {k.fractie && (
+                            <span className="text-xs text-text-muted">{k.fractie}</span>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="flex items-center gap-3 pt-2">

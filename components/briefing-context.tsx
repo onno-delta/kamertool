@@ -15,9 +15,11 @@ export type BriefingState = {
   cancelled?: boolean
 }
 
+type Kamerlid = { id: string; naam: string; fractie?: string }
+
 type BriefingContextType = {
   state: BriefingState | null
-  startBriefing: (topic: string, soort?: string, partyOverride?: { id: string; name: string } | null) => void
+  startBriefing: (topic: string, soort?: string, partyOverride?: { id: string; name: string } | null, kamerledenOverride?: Kamerlid[]) => void
   cancelBriefing: () => void
   downloadPDF: () => void
   dismiss: () => void
@@ -40,7 +42,7 @@ export function BriefingProvider({ children }: { children: ReactNode }) {
   const abortRef = useRef<AbortController | null>(null)
 
   const startBriefing = useCallback(
-    (topic: string, soort?: string, partyOverride?: { id: string; name: string } | null) => {
+    (topic: string, soort?: string, partyOverride?: { id: string; name: string } | null, kamerledenOverride?: Kamerlid[]) => {
       // Abort any previous request
       abortRef.current?.abort()
       const controller = new AbortController()
@@ -74,8 +76,9 @@ export function BriefingProvider({ children }: { children: ReactNode }) {
 
           setState((s) => (s ? { ...s, partyName: pName } : s))
 
-          // Collect kamerlid names for the briefing
-          const kamerledenNames = (prefs?.kamerleden ?? []).map(
+          // Collect kamerlid names for the briefing (override > preferences)
+          const kamerledenSource = kamerledenOverride ?? prefs?.kamerleden ?? []
+          const kamerledenNames = kamerledenSource.map(
             (k: { naam: string; fractie?: string }) =>
               k.fractie ? `${k.naam} (${k.fractie})` : k.naam
           )
