@@ -220,7 +220,7 @@ export default function AgendaPage() {
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Zoek op onderwerp of commissie..."
+                placeholder="Zoeken"
                 className="w-52 rounded border border-border bg-white py-1.5 pl-8 pr-3 text-sm text-primary placeholder:text-text-muted focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20"
               />
             </div>
