@@ -10,6 +10,7 @@ type Source = { id: string; url: string; title?: string | null }
 
 type Preferences = {
   defaultPartyId: string | null
+  searchBeyondSources: boolean
   dossiers: string[]
   kamerleden: Kamerlid[]
   meetingSkills: Record<string, string>

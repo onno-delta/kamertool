@@ -47,6 +47,7 @@ export const users = pgTable("user", {
   role: text("role").notNull().default("member"),
   organisationId: text("organisationId").references(() => organisations.id),
   defaultPartyId: text("defaultPartyId").references(() => parties.id),
+  searchBeyondSources: boolean("search_beyond_sources").notNull().default(true),
 })
 
 export const accounts = pgTable(

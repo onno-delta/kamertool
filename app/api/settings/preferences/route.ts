@@ -13,7 +13,7 @@ export async function GET() {
     console.log("[settings/preferences] GET", { userId: session.user.id })
 
     const [user] = await db
-      .select({ defaultPartyId: users.defaultPartyId })
+      .select({ defaultPartyId: users.defaultPartyId, searchBeyondSources: users.searchBeyondSources })
       .from(users)
       .where(eq(users.id, session.user.id))
       .limit(1)
@@ -40,6 +40,7 @@ export async function GET() {
 
     return NextResponse.json({
       defaultPartyId: user?.defaultPartyId ?? null,
+      searchBeyondSources: user?.searchBeyondSources ?? true,
       dossiers: dossiers.map((d) => d.dossier),
       kamerleden: kamerleden.map((k) => ({ id: k.persoonId, naam: k.naam, fractie: k.fractie })),
       meetingSkills: meetingSkills.reduce((acc, s) => ({ ...acc, [s.soort]: s.prompt }), {} as Record<string, string>),
@@ -61,13 +62,16 @@ export async function PUT(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { defaultPartyId, dossiers, kamerleden, meetingSkills, sources } = await req.json()
-    console.log("[settings/preferences] PUT", { userId: session.user.id, defaultPartyId, dossiers, kamerleden: kamerleden?.length, meetingSkills: meetingSkills ? Object.keys(meetingSkills).length : 0, sources: sources?.length })
+    const { defaultPartyId, dossiers, kamerleden, meetingSkills, sources, searchBeyondSources } = await req.json()
+    console.log("[settings/preferences] PUT", { userId: session.user.id, defaultPartyId, dossiers, kamerleden: kamerleden?.length, meetingSkills: meetingSkills ? Object.keys(meetingSkills).length : 0, sources: sources?.length, searchBeyondSources })
 
-    // Update default party
+    // Update default party + search beyond sources
     await db
       .update(users)
-      .set({ defaultPartyId: defaultPartyId || null })
+      .set({
+        defaultPartyId: defaultPartyId || null,
+        searchBeyondSources: searchBeyondSources ?? true,
+      })
       .where(eq(users.id, session.user.id))
 
     // Replace dossiers

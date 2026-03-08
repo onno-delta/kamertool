@@ -2,7 +2,7 @@ import { streamText, stepCountIs } from "ai"
 import { getModel } from "@/lib/ai"
 import { auth } from "@/auth"
 import { db } from "@/lib/db"
-import { briefings, userSources } from "@/lib/db/schema"
+import { briefings, users, userSources } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 import { checkAndIncrementUsage, isUnlimitedEmail } from "@/lib/rate-limit"
 import { cookies } from "next/headers"
@@ -104,13 +104,22 @@ ${Array.isArray(kamerleden) && kamerleden.length > 0 ? `\nRelevante Kamerleden o
 
 BELANGRIJK: Zoek de daadwerkelijke inhoud van de relevante stukken op en vat samen wat erin staat. Noem altijd het documentnummer en de datum. Gebruik je tools om actuele informatie op te zoeken.`
 
-    // Fetch user's priority sources
+    // Fetch user's priority sources + search-beyond preference
     const sources = userId
       ? await db.select({ url: userSources.url, title: userSources.title }).from(userSources).where(eq(userSources.userId, userId))
       : []
+    let searchBeyondSources = true
+    if (userId) {
+      const [user] = await db.select({ searchBeyondSources: users.searchBeyondSources }).from(users).where(eq(users.id, userId)).limit(1)
+      if (user) searchBeyondSources = user.searchBeyondSources
+    }
 
     const sourcesPrompt = sources.length > 0
       ? `\n\nDe gebruiker heeft de volgende bronnen als prioriteit ingesteld. Raadpleeg deze actief met fetchWebPage wanneer ze relevant zijn voor het onderwerp:\n${sources.map((s) => s.title ? `- ${s.title}: ${s.url}` : `- ${s.url}`).join("\n")}`
+      : ""
+
+    const beyondPrompt = !searchBeyondSources
+      ? `\n\nBELANGRIJK: Gebruik ALLEEN de geïntegreerde bronnen (parlementaire databases, partijprogramma's, nieuwszoekmachine) en de eigen websites hierboven. Gebruik fetchWebPage NIET om andere websites te raadplegen.`
       : ""
 
     const abortController = new AbortController()
@@ -127,7 +136,7 @@ Werkwijze:
 - Gebruik searchToezeggingen, searchStemmingen en searchHandelingen voor context
 - Gebruik getRecenteKamervragen om recente schriftelijke vragen te bekijken
 - Vat de inhoud van elk relevant stuk bondig maar volledig samen
-- Voor de concept-speech: zoek altijd eerst eerdere bijdragen van het Kamerlid op in de Handelingen via searchParlement om hun spreekstijl te analyseren en te imiteren${sourcesPrompt}`,
+- Voor de concept-speech: zoek altijd eerst eerdere bijdragen van het Kamerlid op in de Handelingen via searchParlement om hun spreekstijl te analyseren en te imiteren${sourcesPrompt}${beyondPrompt}`,
       prompt,
       stopWhen: stepCountIs(25),
       tools: {

@@ -46,11 +46,73 @@ const BUILTIN_SOURCES = [
   { name: "ACVZ", desc: "Adviescommissie voor Vreemdelingenzaken - adviescommissievoorvreemdelingenzaken.nl" },
   { name: "ATR", desc: "Adviescollege Toetsing Regeldruk - atr-regeldruk.nl" },
   { name: "RLi", desc: "Raad voor de leefomgeving en infrastructuur - rli.nl" },
+  // Uitvoeringsorganisaties
+  { name: "UWV", desc: "Werknemersverzekeringen - uwv.nl" },
+  { name: "SVB", desc: "Sociale Verzekeringsbank - svb.nl" },
+  { name: "Belastingdienst", desc: "Belastingdienst - belastingdienst.nl" },
+  { name: "DUO", desc: "Dienst Uitvoering Onderwijs - duo.nl" },
+  { name: "RVO", desc: "Rijksdienst voor Ondernemend Nederland - rvo.nl" },
+  { name: "Rijkswaterstaat", desc: "Rijkswaterstaat - rijkswaterstaat.nl" },
+  { name: "IND", desc: "Immigratie- en Naturalisatiedienst - ind.nl" },
+  { name: "COA", desc: "Centraal Orgaan opvang Asielzoekers - coa.nl" },
+  { name: "CJIB", desc: "Centraal Justitieel Incassobureau - cjib.nl" },
+  { name: "DJI", desc: "Dienst Justitiële Inrichtingen - dji.nl" },
+  { name: "Kadaster", desc: "Kadaster - kadaster.nl" },
+  { name: "KVK", desc: "Kamer van Koophandel - kvk.nl" },
+  { name: "NVWA", desc: "Nederlandse Voedsel- en Warenautoriteit - nvwa.nl" },
+  { name: "NFI", desc: "Nederlands Forensisch Instituut - forensischinstituut.nl" },
+  // Hoge Colleges van Staat & Rechtspraak
+  { name: "Eerste Kamer", desc: "Eerste Kamer der Staten-Generaal - eerstekamer.nl" },
+  { name: "Nationale Ombudsman", desc: "Nationale Ombudsman - nationaleombudsman.nl" },
+  { name: "Rechtspraak", desc: "De Rechtspraak - rechtspraak.nl" },
+  // Toezichthouders (extra)
+  { name: "NZa", desc: "Nederlandse Zorgautoriteit - nza.nl" },
+  { name: "OVV", desc: "Onderzoeksraad voor Veiligheid - onderzoeksraad.nl" },
+  { name: "Kansspelautoriteit", desc: "Kansspelautoriteit - kansspelautoriteit.nl" },
+  { name: "ANVS", desc: "Autoriteit Nucleaire Veiligheid en Stralingsbescherming - anvs.nl" },
+  { name: "SodM", desc: "Staatstoezicht op de Mijnen - sodm.nl" },
+  { name: "Commissariaat voor de Media", desc: "Commissariaat voor de Media - cvdm.nl" },
+  { name: "CTIVD", desc: "Toezicht op inlichtingen- en veiligheidsdiensten - ctivd.nl" },
+  // Adviesraden (extra)
+  { name: "Raad voor Cultuur", desc: "Raad voor Cultuur - raadvoorcultuur.nl" },
+  { name: "AIV", desc: "Adviesraad Internationale Vraagstukken - adviesraadinternationalevraagstukken.nl" },
+  { name: "RVS", desc: "Raad voor Volksgezondheid en Samenleving - raadrvs.nl" },
+  { name: "Raad voor Dierenaangelegenheden", desc: "Raad voor Dierenaangelegenheden - rda.nl" },
+  { name: "College voor de Rechten van de Mens", desc: "College voor de Rechten van de Mens - mensenrechten.nl" },
+  // Kennisinstituten (extra)
+  { name: "Clingendael", desc: "Instituut voor Internationale Betrekkingen - clingendael.org" },
+  { name: "NIVEL", desc: "Nederlands instituut voor onderzoek van de gezondheidszorg - nivel.nl" },
+  { name: "SWOV", desc: "Instituut voor wetenschappelijk onderzoek verkeersveiligheid - swov.nl" },
+  { name: "NIDI", desc: "Nederlands Interdisciplinair Demografisch Instituut - nidi.nl" },
+  { name: "KNAW", desc: "Koninklijke Nederlandse Akademie van Wetenschappen - knaw.nl" },
+  // Veiligheid & Inlichtingen
+  { name: "AIVD", desc: "Algemene Inlichtingen- en Veiligheidsdienst - aivd.nl" },
+  { name: "MIVD", desc: "Militaire Inlichtingen- en Veiligheidsdienst - defensie.nl/mivd" },
+  { name: "NCTV", desc: "Nationaal Coördinator Terrorismebestrijding en Veiligheid - nctv.nl" },
+  { name: "Politie", desc: "Nationale Politie - politie.nl" },
+  // Zorg
+  { name: "Zorginstituut Nederland", desc: "Zorginstituut Nederland - zorginstituutnederland.nl" },
+  { name: "CIZ", desc: "Centrum Indicatiestelling Zorg - ciz.nl" },
+  { name: "CAK", desc: "CAK - hetcak.nl" },
   // Internationaal
   { name: "EUR-Lex", desc: "EU-wetgeving en jurisprudentie - eur-lex.europa.eu" },
   { name: "ECB", desc: "Europese Centrale Bank - ecb.europa.eu" },
+  { name: "Europese Commissie", desc: "Europese Commissie - ec.europa.eu" },
+  { name: "Europees Parlement", desc: "Europees Parlement - europarl.europa.eu" },
+  { name: "Eurostat", desc: "Europees Bureau voor de Statistiek - ec.europa.eu/eurostat" },
+  { name: "EHRM", desc: "Europees Hof voor de Rechten van de Mens - echr.coe.int" },
+  { name: "Raad van Europa", desc: "Raad van Europa - coe.int" },
   { name: "OECD", desc: "Organisatie voor Economische Samenwerking en Ontwikkeling - oecd.org" },
   { name: "IMF", desc: "Internationaal Monetair Fonds - imf.org" },
+  { name: "VN", desc: "Verenigde Naties - un.org" },
+  { name: "WHO", desc: "Wereldgezondheidsorganisatie - who.int" },
+  { name: "NATO", desc: "Noord-Atlantische Verdragsorganisatie - nato.int" },
+  { name: "Wereldbank", desc: "Wereldbank - worldbank.org" },
+  { name: "ILO", desc: "Internationale Arbeidsorganisatie - ilo.org" },
+  { name: "UNHCR", desc: "VN-Vluchtelingenorganisatie - unhcr.org" },
+  { name: "IPCC", desc: "Intergouvernementeel Panel inzake Klimaatverandering - ipcc.ch" },
+  // Overig
+  { name: "Delta Instituut", desc: "Delta Instituut - deltainstituut.nl" },
 ]
 
 export default function SettingsPage() {
@@ -71,6 +133,7 @@ export default function SettingsPage() {
   const [newSourceUrl, setNewSourceUrl] = useState("")
   const [newSourceTitle, setNewSourceTitle] = useState("")
   const [sourcesExpanded, setSourcesExpanded] = useState(false)
+  const [searchBeyondSources, setSearchBeyondSources] = useState(true)
 
   // Apply cached preferences + parties
   useEffect(() => {
@@ -78,6 +141,7 @@ export default function SettingsPage() {
     setSelectedDossiers(preferences.dossiers ?? [])
     setSelectedKamerleden(preferences.kamerleden ?? [])
     setUserSources((preferences.sources ?? []).map((s) => ({ url: s.url, title: s.title ?? undefined })))
+    setSearchBeyondSources(preferences.searchBeyondSources ?? true)
     if (preferences.defaultPartyId && parties.length > 0) {
       const match = parties.find((p) => p.id === preferences.defaultPartyId)
       if (match) setSelectedParty(match)
@@ -173,6 +237,7 @@ export default function SettingsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           defaultPartyId: selectedParty?.id ?? null,
+          searchBeyondSources,
           dossiers: selectedDossiers,
           kamerleden: selectedKamerleden,
           sources: userSources,
@@ -371,6 +436,20 @@ export default function SettingsPage() {
         </div>
 
         <div className="px-5 py-5">
+          {/* Search beyond sources toggle */}
+          <label className="mb-5 flex items-center gap-3 rounded-lg border border-border-light bg-surface-muted px-4 py-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={searchBeyondSources}
+              onChange={(e) => { setSearchBeyondSources(e.target.checked); setPrefsSaved(false) }}
+              className="h-4 w-4 rounded border-border text-primary accent-primary focus:ring-primary"
+            />
+            <div>
+              <span className="text-sm font-medium text-primary">Zoek ook buiten deze bronnen</span>
+              <p className="text-xs text-text-muted">De AI mag ook andere websites raadplegen voor extra context</p>
+            </div>
+          </label>
+
           {/* Built-in sources (collapsible) */}
           <button
             type="button"
