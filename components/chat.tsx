@@ -215,7 +215,7 @@ export function Chat() {
 
           {/* Messages */}
           <div
-            className={`flex-1 overflow-y-auto${isLoading && !userScrolled ? " hide-scrollbar" : ""}`}
+            className={`${messages.length > 0 ? "flex-1" : ""} overflow-y-auto${isLoading && !userScrolled ? " hide-scrollbar" : ""}`}
             onScroll={() => { if (isLoading && !userScrolled) setUserScrolled(true) }}
           >
             <div className="mx-auto max-w-[42rem] px-6 py-5">
