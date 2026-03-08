@@ -345,7 +345,7 @@ export function Chat() {
         {/* Right sidebar: progress when tools active, links otherwise */}
         <aside className="hidden min-h-0 lg:block">
           {toolSteps.length > 0 ? (
-            <ProgressSidebar steps={toolSteps} />
+            <ProgressSidebar steps={toolSteps} isStreaming={isLoading} hasAssistantText={!!hasAssistantText} />
           ) : (
             <AgendaSidebar onPrepare={handleSuggestion} />
           )}

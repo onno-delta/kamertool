@@ -52,55 +52,125 @@ export function getStepDetail(
   return undefined
 }
 
-type DisplayItem = {
-  key: string
-  tool: string
-  label: string
-  detail?: string
-  status: "running" | "done" | "error"
-  count: number
+// --- Phase grouping ---
+
+type PhaseKey = "search" | "fetch" | "summarize"
+
+const TOOL_PHASE: Record<string, PhaseKey> = {
+  searchParlement: "search",
+  searchKamerstukken: "search",
+  searchHandelingen: "search",
+  searchToezeggingen: "search",
+  searchStemmingen: "search",
+  searchAgenda: "search",
+  searchDocumenten: "search",
+  searchPartyDocs: "search",
+  searchNews: "search",
+  getRecenteKamervragen: "search",
+  getDocumentText: "fetch",
+  fetchWebPage: "fetch",
 }
 
-function processSteps(steps: ToolStep[]): DisplayItem[] {
-  // Group consecutive same-tool completed fetchWebPage calls
-  const grouped: DisplayItem[] = []
+const PHASE_CONFIG: Record<PhaseKey, {
+  label: string
+  doneLabel: (count: number) => string
+}> = {
+  search: {
+    label: "Bronnen zoeken",
+    doneLabel: (n) => `${n} ${n === 1 ? "bron" : "bronnen"} doorzocht`,
+  },
+  fetch: {
+    label: "Documenten lezen",
+    doneLabel: (n) => `${n} ${n === 1 ? "document" : "documenten"} gelezen`,
+  },
+  summarize: {
+    label: "Antwoord schrijven",
+    doneLabel: () => "Antwoord geschreven",
+  },
+}
+
+type PhaseItem = {
+  key: PhaseKey
+  label: string
+  detail?: string
+  status: "running" | "done" | "idle"
+}
+
+function processPhases(
+  steps: ToolStep[],
+  isStreaming: boolean,
+  hasAssistantText: boolean
+): PhaseItem[] {
+  // Group steps by phase
+  const byPhase: Record<PhaseKey, ToolStep[]> = { search: [], fetch: [], summarize: [] }
   for (const step of steps) {
-    const last = grouped[grouped.length - 1]
-    if (
-      last &&
-      last.status === "done" &&
-      step.status === "done" &&
-      step.tool === "fetchWebPage" &&
-      last.tool === "fetchWebPage"
-    ) {
-      last.count++
-      last.label = last.label.split(" ")[0]
-      last.detail = `${last.count}x opgehaald`
-      last.key += `-${step.id}`
-      continue
-    }
-    grouped.push({
-      key: step.id,
-      tool: step.tool,
-      label: step.label,
-      detail: step.detail,
-      status: step.status,
-      count: 1,
+    const phase = TOOL_PHASE[step.tool]
+    if (phase) byPhase[phase].push(step)
+  }
+
+  const phases: PhaseItem[] = []
+
+  // Search phase
+  if (byPhase.search.length > 0) {
+    const anyRunning = byPhase.search.some((s) => s.status === "running")
+    const allSettled = byPhase.search.every((s) => s.status === "done" || s.status === "error")
+    const config = PHASE_CONFIG.search
+    phases.push({
+      key: "search",
+      label: config.label,
+      status: anyRunning ? "running" : allSettled ? "done" : "running",
+      detail: allSettled ? config.doneLabel(byPhase.search.length) : undefined,
     })
   }
 
-  return grouped
+  // Fetch phase
+  if (byPhase.fetch.length > 0) {
+    const anyRunning = byPhase.fetch.some((s) => s.status === "running")
+    const allSettled = byPhase.fetch.every((s) => s.status === "done" || s.status === "error")
+    const config = PHASE_CONFIG.fetch
+    phases.push({
+      key: "fetch",
+      label: config.label,
+      status: anyRunning ? "running" : allSettled ? "done" : "running",
+      detail: allSettled ? config.doneLabel(byPhase.fetch.length) : undefined,
+    })
+  }
+
+  // Summarize phase: derived from streaming state
+  const noRunningTools = steps.length > 0 && steps.every((s) => s.status === "done" || s.status === "error")
+  if (isStreaming && noRunningTools && steps.length > 0) {
+    phases.push({
+      key: "summarize",
+      label: PHASE_CONFIG.summarize.label,
+      status: "running",
+    })
+  } else if (!isStreaming && steps.length > 0 && hasAssistantText) {
+    phases.push({
+      key: "summarize",
+      label: PHASE_CONFIG.summarize.label,
+      status: "done",
+      detail: PHASE_CONFIG.summarize.doneLabel(0),
+    })
+  }
+
+  return phases
 }
 
-export function ProgressSidebar({ steps }: { steps: ToolStep[] }) {
+type ProgressSidebarProps = {
+  steps: ToolStep[]
+  isStreaming?: boolean
+  hasAssistantText?: boolean
+}
+
+export function ProgressSidebar({ steps, isStreaming = false, hasAssistantText = false }: ProgressSidebarProps) {
   if (steps.length === 0) return null
 
-  const items = processSteps(steps)
-  if (items.length === 0) return null
+  const phases = processPhases(steps, isStreaming, hasAssistantText)
+  if (phases.length === 0) return null
 
-  const doneCount = items.filter((i) => i.status === "done").length
-  const totalCount = items.length
-  const allDone = doneCount === totalCount && !items.some((i) => i.status === "running")
+  const doneCount = phases.filter((p) => p.status === "done").length
+  const totalCount = phases.length
+  const allDone = doneCount === totalCount && !phases.some((p) => p.status === "running")
 
   return (
     <div className="sticky top-4 max-h-[calc(100vh-2rem)] overflow-y-auto">
@@ -126,41 +196,39 @@ export function ProgressSidebar({ steps }: { steps: ToolStep[] }) {
               </svg>
             </span>
             <span className="text-[0.8125rem] font-medium text-green-800">
-              {totalCount} {totalCount === 1 ? "bron" : "bronnen"} doorzocht
+              Onderzoek afgerond
             </span>
           </div>
         ) : (
           <div className="space-y-0">
-            {items.map((item, idx) => (
+            {phases.map((phase, idx) => (
               <div
-                key={item.key}
+                key={phase.key}
                 className={`flex items-start gap-2.5 py-2.5 animate-[fadeIn_0.3s_ease-out] ${idx > 0 ? "border-t border-border-light" : ""}`}
               >
                 <div className="mt-0.5 shrink-0">
-                  {item.status === "running" ? (
+                  {phase.status === "running" ? (
                     <span className="block h-5 w-5 animate-spin rounded-full border-2 border-border border-t-primary" />
-                  ) : item.status === "error" ? (
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-red-100">
-                      <svg className="h-2.5 w-2.5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </span>
-                  ) : (
+                  ) : phase.status === "done" ? (
                     <span className="flex h-5 w-5 items-center justify-center rounded-full bg-green-100">
                       <svg className="h-[11px] w-[11px] text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                       </svg>
                     </span>
+                  ) : (
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gray-100">
+                      <span className="h-1.5 w-1.5 rounded-full bg-gray-300" />
+                    </span>
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className={`truncate text-[0.8125rem] font-medium ${
-                    item.status === "running" ? "text-primary" : "text-text-muted"
+                  <p className={`text-[0.8125rem] font-medium ${
+                    phase.status === "running" ? "text-primary" : "text-text-muted"
                   }`}>
-                    {item.label}
+                    {phase.label}
                   </p>
-                  {item.detail && (
-                    <p className="truncate text-xs text-text-muted">{item.detail}</p>
+                  {phase.detail && (
+                    <p className="text-xs text-text-muted">{phase.detail}</p>
                   )}
                 </div>
               </div>

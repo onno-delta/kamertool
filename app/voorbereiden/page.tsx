@@ -321,7 +321,7 @@ function VoorbereidenContent() {
 
       {/* Progress sidebar */}
       <div className="hidden min-h-0 lg:block">
-        <ProgressSidebar steps={steps} />
+        <ProgressSidebar steps={steps} isStreaming={loading ?? false} hasAssistantText={!!content} />
       </div>
     </div>
   )
