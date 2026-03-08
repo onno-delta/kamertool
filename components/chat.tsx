@@ -17,7 +17,7 @@ import {
 import { PartySelector } from "./party-selector"
 import { Message, extractToolSteps } from "./message"
 import { ProgressSidebar } from "./progress-sidebar"
-import { LinksSidebar } from "./links-sidebar"
+import { AgendaSidebar } from "./agenda-sidebar"
 import { useDataContext } from "./data-context"
 
 type Party = { id: string; name: string; shortName: string }
@@ -336,7 +336,7 @@ export function Chat() {
           {toolSteps.length > 0 ? (
             <ProgressSidebar steps={toolSteps} />
           ) : (
-            <LinksSidebar />
+            <AgendaSidebar />
           )}
         </aside>
       </div>
