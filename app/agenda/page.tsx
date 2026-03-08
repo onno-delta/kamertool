@@ -351,7 +351,7 @@ export default function AgendaPage() {
                   </h2>
                   <span className="h-px flex-1 bg-border-light" />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-3">
                   {grouped[date].map((item) => (
                     <div
                       key={item.Id}
