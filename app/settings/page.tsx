@@ -286,8 +286,26 @@ export default function SettingsPage() {
         </p>
       </section>
 
+      {!preferences && (
+        <div className="space-y-5 animate-pulse">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="rounded-xl border border-border-light bg-white shadow-sm">
+              <div className="flex items-center gap-3 border-b border-border-light bg-surface-muted rounded-t-xl px-5 py-3.5">
+                <div className="h-8 w-8 rounded-lg bg-border-light" />
+                <div className="h-4 w-32 rounded bg-border-light" />
+              </div>
+              <div className="px-5 py-5 space-y-3">
+                <div className="h-3 w-3/4 rounded bg-border-light" />
+                <div className="h-3 w-1/2 rounded bg-border-light" />
+                <div className="h-10 w-full rounded-lg bg-border-light" />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Kamerleden card */}
-      <div className="mb-5 rounded-xl border border-border-light bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.02)]">
+      <div className={`mb-5 rounded-xl border border-border-light bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.02)] ${!preferences ? "hidden" : ""}`}>
         <div className="flex items-center gap-3 border-b border-border-light bg-surface-muted rounded-t-xl px-5 py-3.5">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-15">
             <Users className="h-4 w-4 text-primary" />
@@ -369,7 +387,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Party selector card */}
-      <div className="mb-5 rounded-xl border border-border-light bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.02)]">
+      <div className={`mb-5 rounded-xl border border-border-light bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.02)] ${!preferences ? "hidden" : ""}`}>
         <div className="flex items-center gap-3 border-b border-border-light bg-surface-muted px-5 py-3.5">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-15">
             <Vote className="h-4 w-4 text-primary" />
@@ -395,7 +413,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Commissies card */}
-      <div className="mb-5 overflow-hidden rounded-xl border border-border-light bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.02)]">
+      <div className={`mb-5 overflow-hidden rounded-xl border border-border-light bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.02)] ${!preferences ? "hidden" : ""}`}>
         <div className="flex items-center gap-3 border-b border-border-light bg-surface-muted px-5 py-3.5">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-15">
             <FolderOpen className="h-4 w-4 text-primary" />
@@ -439,7 +457,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Bronnen card */}
-      <div className="mb-8 rounded-xl border border-border-light bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.02)]">
+      <div className={`mb-8 rounded-xl border border-border-light bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.02)] ${!preferences ? "hidden" : ""}`}>
         <div className="flex items-center gap-3 border-b border-border-light bg-surface-muted rounded-t-xl px-5 py-3.5">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-15">
             <Database className="h-4 w-4 text-primary" />
@@ -596,7 +614,7 @@ export default function SettingsPage() {
       <button
         onClick={handleSavePrefs}
         disabled={prefsSaving}
-        className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-dark active:translate-y-px disabled:opacity-50"
+        className={`inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-dark active:translate-y-px disabled:opacity-50 ${!preferences ? "hidden" : ""}`}
       >
         {prefsSaving ? (
           <>

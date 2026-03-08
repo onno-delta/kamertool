@@ -49,16 +49,14 @@ export default function InstructiesPage() {
   const [expandedSkill, setExpandedSkill] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
-  const [loading, setLoading] = useState(true)
   const prefsApplied = useRef(false)
 
-  // Apply cached preferences
+  // Apply user overrides when preferences arrive
   useEffect(() => {
     if (prefsApplied.current) return
     if (preferences) {
       if (preferences.meetingSkills) setMeetingSkills(preferences.meetingSkills)
       prefsApplied.current = true
-      setLoading(false)
     }
   }, [preferences])
 
@@ -81,14 +79,6 @@ export default function InstructiesPage() {
     setSaving(false)
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
-  }
-
-  if (loading) {
-    return (
-      <div className="flex flex-1 items-center justify-center">
-        <span className="h-5 w-5 animate-spin rounded-full border-2 border-border border-t-primary" />
-      </div>
-    )
   }
 
   return (

@@ -18,6 +18,16 @@ type Preferences = {
   hiddenSources: string[]
 }
 
+const EMPTY_PREFERENCES: Preferences = {
+  defaultPartyId: null,
+  searchBeyondSources: true,
+  dossiers: [],
+  kamerleden: [],
+  meetingSkills: {},
+  sources: [],
+  hiddenSources: [],
+}
+
 type DataContextType = {
   parties: Party[]
   preferences: Preferences | null
@@ -45,15 +55,18 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [preferences, setPreferences] = useState<Preferences | null>(null)
   const [sessionKamerleden, setSessionKamerleden] = useState<Kamerlid[]>([])
 
-  const fetchPreferences = useCallback(async () => {
+  const fetchPreferences = useCallback(async (signal?: AbortSignal) => {
     try {
-      const res = await fetch("/api/settings/preferences")
+      const res = await fetch("/api/settings/preferences", { signal })
       if (res.ok) {
         const data = await res.json()
         setPreferences(data)
         setSessionKamerleden(data.kamerleden ?? [])
+        return
       }
-    } catch { /* unauthenticated or network error */ }
+    } catch { /* unauthenticated, timeout, or network error */ }
+    // On any failure, set empty defaults so pages don't hang
+    setPreferences((prev) => prev ?? EMPTY_PREFERENCES)
   }, [])
 
   const addSessionKamerlid = useCallback((k: Kamerlid) => {
@@ -71,11 +84,12 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   // session cookie directly; returns 401 for unauthenticated users
   // which fetchPreferences handles gracefully.
   useEffect(() => {
-    fetch("/api/parties")
+    const timeout = AbortSignal.timeout(5000)
+    fetch("/api/parties", { signal: timeout })
       .then((r) => r.json())
       .then(setParties)
       .catch(() => {})
-    fetchPreferences()
+    fetchPreferences(timeout)
   }, [fetchPreferences])
 
   return (
