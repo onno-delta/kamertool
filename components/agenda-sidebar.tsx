@@ -97,15 +97,25 @@ function KamerlidPicker({ onSelect }: { onSelect: (k: Kamerlid) => void }) {
   )
 }
 
+// Plenaire activiteiten zijn relevant voor alle Kamerleden
+const PLENAIRE_SOORTEN = new Set([
+  "Plenair debat",
+  "Tweeminutendebat",
+  "Stemmingen",
+  "Regeling van werkzaamheden",
+])
+
 const PAGE_SIZE = 3
 
 export function AgendaSidebar({ onPrepare }: { onPrepare?: (text: string) => void }) {
   const { sessionKamerleden, addSessionKamerlid, removeSessionKamerlid } = useDataContext()
 
-  const [events, setEvents] = useState<Activiteit[]>([])
+  const [allEvents, setAllEvents] = useState<Activiteit[]>([])
+  const [commissies, setCommissies] = useState<Set<string> | null>(null)
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(0)
 
+  // Fetch all agenda events
   useEffect(() => {
     const now = new Date()
     const from = now.toISOString().split("T")[0]
@@ -113,17 +123,43 @@ export function AgendaSidebar({ onPrepare }: { onPrepare?: (text: string) => voi
     fetch(`/api/agenda?from=${from}&to=${to}`)
       .then((r) => r.ok ? r.json() : [])
       .then((data) => {
-        setEvents(Array.isArray(data) ? data : [])
+        setAllEvents(Array.isArray(data) ? data : [])
         setLoading(false)
       })
       .catch(() => setLoading(false))
   }, [])
+
+  // Fetch commissies for selected Kamerleden
+  useEffect(() => {
+    if (sessionKamerleden.length === 0) {
+      setCommissies(null)
+      return
+    }
+    const ids = sessionKamerleden.map((k) => k.id).join(",")
+    fetch(`/api/kamerleden/commissies?ids=${ids}`)
+      .then((r) => r.ok ? r.json() : { commissies: [] })
+      .then((data) => setCommissies(new Set(data.commissies as string[])))
+      .catch(() => setCommissies(null))
+  }, [sessionKamerleden])
+
+  // Filter events: if Kamerleden selected, only show plenaire + their commissions
+  const events = useMemo(() => {
+    if (!commissies) return allEvents
+    return allEvents.filter(
+      (e) =>
+        PLENAIRE_SOORTEN.has(e.Soort) ||
+        (e.Voortouwafkorting && commissies.has(e.Voortouwafkorting))
+    )
+  }, [allEvents, commissies])
 
   const totalPages = Math.ceil(events.length / PAGE_SIZE)
   const pageEvents = useMemo(
     () => events.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE),
     [events, page]
   )
+
+  // Reset to first page when filter changes
+  useEffect(() => { setPage(0) }, [commissies])
 
   return (
     <div className="sticky top-4">
