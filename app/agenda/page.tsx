@@ -27,7 +27,7 @@ function toDateStr(d: Date): string {
 
 const today = new Date()
 const defaultFrom = toDateStr(today)
-const defaultTo = toDateStr(new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000))
+const defaultTo = toDateStr(new Date(today.getTime() + 14 * 24 * 60 * 60 * 1000))
 
 const TYPE_COLORS: Record<string, string> = {
   "Plenair debat": "bg-red-100 text-red-800",
