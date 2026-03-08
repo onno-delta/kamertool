@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { Calendar, Search, X, Users, Play } from "lucide-react"
+import { Calendar, Search, X, Play } from "lucide-react"
 import { useDataContext } from "./data-context"
 
 type Kamerlid = { id: string; naam: string; fractie?: string }
@@ -137,15 +137,15 @@ export function AgendaSidebar({ onPrepare }: { onPrepare?: (text: string) => voi
   }
 
   return (
-    <div className="sticky top-4 space-y-4">
-      {/* Kamerleden section */}
+    <div className="sticky top-4">
       <div className="rounded-xl border border-border-light bg-white p-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
         <h3 className="mb-3 flex items-center gap-1.5 text-[0.6875rem] font-semibold uppercase tracking-[0.075em] text-text-muted">
-          <Users className="h-[13px] w-[13px]" />
-          Kamerleden
+          <Calendar className="h-[13px] w-[13px]" />
+          Komende vergaderingen
         </h3>
 
-        {kamerleden.length > 0 ? (
+        {/* Kamerleden chips + picker */}
+        {kamerleden.length > 0 && (
           <div className="mb-3 flex flex-wrap gap-1.5">
             {kamerleden.map((k) => (
               <span
@@ -164,21 +164,10 @@ export function AgendaSidebar({ onPrepare }: { onPrepare?: (text: string) => voi
               </span>
             ))}
           </div>
-        ) : (
-          <p className="mb-3 text-xs text-text-muted">
-            Selecteer een Kamerlid om relevante vergaderingen te zien.
-          </p>
         )}
-
-        <KamerlidPicker onSelect={addKamerlid} />
-      </div>
-
-      {/* Upcoming events */}
-      <div className="rounded-xl border border-border-light bg-white p-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-        <h3 className="mb-3 flex items-center gap-1.5 text-[0.6875rem] font-semibold uppercase tracking-[0.075em] text-text-muted">
-          <Calendar className="h-[13px] w-[13px]" />
-          Komende vergaderingen
-        </h3>
+        <div className="mb-3">
+          <KamerlidPicker onSelect={addKamerlid} />
+        </div>
 
         {loading && (
           <div className="space-y-2">
