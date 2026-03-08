@@ -19,6 +19,7 @@ import {
   Vote,
   CalendarClock,
   MapPin,
+  ScrollText,
   RotateCcw,
   Save,
   Check,
@@ -39,6 +40,7 @@ const SKILL_ICONS: Record<string, React.ComponentType<{ className?: string }>> =
   "Stemmingen": Vote,
   "Regeling van werkzaamheden": CalendarClock,
   "Werkbezoek": MapPin,
+  "Petitieaanbieding": ScrollText,
 }
 
 export default function InstructiesPage() {
