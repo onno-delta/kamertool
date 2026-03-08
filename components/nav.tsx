@@ -15,6 +15,8 @@ import {
   Menu,
   X,
 } from "lucide-react"
+import { useDataContext } from "./data-context"
+import { PARTY_COLORS } from "@/lib/parties"
 
 const NAV_ICONS: Record<string, React.ReactNode> = {
   "/": <MessageSquare className="h-[15px] w-[15px] opacity-80" />,
@@ -30,6 +32,8 @@ export function Nav() {
   const pathname = usePathname()
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
+  const { parties, preferences } = useDataContext()
+  const selectedParty = parties.find(p => p.id === preferences?.defaultPartyId)
 
   // Close menu on route change
   const prevPathname = useRef(pathname)
@@ -108,6 +112,14 @@ export function Nav() {
           >
             <Layers className="h-[22px] w-[22px]" />
             Kamertool
+            {selectedParty && (
+              <span
+                className="rounded-full px-2 py-0.5 text-xs font-semibold text-white"
+                style={{ backgroundColor: PARTY_COLORS[selectedParty.shortName] }}
+              >
+                {selectedParty.shortName}
+              </span>
+            )}
           </Link>
           <div className="flex items-center gap-4">
             {session && (
@@ -140,9 +152,17 @@ export function Nav() {
           {/* Mobile: logo */}
           <Link
             href="/"
-            className="text-lg font-bold tracking-tight text-white md:hidden"
+            className="flex items-center gap-2 text-lg font-bold tracking-tight text-white md:hidden"
           >
             Kamertool
+            {selectedParty && (
+              <span
+                className="rounded-full px-2 py-0.5 text-xs font-semibold text-white"
+                style={{ backgroundColor: PARTY_COLORS[selectedParty.shortName] }}
+              >
+                {selectedParty.shortName}
+              </span>
+            )}
           </Link>
 
           {/* Desktop nav links */}
