@@ -115,7 +115,7 @@ Werkwijze:
 
 Doe eerst al je onderzoek met tools, en schrijf daarna direct de volledige briefing. Vraag niet om bevestiging tussendoor - ga altijd automatisch door van onderzoek naar het schrijven van het eindproduct.
 
-De instructies bevatten genummerde stappen. Doorloop deze stappen en gebruik de stapnamen als kopjes (##) in de briefing.
+De instructies bevatten genummerde stappen. Doorloop deze stappen en gebruik de stapnamen als kopjes (##) in de briefing. Begin NIET met een # titel of een inleidende zin zoals "Op basis van mijn onderzoek..." - start direct met het eerste ## kopje.
 
 Bronvermelding: gebruik doorlopend genummerde voetnoten [1], [2], [3] etc. in de tekst bij elke feitelijke bewering, elk document of elk standpunt. Sluit de briefing af met een ## Bronnen sectie waarin alle voetnoten staan met het volledige documentnummer, titel, datum en/of URL. Voorbeeld:
 [1] Kamerstuk 36 410-VIII nr. 45 - Kamerbrief over onderwijshuisvesting, 15 januari 2025

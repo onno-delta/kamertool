@@ -1,5 +1,5 @@
 import { Document, Page, Text, View, Image, Font, StyleSheet, pdf } from "@react-pdf/renderer"
-import { DELTA_LOGO_URI, TK_LOGO_URI } from "./pdf-assets"
+import { DELTA_LOGO_URI } from "./pdf-assets"
 
 // Fonts embedded as base64 data URIs — works on Vercel without file system access
 import { RIJKS_SANS_TEXT_REGULAR, RIJKS_SANS_HEADING_BOLD } from "./pdf-fonts-rijks"
@@ -53,10 +53,6 @@ const s = StyleSheet.create({
     paddingBottom: 8,
     borderBottomWidth: 2,
     borderBottomColor: C.primary,
-  },
-  tkLogo: {
-    height: 24,
-    width: 85, // 564/160 * 24 ≈ 85 (maintains aspect ratio)
   },
   headerCenter: {
     fontSize: 9,
@@ -183,10 +179,8 @@ function Header() {
   return (
     <View style={s.header} fixed>
       {/* eslint-disable-next-line jsx-a11y/alt-text */}
-      <Image style={s.tkLogo} src={TK_LOGO_URI} />
-      <Text style={s.headerCenter}>DEBATBRIEFING</Text>
-      {/* eslint-disable-next-line jsx-a11y/alt-text */}
       <Image style={s.headerLogo} src={DELTA_LOGO_URI} />
+      <Text style={s.headerCenter}>DEBATBRIEFING</Text>
     </View>
   )
 }
@@ -230,7 +224,7 @@ export function BriefingPDF({ topic, content, date, partyName }: BriefingPDFProp
       continue
     }
     if (trimmed.startsWith("# ")) {
-      elements.push(<View key={i++} minPresenceAhead={50}><Text style={s.h1}>{trimmed.slice(2)}</Text></View>)
+      // Skip top-level headings — the PDF title already covers this
       continue
     }
 

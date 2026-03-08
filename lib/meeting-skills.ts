@@ -227,6 +227,24 @@ Vergelijk met het partijstandpunt op dit beleidsterrein. Formuleer 10-15 vragen 
 Stap 4 - Mediakansen:
 Analyseer welke bevindingen mediageniek kunnen zijn. Beschrijf mogelijke fotomomenten, quotes of bevindingen die de fractie kan inzetten voor communicatie en sociale media.`,
   },
+  {
+    soort: "Petitieaanbieding",
+    label: "Petitieaanbieding",
+    steps: ["Achtergrond petitie", "Profiel indiener", "Beleidscontext", "Vragen & aandachtspunten"],
+    prompt: `Petitieaanbieding - burgers of organisaties bieden een petitie aan bij de Kamer. Het Kamerlid ontvangt de petitie namens de commissie en moet weten wie er voor hem staat en wat ze willen.
+
+Stap 1 - Achtergrond petitie:
+Zoek op wat de petitie inhoudt: wat wordt er gevraagd, hoeveel mensen hebben getekend, en wat is de directe aanleiding. Beschrijf de kern van het verzoek, de omvang van het draagvlak en de context waarin de petitie is gestart.
+
+Stap 2 - Profiel indiener:
+Zoek op wie de petitie heeft ingediend. Bekijk de website van de organisatie of het initiatief, zoek in het nieuws en in parlementaire documenten naar eerdere betrokkenheid. Beschrijf wat de organisatie doet, wie erachter zitten, hoe groot ze zijn, hoe ze worden gefinancierd, en of ze eerder petities of lobbycampagnes hebben gevoerd.
+
+Stap 3 - Beleidscontext:
+Zoek relevante Kamerbrieven, wetsvoorstellen en eerdere debatten op over het onderwerp van de petitie. Vergelijk met het partijstandpunt. Beschrijf de huidige stand van het beleid, wat de regering al doet of van plan is, en hoe het partijstandpunt zich verhoudt tot het verzoek in de petitie.
+
+Stap 4 - Vragen & aandachtspunten:
+Formuleer 5-10 vragen die het Kamerlid kan stellen bij de ontvangst of kan meenemen naar een volgend debat. Beschrijf ook eventuele risico's of gevoeligheden (mediadruk, achterban, politieke valkuilen).`,
+  },
 ]
 
 /** Get the default skill prompt for a given meeting type */
