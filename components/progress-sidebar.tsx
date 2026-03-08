@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Activity, CheckCircle2, ChevronDown } from "lucide-react"
+import { Activity, CheckCircle2, ChevronDown, Download } from "lucide-react"
 
 export type Phase = {
   label: string
@@ -176,12 +176,15 @@ type ProgressSidebarProps = {
   // Shared
   isStreaming?: boolean
   hasAssistantText?: boolean
+  // PDF download (shown when briefing is complete)
+  onDownloadPDF?: () => void
+  pdfBusy?: boolean
 }
 
-export function ProgressSidebar({ phases, toolCount = 0, steps, isStreaming = false, hasAssistantText = false }: ProgressSidebarProps) {
+export function ProgressSidebar({ phases, toolCount = 0, steps, isStreaming = false, hasAssistantText = false, onDownloadPDF, pdfBusy }: ProgressSidebarProps) {
   // Briefing mode: show deliverable phases
   if (phases && phases.length > 0) {
-    return <BriefingProgress phases={phases} isStreaming={isStreaming} toolCount={toolCount} />
+    return <BriefingProgress phases={phases} isStreaming={isStreaming} toolCount={toolCount} onDownloadPDF={onDownloadPDF} pdfBusy={pdfBusy} />
   }
 
   // Chat mode: show tool-grouped phases
@@ -192,7 +195,7 @@ export function ProgressSidebar({ phases, toolCount = 0, steps, isStreaming = fa
   return null
 }
 
-function BriefingProgress({ phases, isStreaming, toolCount }: { phases: Phase[]; isStreaming: boolean; toolCount: number }) {
+function BriefingProgress({ phases, isStreaming, toolCount, onDownloadPDF, pdfBusy }: { phases: Phase[]; isStreaming: boolean; toolCount: number; onDownloadPDF?: () => void; pdfBusy?: boolean }) {
   const doneCount = phases.filter((p) => p.status === "done").length
   const totalCount = phases.length
   const allDone = totalCount > 0 && doneCount === totalCount && !isStreaming
@@ -213,15 +216,27 @@ function BriefingProgress({ phases, isStreaming, toolCount }: { phases: Phase[];
         </h3>
 
         {allDone ? (
-          <div className="flex items-center gap-2 rounded-lg bg-green-50 px-3 py-2.5">
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-green-100">
-              <svg className="h-[11px] w-[11px] text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
-            </span>
-            <span className="text-[0.8125rem] font-medium text-green-800">
-              Briefing compleet
-            </span>
+          <div>
+            <div className="flex items-center gap-2 rounded-lg bg-green-50 px-3 py-2.5">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-green-100">
+                <svg className="h-[11px] w-[11px] text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              </span>
+              <span className="text-[0.8125rem] font-medium text-green-800">
+                Briefing compleet
+              </span>
+            </div>
+            {onDownloadPDF && (
+              <button
+                onClick={onDownloadPDF}
+                disabled={pdfBusy}
+                className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-white px-4 py-2.5 text-sm font-medium text-primary hover:bg-surface-muted disabled:opacity-50"
+              >
+                <Download className="h-4 w-4" />
+                {pdfBusy ? "Bezig..." : "Download PDF"}
+              </button>
+            )}
           </div>
         ) : (
           <div className="space-y-0">

@@ -17,11 +17,23 @@ import {
 } from "lucide-react"
 import { KamerlidSelector } from "./kamerlid-selector"
 import { Message, extractToolSteps } from "./message"
-import { ProgressSidebar } from "./progress-sidebar"
+import { ProgressSidebar, type Phase } from "./progress-sidebar"
 import { AgendaSidebar } from "./agenda-sidebar"
 import { useDataContext } from "./data-context"
+import { MEETING_SKILLS } from "@/lib/meeting-skills"
 
 type Kamerlid = { id: string; naam: string; fractie?: string }
+
+const DEFAULT_BRIEFING_STEPS = [
+  "Samenvatting",
+  "Relevante Kamerstukken",
+  "Moties en amendementen",
+  "Openstaande toezeggingen",
+  "Standpunten per fractie",
+  "Recent nieuws",
+  "Suggestievragen voor het debat",
+  "Mogelijke speech",
+]
 
 const FREE_MODELS = [
   { key: "claude-sonnet-4", label: "Claude Sonnet 4" },
@@ -187,6 +199,80 @@ export function Chat() {
   const hasActiveTools = toolSteps.length > 0
   const showThinking = isLoading && !hasAssistantText && !hasActiveTools
 
+  // Detect briefing-style response from ## section headers
+  const lastAssistantText = useMemo(() => {
+    const lastAssistant = [...messages].reverse().find(m => m.role === "assistant")
+    if (!lastAssistant) return ""
+    return lastAssistant.parts
+      .filter((p): p is { type: "text"; text: string } => p.type === "text" && !!p.text)
+      .map(p => p.text)
+      .join("\n\n")
+  }, [messages])
+
+  const briefingPhases = useMemo((): Phase[] | null => {
+    if (!lastAssistantText) return null
+
+    const headers: string[] = []
+    for (const line of lastAssistantText.split("\n")) {
+      const match = line.match(/^##\s+(.+)/)
+      if (match) headers.push(match[1].trim())
+    }
+    if (headers.length === 0) return null
+
+    // Try matching against meeting skills
+    let bestSteps: string[] | null = null
+    let bestScore = 0
+    for (const skill of MEETING_SKILLS) {
+      const score = skill.steps.filter(step =>
+        headers.some(h => h.toLowerCase().trim() === step.toLowerCase().trim())
+      ).length
+      if (score > bestScore) {
+        bestScore = score
+        bestSteps = skill.steps
+      }
+    }
+
+    // Fall back to default briefing steps
+    if (!bestSteps || bestScore < 1) {
+      const defaultScore = DEFAULT_BRIEFING_STEPS.filter(step =>
+        headers.some(h => h.toLowerCase().trim() === step.toLowerCase().trim())
+      ).length
+      if (defaultScore >= 2) {
+        bestSteps = DEFAULT_BRIEFING_STEPS
+      }
+    }
+
+    if (!bestSteps) return null
+
+    // Find the last matched step
+    let lastMatchedIdx = -1
+    for (let i = 0; i < bestSteps.length; i++) {
+      if (headers.some(h => h.toLowerCase().trim() === bestSteps![i].toLowerCase().trim())) {
+        lastMatchedIdx = i
+      }
+    }
+
+    return bestSteps.map((step, i) => ({
+      label: step,
+      status: i < lastMatchedIdx ? "done" as const
+        : i === lastMatchedIdx ? (isLoading ? "running" as const : "done" as const)
+        : "idle" as const,
+    }))
+  }, [lastAssistantText, isLoading])
+
+  const chatBriefingDone = briefingPhases !== null && !isLoading && lastAssistantText.length > 500
+
+  const [pdfBusy, setPdfBusy] = useState(false)
+  async function handleSidebarPDF() {
+    setPdfBusy(true)
+    try {
+      const { downloadBriefingPDF } = await import("@/lib/pdf-template")
+      await downloadBriefingPDF(lastAssistantText, briefingTopic || "Debatbriefing")
+    } finally {
+      setPdfBusy(false)
+    }
+  }
+
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
     const text = input.trim()
@@ -347,9 +433,18 @@ export function Chat() {
           </footer>
         </section>
 
-        {/* Right sidebar: progress when tools active, links otherwise */}
+        {/* Right sidebar: briefing progress, tool progress, or agenda links */}
         <aside className="hidden min-h-0 lg:block">
-          {toolSteps.length > 0 ? (
+          {briefingPhases ? (
+            <ProgressSidebar
+              phases={briefingPhases}
+              toolCount={toolSteps.filter(s => s.status === "done").length}
+              isStreaming={isLoading}
+              hasAssistantText={!!hasAssistantText}
+              onDownloadPDF={chatBriefingDone ? handleSidebarPDF : undefined}
+              pdfBusy={pdfBusy}
+            />
+          ) : toolSteps.length > 0 ? (
             <ProgressSidebar steps={toolSteps} isStreaming={isLoading} hasAssistantText={!!hasAssistantText} />
           ) : (
             <AgendaSidebar onPrepare={handleSuggestion} />
