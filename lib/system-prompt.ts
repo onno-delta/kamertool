@@ -1,4 +1,4 @@
-export function buildSystemPrompt(partyName?: string | null, userSources?: { url: string; title?: string | null }[], searchBeyondSources = true) {
+export function buildSystemPrompt(partyName?: string | null, userSources?: { url: string; title?: string | null }[], searchBeyondSources = true, kamerlidNaam?: string | null) {
   const base = `Je bent een AI-assistent die Kamerleden helpt bij het voorbereiden van debatten in de Tweede Kamer der Staten-Generaal.
 
 Je hebt toegang tot:
@@ -41,6 +41,12 @@ Gebruik altijd je tools om actuele informatie op te zoeken. Geef bronnen aan bij
 
   if (!searchBeyondSources) {
     prompt += `\n\nBELANGRIJK: De gebruiker heeft ingesteld dat je ALLEEN informatie uit de geïntegreerde bronnen (parlementaire databases, partijprogramma's, nieuwszoekmachine) en de eigen websites hierboven mag gebruiken. Gebruik fetchWebPage NIET om andere websites te raadplegen, tenzij de gebruiker expliciet een URL deelt in het gesprek.`
+  }
+
+  if (kamerlidNaam && partyName) {
+    prompt += `\n\nDe gebruiker is ${kamerlidNaam} (${partyName}). Personaliseer je suggesties: zoek eerdere interventies van dit Kamerlid in Handelingen, refereer aan hun commissielidmaatschappen, en schrijf concept-speeches in hun persoonlijke stijl.`
+  } else if (kamerlidNaam) {
+    prompt += `\n\nDe gebruiker is ${kamerlidNaam}. Personaliseer je suggesties: zoek eerdere interventies van dit Kamerlid in Handelingen, refereer aan hun commissielidmaatschappen, en schrijf concept-speeches in hun persoonlijke stijl.`
   }
 
   if (partyName) {

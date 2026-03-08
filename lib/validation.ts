@@ -4,6 +4,7 @@ export const chatBodySchema = z.object({
   messages: z.array(z.any()),
   partyId: z.string().uuid().nullable().optional(),
   partyName: z.string().max(50).nullable().optional(),
+  kamerlidNaam: z.string().max(200).nullable().optional(),
   organisationId: z.string().uuid().nullable().optional(),
   model: z.string().max(100).optional(),
 })

@@ -33,7 +33,7 @@ export async function POST(req: Request) {
     if (!parsed.success) {
       return NextResponse.json({ error: "Invalid request" }, { status: 400 })
     }
-    const { messages, partyId, partyName, organisationId, model: requestedModel } = parsed.data
+    const { messages, partyId, partyName, kamerlidNaam, organisationId, model: requestedModel } = parsed.data
 
     const session = await auth()
     const userId = session?.user?.id ?? null
@@ -97,7 +97,7 @@ export async function POST(req: Request) {
 
     const result = streamText({
       model: getModel(modelOpts),
-      system: buildSystemPrompt(partyName, sources, searchBeyondSources),
+      system: buildSystemPrompt(partyName, sources, searchBeyondSources, kamerlidNaam),
       messages: modelMessages,
       stopWhen: stepCountIs(10),
       tools,

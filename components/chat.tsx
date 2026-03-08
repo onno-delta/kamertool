@@ -16,12 +16,14 @@ import {
   Trash2,
 } from "lucide-react"
 import { PartySelector } from "./party-selector"
+import { KamerlidSelector } from "./kamerlid-selector"
 import { Message, extractToolSteps } from "./message"
 import { ProgressSidebar } from "./progress-sidebar"
 import { AgendaSidebar } from "./agenda-sidebar"
 import { useDataContext } from "./data-context"
 
 type Party = { id: string; name: string; shortName: string }
+type Kamerlid = { id: string; naam: string; fractie?: string }
 
 const FREE_MODELS = [
   { key: "claude-sonnet-4", label: "Claude Sonnet 4" },
@@ -107,12 +109,14 @@ function ModelSelector({ value, onChange }: { value: string; onChange: (v: strin
 export function Chat() {
   const { parties, preferences } = useDataContext()
   const [party, setParty] = useState<Party | null>(null)
+  const [kamerlid, setKamerlid] = useState<Kamerlid | null>(null)
   const [model, setModel] = useState("claude-sonnet-4")
   const [input, setInput] = useState("")
   const [usage, setUsage] = useState<{ used: number; limit: number; unlimited?: boolean } | null>(null)
   const [rateLimitError, setRateLimitError] = useState<string | null>(null)
   const [userScrolled, setUserScrolled] = useState(false)
   const defaultPartyApplied = useRef(false)
+  const defaultKamerlidApplied = useRef(false)
 
   useEffect(() => {
     fetch("/api/settings/usage").then(r => r.json()).then(setUsage).catch(() => {})
@@ -128,10 +132,25 @@ export function Chat() {
     }
   }, [preferences, parties])
 
+  // Apply default kamerlid from preferences (first in list)
+  useEffect(() => {
+    if (defaultKamerlidApplied.current || !preferences?.kamerleden?.length) return
+    const k = preferences.kamerleden[0]
+    setKamerlid(k)
+    // Also auto-set party to match kamerlid's fractie
+    if (k.fractie && parties.length > 0) {
+      const match = parties.find((p) => p.shortName === k.fractie)
+      if (match) setParty(match)
+    }
+    defaultKamerlidApplied.current = true
+  }, [preferences, parties])
+
   const partyRef = useRef(party)
   const modelRef = useRef(model)
+  const kamerlidRef = useRef(kamerlid)
   useEffect(() => { partyRef.current = party }, [party])
   useEffect(() => { modelRef.current = model }, [model])
+  useEffect(() => { kamerlidRef.current = kamerlid }, [kamerlid])
 
   const [transport] = useState(
     () => // eslint-disable-line react-hooks/refs -- refs read in body() callback at request time, not render
@@ -140,6 +159,7 @@ export function Chat() {
         body: () => ({
           partyId: partyRef.current?.id ?? null,
           partyName: partyRef.current?.shortName ?? null,
+          kamerlidNaam: kamerlidRef.current?.naam ?? null,
           model: modelRef.current,
         }),
       }),
@@ -182,6 +202,14 @@ export function Chat() {
   const hasActiveTools = toolSteps.length > 0
   const showThinking = isLoading && !hasAssistantText && !hasActiveTools
 
+  function handleKamerlidChange(k: Kamerlid | null) {
+    setKamerlid(k)
+    if (k?.fractie && parties.length > 0) {
+      const match = parties.find((p) => p.shortName === k.fractie)
+      if (match) setParty(match)
+    }
+  }
+
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
     const text = input.trim()
@@ -204,6 +232,8 @@ export function Chat() {
           <header className="flex flex-wrap items-center gap-2 border-b border-border-light bg-surface-muted px-4 py-2.5 sm:px-5">
             <div className="flex min-w-0 flex-1 items-center gap-2">
               <PartySelector value={party} onChange={setParty} />
+              <div className="h-5 w-px bg-border-light" />
+              <KamerlidSelector value={kamerlid} onChange={handleKamerlidChange} />
               <div className="h-5 w-px bg-border-light" />
               <ModelSelector value={model} onChange={setModel} />
               {usage && !usage.unlimited && (
