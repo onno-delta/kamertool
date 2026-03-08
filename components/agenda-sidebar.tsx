@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import Link from "next/link"
-import { Calendar, Search, X, Play } from "lucide-react"
+import { Calendar, Search, X, Play, ChevronLeft, ChevronRight } from "lucide-react"
 import { useDataContext } from "./data-context"
 
 type Kamerlid = { id: string; naam: string; fractie?: string }
@@ -97,24 +97,33 @@ function KamerlidPicker({ onSelect }: { onSelect: (k: Kamerlid) => void }) {
   )
 }
 
+const PAGE_SIZE = 3
+
 export function AgendaSidebar({ onPrepare }: { onPrepare?: (text: string) => void }) {
   const { sessionKamerleden, addSessionKamerlid, removeSessionKamerlid } = useDataContext()
 
   const [events, setEvents] = useState<Activiteit[]>([])
   const [loading, setLoading] = useState(true)
+  const [page, setPage] = useState(0)
 
   useEffect(() => {
     const now = new Date()
     const from = now.toISOString().split("T")[0]
-    const to = new Date(now.getTime() + 7 * 86400000).toISOString().split("T")[0]
+    const to = new Date(now.getTime() + 14 * 86400000).toISOString().split("T")[0]
     fetch(`/api/agenda?from=${from}&to=${to}`)
       .then((r) => r.ok ? r.json() : [])
       .then((data) => {
-        setEvents(Array.isArray(data) ? data.slice(0, 3) : [])
+        setEvents(Array.isArray(data) ? data : [])
         setLoading(false)
       })
       .catch(() => setLoading(false))
   }, [])
+
+  const totalPages = Math.ceil(events.length / PAGE_SIZE)
+  const pageEvents = useMemo(
+    () => events.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE),
+    [events, page]
+  )
 
   return (
     <div className="sticky top-4">
@@ -158,12 +167,12 @@ export function AgendaSidebar({ onPrepare }: { onPrepare?: (text: string) => voi
         )}
 
         {!loading && events.length === 0 && (
-          <p className="text-xs text-text-muted">Geen vergaderingen deze week.</p>
+          <p className="text-xs text-text-muted">Geen vergaderingen komende twee weken.</p>
         )}
 
-        {!loading && events.length > 0 && (
+        {!loading && pageEvents.length > 0 && (
           <div className="space-y-1.5">
-            {events.map((item) => (
+            {pageEvents.map((item) => (
               <div
                 key={item.Id}
                 className="group rounded-lg border border-border-light p-2.5 transition-[border-color,box-shadow] hover:border-primary/30 hover:shadow-sm"
@@ -208,9 +217,33 @@ export function AgendaSidebar({ onPrepare }: { onPrepare?: (text: string) => voi
           </div>
         )}
 
+        {!loading && totalPages > 1 && (
+          <div className="mt-2.5 flex items-center justify-between">
+            <button
+              type="button"
+              onClick={() => setPage((p) => p - 1)}
+              disabled={page === 0}
+              className="flex h-6 w-6 items-center justify-center rounded text-text-muted transition-colors hover:bg-surface-muted hover:text-primary disabled:opacity-30 disabled:hover:bg-transparent"
+            >
+              <ChevronLeft className="h-3.5 w-3.5" />
+            </button>
+            <span className="text-[10px] text-text-muted">
+              {page + 1} / {totalPages}
+            </span>
+            <button
+              type="button"
+              onClick={() => setPage((p) => p + 1)}
+              disabled={page >= totalPages - 1}
+              className="flex h-6 w-6 items-center justify-center rounded text-text-muted transition-colors hover:bg-surface-muted hover:text-primary disabled:opacity-30 disabled:hover:bg-transparent"
+            >
+              <ChevronRight className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        )}
+
         <Link
           href="/agenda"
-          className="mt-3 block text-center text-xs font-medium text-primary hover:underline"
+          className="mt-2.5 block text-center text-xs font-medium text-primary hover:underline"
         >
           Volledige agenda bekijken
         </Link>
