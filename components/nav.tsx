@@ -14,6 +14,7 @@ import {
   Layers,
   Menu,
   X,
+  Users,
 } from "lucide-react"
 import { useDataContext } from "./data-context"
 import { PARTY_COLORS } from "@/lib/parties"
@@ -24,6 +25,7 @@ const NAV_ICONS: Record<string, React.ReactNode> = {
   "/briefings": <FileText className="h-[15px] w-[15px] opacity-80" />,
   "/instructies": <PenLine className="h-[15px] w-[15px] opacity-80" />,
   "/dashboard": <Building2 className="h-[15px] w-[15px] opacity-80" />,
+  "/smoelenboek": <Users className="h-[15px] w-[15px] opacity-80" />,
   "/settings": <Settings className="h-[15px] w-[15px] opacity-80" />,
 }
 
@@ -82,6 +84,7 @@ export function Nav() {
     ? [
         { href: "/", label: "Chat" },
         { href: "/agenda", label: "Agenda" },
+        { href: "/smoelenboek", label: "Smoelenboek" },
         { href: "/briefings", label: "Briefings" },
         { href: "/instructies", label: "Instructies" },
         ...(session.user.organisationId
@@ -92,6 +95,7 @@ export function Nav() {
     : [
         { href: "/", label: "Chat" },
         { href: "/agenda", label: "Agenda" },
+        { href: "/smoelenboek", label: "Smoelenboek" },
       ]
 
   function isActive(href: string) {
