@@ -79,7 +79,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-8">
+    <div className="mx-auto max-w-3xl px-4 py-6 pb-10 sm:px-6 sm:py-8">
       <nav aria-label="Kruimelpad" className="mb-4 text-sm text-text-muted">
         <Link href="/" className="hover:text-primary hover:underline">Home</Link>
         <span className="mx-1.5">&rsaquo;</span>

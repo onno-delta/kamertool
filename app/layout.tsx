@@ -36,11 +36,11 @@ export default function RootLayout({
           <div className="flex h-dvh flex-col">
             <Nav />
             <main id="main-content" className="flex min-h-0 flex-1 flex-col" role="main">
-              <div className="mx-auto flex w-full max-w-6xl min-h-0 flex-1 flex-col overflow-y-auto px-4 py-8 sm:px-6 sm:py-10">
+              <div className="mx-auto flex w-full max-w-6xl min-h-0 flex-1 flex-col overflow-y-auto px-4 pt-8 sm:px-6 sm:pt-10">
                 {children}
               </div>
             </main>
-            <footer className="shrink-0 border-t-[3px] border-primary bg-primary-dark py-5 text-white">
+            <footer className="shrink-0 border-t-[3px] border-primary bg-primary-dark py-5 text-white shadow-[0_-2px_8px_rgba(0,0,0,0.12)]">
               <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-6 gap-y-2 px-6 text-center text-sm">
                 <span className="text-white">Kamertool — Debatvoorbereiding</span>
                 <a href="https://kamer.deltainstituut.nl" className="text-white/70 hover:text-white">
