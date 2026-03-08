@@ -170,7 +170,7 @@ export default function InstructiesPage() {
                       setSaved(false)
                     }}
                     rows={14}
-                    className="w-full rounded-xl border border-border bg-surface-muted/50 px-4 py-3 font-mono text-[13px] leading-relaxed text-primary placeholder:text-text-muted focus:border-primary/40 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/10"
+                    className="w-full rounded-xl border border-border bg-white px-4 py-3 text-sm leading-relaxed text-text placeholder:text-text-muted focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/10"
                   />
                   <div className="mt-3 flex items-center justify-between">
                     <p className="text-xs text-text-muted">
