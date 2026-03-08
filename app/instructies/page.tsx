@@ -1,8 +1,9 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { MEETING_SKILLS, getDefaultSkill } from "@/lib/meeting-skills"
+import { useDataContext } from "@/components/data-context"
 import {
   ChevronDown,
   Megaphone,
@@ -41,21 +42,23 @@ const SKILL_ICONS: Record<string, React.ComponentType<{ className?: string }>> =
 }
 
 export default function InstructiesPage() {
+  const { preferences, refreshPreferences } = useDataContext()
   const [meetingSkills, setMeetingSkills] = useState<Record<string, string>>({})
   const [expandedSkill, setExpandedSkill] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [loading, setLoading] = useState(true)
+  const prefsApplied = useRef(false)
 
+  // Apply cached preferences
   useEffect(() => {
-    fetch("/api/settings/preferences")
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
-        if (data?.meetingSkills) setMeetingSkills(data.meetingSkills)
-        setLoading(false)
-      })
-      .catch(() => setLoading(false))
-  }, [])
+    if (prefsApplied.current) return
+    if (preferences) {
+      if (preferences.meetingSkills) setMeetingSkills(preferences.meetingSkills)
+      prefsApplied.current = true
+      setLoading(false)
+    }
+  }, [preferences])
 
   async function handleSave() {
     setSaving(true)
@@ -72,6 +75,7 @@ export default function InstructiesPage() {
       body: JSON.stringify({ meetingSkills: customOnly }),
     })
     setMeetingSkills(customOnly)
+    await refreshPreferences()
     setSaving(false)
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)

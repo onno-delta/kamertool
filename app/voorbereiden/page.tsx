@@ -1,12 +1,13 @@
 "use client"
 
-import { useState, useEffect, Suspense } from "react"
+import { useState, useEffect, useRef, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { useBriefing } from "@/components/briefing-context"
 import { copyAsRichText } from "@/lib/copy-rich-text"
 import { ProgressSidebar } from "@/components/progress-sidebar"
 import { PartySelector } from "@/components/party-selector"
+import { useDataContext } from "@/components/data-context"
 
 type Party = { id: string; name: string; shortName: string }
 
@@ -15,27 +16,25 @@ function VoorbereidenContent() {
   const topic = searchParams.get("topic") ?? ""
   const soort = searchParams.get("soort") ?? undefined
   const { state, startBriefing, cancelBriefing, downloadPDF } = useBriefing()
+  const { parties, preferences } = useDataContext()
 
   const [selectedParty, setSelectedParty] = useState<Party | null>(null)
   const [partyLoaded, setPartyLoaded] = useState(false)
   const [started, setStarted] = useState(false)
+  const defaultPartyApplied = useRef(false)
 
-  // Load user's default party on mount
+  // Apply default party from cached context
   useEffect(() => {
-    fetch("/api/settings/preferences")
-      .then((r) => (r.ok ? r.json() : null))
-      .then(async (prefs) => {
-        if (prefs?.defaultPartyId) {
-          const parties = await fetch("/api/parties").then((r) => r.json())
-          const party = parties.find(
-            (p: Party) => p.id === prefs.defaultPartyId
-          )
-          if (party) setSelectedParty(party)
-        }
-        setPartyLoaded(true)
-      })
-      .catch(() => setPartyLoaded(true))
-  }, [])
+    if (defaultPartyApplied.current) return
+    if (preferences && parties.length > 0) {
+      if (preferences.defaultPartyId) {
+        const match = parties.find((p) => p.id === preferences.defaultPartyId)
+        if (match) setSelectedParty(match)
+      }
+      defaultPartyApplied.current = true
+      setPartyLoaded(true)
+    }
+  }, [preferences, parties])
 
   function handleStart() {
     if (!topic) return

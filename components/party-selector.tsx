@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react"
 import { ChevronDown } from "lucide-react"
 import { PARTY_COLORS } from "@/lib/parties"
+import { useDataContext } from "./data-context"
 
 type Party = { id: string; name: string; shortName: string }
 
@@ -13,15 +14,9 @@ export function PartySelector({
   value: Party | null
   onChange: (party: Party | null) => void
 }) {
-  const [parties, setParties] = useState<Party[]>([])
+  const { parties } = useDataContext()
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    fetch("/api/parties")
-      .then((r) => r.json())
-      .then(setParties)
-  }, [])
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {

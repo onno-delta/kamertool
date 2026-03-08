@@ -1,15 +1,18 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { Vote, FolderOpen, Users, Search, X, Check, Save } from "lucide-react"
 import { DOSSIERS } from "@/lib/dossiers"
 import { PartySelector } from "@/components/party-selector"
+import { useDataContext } from "@/components/data-context"
 
 type Party = { id: string; name: string; shortName: string }
 type Kamerlid = { id: string; naam: string; fractie?: string }
 
 export default function SettingsPage() {
+  const { parties, preferences, refreshPreferences } = useDataContext()
+
   // Preferences state
   const [selectedParty, setSelectedParty] = useState<Party | null>(null)
   const [selectedDossiers, setSelectedDossiers] = useState<string[]>([])
@@ -18,23 +21,19 @@ export default function SettingsPage() {
   const [kamerleidFocused, setKamerleidFocused] = useState(false)
   const [prefsSaving, setPrefsSaving] = useState(false)
   const [prefsSaved, setPrefsSaved] = useState(false)
+  const prefsApplied = useRef(false)
 
+  // Apply cached preferences + parties
   useEffect(() => {
-    // Load preferences + parties, then resolve the default party
-    Promise.all([
-      fetch("/api/settings/preferences").then((r) => r.ok ? r.json() : null),
-      fetch("/api/parties").then((r) => r.json()),
-    ]).then(([prefs, allParties]) => {
-      if (prefs) {
-        setSelectedDossiers(prefs.dossiers ?? [])
-        setSelectedKamerleden(prefs.kamerleden ?? [])
-        if (prefs.defaultPartyId && allParties) {
-          const match = allParties.find((p: Party) => p.id === prefs.defaultPartyId)
-          if (match) setSelectedParty(match)
-        }
-      }
-    }).catch(() => {})
-  }, [])
+    if (prefsApplied.current || !preferences) return
+    setSelectedDossiers(preferences.dossiers ?? [])
+    setSelectedKamerleden(preferences.kamerleden ?? [])
+    if (preferences.defaultPartyId && parties.length > 0) {
+      const match = parties.find((p) => p.id === preferences.defaultPartyId)
+      if (match) setSelectedParty(match)
+    }
+    prefsApplied.current = true
+  }, [preferences, parties])
 
   function toggleDossier(dossierId: string) {
     setSelectedDossiers((prev) =>
@@ -86,6 +85,7 @@ export default function SettingsPage() {
         kamerleden: selectedKamerleden,
       }),
     })
+    await refreshPreferences()
     setPrefsSaving(false)
     setPrefsSaved(true)
     setTimeout(() => setPrefsSaved(false), 2000)

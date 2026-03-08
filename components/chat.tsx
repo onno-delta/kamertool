@@ -18,6 +18,7 @@ import { PartySelector } from "./party-selector"
 import { Message, extractToolSteps } from "./message"
 import { ProgressSidebar } from "./progress-sidebar"
 import { LinksSidebar } from "./links-sidebar"
+import { useDataContext } from "./data-context"
 
 type Party = { id: string; name: string; shortName: string }
 
@@ -103,25 +104,28 @@ function ModelSelector({ value, onChange }: { value: string; onChange: (v: strin
 }
 
 export function Chat() {
+  const { parties, preferences } = useDataContext()
   const [party, setParty] = useState<Party | null>(null)
   const [model, setModel] = useState("claude-sonnet-4")
   const [input, setInput] = useState("")
   const [usage, setUsage] = useState<{ used: number; limit: number; unlimited?: boolean } | null>(null)
   const [rateLimitError, setRateLimitError] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const defaultPartyApplied = useRef(false)
 
   useEffect(() => {
     fetch("/api/settings/usage").then(r => r.json()).then(setUsage).catch(() => {})
-    Promise.all([
-      fetch("/api/settings/preferences").then(r => r.ok ? r.json() : null),
-      fetch("/api/parties").then(r => r.json()),
-    ]).then(([prefs, allParties]) => {
-      if (prefs?.defaultPartyId && allParties) {
-        const defaultParty = allParties.find((p: Party) => p.id === prefs.defaultPartyId)
-        if (defaultParty) setParty(defaultParty)
-      }
-    }).catch(() => {})
   }, [])
+
+  // Apply default party from cached preferences + parties
+  useEffect(() => {
+    if (defaultPartyApplied.current || !preferences?.defaultPartyId || parties.length === 0) return
+    const match = parties.find((p) => p.id === preferences.defaultPartyId)
+    if (match) {
+      setParty(match)
+      defaultPartyApplied.current = true
+    }
+  }, [preferences, parties])
 
   const partyRef = useRef(party)
   const modelRef = useRef(model)
