@@ -36,7 +36,7 @@ export default function RootLayout({
           <div className="flex h-dvh flex-col">
             <Nav />
             <main id="main-content" className="flex min-h-0 flex-1 flex-col" role="main">
-              <div className="mx-auto flex w-full max-w-6xl min-h-0 flex-1 flex-col overflow-y-auto px-4 pt-8 sm:px-6 sm:pt-10">
+              <div className="mx-auto flex w-full max-w-6xl min-h-0 flex-1 flex-col overflow-y-auto px-4 py-8 sm:px-6 sm:py-10">
                 {children}
               </div>
             </main>
