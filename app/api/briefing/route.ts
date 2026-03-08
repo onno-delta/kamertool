@@ -115,7 +115,12 @@ Werkwijze:
 
 Doe eerst al je onderzoek met tools, en schrijf daarna direct de volledige briefing. Vraag niet om bevestiging tussendoor - ga altijd automatisch door van onderzoek naar het schrijven van het eindproduct.
 
-De instructies bevatten genummerde stappen. Doorloop deze stappen en gebruik de stapnamen als kopjes (##) in de briefing.${beyondPrompt}`,
+De instructies bevatten genummerde stappen. Doorloop deze stappen en gebruik de stapnamen als kopjes (##) in de briefing.
+
+Bronvermelding: gebruik doorlopend genummerde voetnoten [1], [2], [3] etc. in de tekst bij elke feitelijke bewering, elk document of elk standpunt. Sluit de briefing af met een ## Bronnen sectie waarin alle voetnoten staan met het volledige documentnummer, titel, datum en/of URL. Voorbeeld:
+[1] Kamerstuk 36 410-VIII nr. 45 - Kamerbrief over onderwijshuisvesting, 15 januari 2025
+[2] Handelingen 2024-2025 nr. 12, item 5 - Plenair debat over klimaatbeleid
+[3] NOS - "Kabinet trekt extra geld uit voor defensie", 3 maart 2025${beyondPrompt}`,
       prompt,
       stopWhen: stepCountIs(25),
       tools: {
