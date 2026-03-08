@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
-import { Vote, FolderOpen, Users, Search, X, Check, Save, Globe, Plus, Database, ChevronDown } from "lucide-react"
+import { Vote, FolderOpen, Users, Search, X, Check, Save, Globe, Plus, Database, ChevronDown, RotateCcw } from "lucide-react"
 import { DOSSIERS, COMMISSIE_DOSSIER_MAP } from "@/lib/dossiers"
 import { PartySelector } from "@/components/party-selector"
 import { useDataContext } from "@/components/data-context"
@@ -134,6 +134,7 @@ export default function SettingsPage() {
   const [newSourceTitle, setNewSourceTitle] = useState("")
   const [sourcesExpanded, setSourcesExpanded] = useState(false)
   const [searchBeyondSources, setSearchBeyondSources] = useState(true)
+  const [hiddenSources, setHiddenSources] = useState<Set<string>>(new Set())
 
   // Apply cached preferences + parties
   useEffect(() => {
@@ -142,6 +143,7 @@ export default function SettingsPage() {
     setSelectedKamerleden(preferences.kamerleden ?? [])
     setUserSources((preferences.sources ?? []).map((s) => ({ url: s.url, title: s.title ?? undefined })))
     setSearchBeyondSources(preferences.searchBeyondSources ?? true)
+    setHiddenSources(new Set(preferences.hiddenSources ?? []))
     if (preferences.defaultPartyId && parties.length > 0) {
       const match = parties.find((p) => p.id === preferences.defaultPartyId)
       if (match) setSelectedParty(match)
@@ -229,6 +231,20 @@ export default function SettingsPage() {
     setPrefsSaved(false)
   }
 
+  function hideBuiltinSource(name: string) {
+    setHiddenSources((prev) => new Set([...prev, name]))
+    setPrefsSaved(false)
+  }
+
+  function restoreBuiltinSource(name: string) {
+    setHiddenSources((prev) => {
+      const next = new Set(prev)
+      next.delete(name)
+      return next
+    })
+    setPrefsSaved(false)
+  }
+
   async function handleSavePrefs() {
     setPrefsSaving(true)
     try {
@@ -241,6 +257,7 @@ export default function SettingsPage() {
           dossiers: selectedDossiers,
           kamerleden: selectedKamerleden,
           sources: userSources,
+          hiddenSources: [...hiddenSources],
         }),
       })
       if (!res.ok) throw new Error()
@@ -451,28 +468,67 @@ export default function SettingsPage() {
           </label>
 
           {/* Built-in sources (collapsible) */}
-          <button
-            type="button"
-            onClick={() => setSourcesExpanded((v) => !v)}
-            className="mb-3 flex w-full items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-text-muted hover:text-primary transition-colors"
-          >
-            <ChevronDown className={`h-3.5 w-3.5 transition-transform ${sourcesExpanded ? "" : "-rotate-90"}`} />
-            Standaard bronnen ({BUILTIN_SOURCES.length})
-          </button>
-          {sourcesExpanded && (
-            <div className="mb-5 space-y-1.5">
-              {BUILTIN_SOURCES.map((s) => (
-                <div
-                  key={s.name}
-                  className="flex items-center gap-2.5 rounded-lg border border-border-light bg-surface-muted px-3.5 py-2"
+          {(() => {
+            const visibleSources = BUILTIN_SOURCES
+              .filter((s) => !hiddenSources.has(s.name))
+              .sort((a, b) => a.name.localeCompare(b.name, "nl"))
+            const hiddenSourcesList = BUILTIN_SOURCES
+              .filter((s) => hiddenSources.has(s.name))
+              .sort((a, b) => a.name.localeCompare(b.name, "nl"))
+            return (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setSourcesExpanded((v) => !v)}
+                  className="mb-3 flex w-full items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-text-muted hover:text-primary transition-colors"
                 >
-                  <Globe className="h-3.5 w-3.5 shrink-0 text-primary" />
-                  <span className="text-sm font-medium text-primary">{s.name}</span>
-                  <span className="text-xs text-text-muted">{s.desc}</span>
-                </div>
-              ))}
-            </div>
-          )}
+                  <ChevronDown className={`h-3.5 w-3.5 transition-transform ${sourcesExpanded ? "" : "-rotate-90"}`} />
+                  Standaard bronnen ({visibleSources.length})
+                </button>
+                {sourcesExpanded && (
+                  <div className="mb-5 space-y-1.5">
+                    {visibleSources.map((s) => (
+                      <div
+                        key={s.name}
+                        className="group flex items-center gap-2.5 rounded-lg border border-border-light bg-surface-muted px-3.5 py-2"
+                      >
+                        <Globe className="h-3.5 w-3.5 shrink-0 text-primary" />
+                        <span className="text-sm font-medium text-primary">{s.name}</span>
+                        <span className="flex-1 text-xs text-text-muted">{s.desc}</span>
+                        <button
+                          type="button"
+                          onClick={() => hideBuiltinSource(s.name)}
+                          className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-text-muted opacity-0 transition-all hover:bg-border-light hover:text-primary group-hover:opacity-100"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                    {hiddenSourcesList.length > 0 && (
+                      <div className="mt-3 rounded-lg border border-dashed border-border-light px-3.5 py-3">
+                        <p className="mb-2 text-xs font-medium text-text-muted">
+                          Verwijderde bronnen ({hiddenSourcesList.length})
+                        </p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {hiddenSourcesList.map((s) => (
+                            <button
+                              key={s.name}
+                              type="button"
+                              onClick={() => restoreBuiltinSource(s.name)}
+                              className="inline-flex items-center gap-1 rounded-full border border-border-light bg-white px-2.5 py-1 text-xs text-text-muted transition-colors hover:border-primary/20 hover:text-primary"
+                            >
+                              <RotateCcw className="h-3 w-3" />
+                              {s.name}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </>
+            )
+          })()}
 
           {/* User sources */}
           <p className="mb-3 text-xs font-medium uppercase tracking-wide text-text-muted">Eigen websites</p>

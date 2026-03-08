@@ -85,6 +85,9 @@ export function KamerlidSelector({
               style={{ backgroundColor: color }}
             />
             <span className="font-medium max-w-[10rem] truncate">{value.naam}</span>
+            {value.fractie && (
+              <span className="text-xs text-text-muted">{value.fractie}</span>
+            )}
           </>
         ) : (
           <>

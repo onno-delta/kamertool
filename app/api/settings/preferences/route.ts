@@ -1,6 +1,6 @@
 import { auth } from "@/auth"
 import { db } from "@/lib/db"
-import { users, userDossiers, userKamerleden, userMeetingSkills, userSources } from "@/lib/db/schema"
+import { users, userDossiers, userKamerleden, userMeetingSkills, userSources, userHiddenSources } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 import { NextResponse } from "next/server"
 
@@ -38,6 +38,11 @@ export async function GET() {
       .from(userSources)
       .where(eq(userSources.userId, session.user.id))
 
+    const hiddenSources = await db
+      .select({ sourceName: userHiddenSources.sourceName })
+      .from(userHiddenSources)
+      .where(eq(userHiddenSources.userId, session.user.id))
+
     return NextResponse.json({
       defaultPartyId: user?.defaultPartyId ?? null,
       searchBeyondSources: user?.searchBeyondSources ?? true,
@@ -45,6 +50,7 @@ export async function GET() {
       kamerleden: kamerleden.map((k) => ({ id: k.persoonId, naam: k.naam, fractie: k.fractie })),
       meetingSkills: meetingSkills.reduce((acc, s) => ({ ...acc, [s.soort]: s.prompt }), {} as Record<string, string>),
       sources: sources.map((s) => ({ id: s.id, url: s.url, title: s.title })),
+      hiddenSources: hiddenSources.map((h) => h.sourceName),
     })
   } catch (error) {
     console.error("[settings/preferences] GET ERROR:", error)
@@ -62,8 +68,8 @@ export async function PUT(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { defaultPartyId, dossiers, kamerleden, meetingSkills, sources, searchBeyondSources } = await req.json()
-    console.log("[settings/preferences] PUT", { userId: session.user.id, defaultPartyId, dossiers, kamerleden: kamerleden?.length, meetingSkills: meetingSkills ? Object.keys(meetingSkills).length : 0, sources: sources?.length, searchBeyondSources })
+    const { defaultPartyId, dossiers, kamerleden, meetingSkills, sources, searchBeyondSources, hiddenSources } = await req.json()
+    console.log("[settings/preferences] PUT", { userId: session.user.id, defaultPartyId, dossiers, kamerleden: kamerleden?.length, meetingSkills: meetingSkills ? Object.keys(meetingSkills).length : 0, sources: sources?.length, searchBeyondSources, hiddenSources: hiddenSources?.length })
 
     // Update default party + search beyond sources
     await db
@@ -136,6 +142,22 @@ export async function PUT(req: Request) {
             userId: session.user.id,
             url: s.url,
             title: s.title ?? null,
+          }))
+        )
+      }
+    }
+
+    // Replace hidden sources
+    if (Array.isArray(hiddenSources)) {
+      await db
+        .delete(userHiddenSources)
+        .where(eq(userHiddenSources.userId, session.user.id))
+
+      if (hiddenSources.length > 0) {
+        await db.insert(userHiddenSources).values(
+          hiddenSources.map((name: string) => ({
+            userId: session.user.id,
+            sourceName: name,
           }))
         )
       }

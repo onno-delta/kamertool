@@ -15,6 +15,7 @@ type Preferences = {
   kamerleden: Kamerlid[]
   meetingSkills: Record<string, string>
   sources: Source[]
+  hiddenSources: string[]
 }
 
 type DataContextType = {

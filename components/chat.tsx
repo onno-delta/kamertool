@@ -15,14 +15,12 @@ import {
   Cpu,
   Trash2,
 } from "lucide-react"
-import { PartySelector } from "./party-selector"
 import { KamerlidSelector } from "./kamerlid-selector"
 import { Message, extractToolSteps } from "./message"
 import { ProgressSidebar } from "./progress-sidebar"
 import { AgendaSidebar } from "./agenda-sidebar"
 import { useDataContext } from "./data-context"
 
-type Party = { id: string; name: string; shortName: string }
 type Kamerlid = { id: string; naam: string; fractie?: string }
 
 const FREE_MODELS = [
@@ -108,42 +106,29 @@ function ModelSelector({ value, onChange }: { value: string; onChange: (v: strin
 
 export function Chat() {
   const { parties, preferences } = useDataContext()
-  const [party, setParty] = useState<Party | null>(null)
   const [kamerlid, setKamerlid] = useState<Kamerlid | null>(null)
   const [model, setModel] = useState("claude-sonnet-4")
   const [input, setInput] = useState("")
   const [usage, setUsage] = useState<{ used: number; limit: number; unlimited?: boolean } | null>(null)
   const [rateLimitError, setRateLimitError] = useState<string | null>(null)
   const [userScrolled, setUserScrolled] = useState(false)
-  const defaultPartyApplied = useRef(false)
   const defaultKamerlidApplied = useRef(false)
 
   useEffect(() => {
     fetch("/api/settings/usage").then(r => r.json()).then(setUsage).catch(() => {})
   }, [])
 
-  // Apply default party from cached preferences + parties
-  useEffect(() => {
-    if (defaultPartyApplied.current || !preferences?.defaultPartyId || parties.length === 0) return
-    const match = parties.find((p) => p.id === preferences.defaultPartyId)
-    if (match) {
-      setParty(match)
-      defaultPartyApplied.current = true
-    }
-  }, [preferences, parties])
-
   // Apply default kamerlid from preferences (first in list)
   useEffect(() => {
     if (defaultKamerlidApplied.current || !preferences?.kamerleden?.length) return
-    const k = preferences.kamerleden[0]
-    setKamerlid(k)
-    // Also auto-set party to match kamerlid's fractie
-    if (k.fractie && parties.length > 0) {
-      const match = parties.find((p) => p.shortName === k.fractie)
-      if (match) setParty(match)
-    }
+    setKamerlid(preferences.kamerleden[0])
     defaultKamerlidApplied.current = true
-  }, [preferences, parties])
+  }, [preferences])
+
+  // Derive party from kamerlid's fractie
+  const party = kamerlid?.fractie
+    ? parties.find((p) => p.shortName === kamerlid.fractie) ?? null
+    : null
 
   const partyRef = useRef(party)
   const modelRef = useRef(model)
@@ -202,14 +187,6 @@ export function Chat() {
   const hasActiveTools = toolSteps.length > 0
   const showThinking = isLoading && !hasAssistantText && !hasActiveTools
 
-  function handleKamerlidChange(k: Kamerlid | null) {
-    setKamerlid(k)
-    if (k?.fractie && parties.length > 0) {
-      const match = parties.find((p) => p.shortName === k.fractie)
-      if (match) setParty(match)
-    }
-  }
-
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
     const text = input.trim()
@@ -231,9 +208,7 @@ export function Chat() {
           {/* Toolbar */}
           <header className="flex flex-wrap items-center gap-2 border-b border-border-light bg-surface-muted px-4 py-2.5 sm:px-5">
             <div className="flex min-w-0 flex-1 items-center gap-2">
-              <PartySelector value={party} onChange={setParty} />
-              <div className="h-5 w-px bg-border-light" />
-              <KamerlidSelector value={kamerlid} onChange={handleKamerlidChange} />
+              <KamerlidSelector value={kamerlid} onChange={setKamerlid} />
               <div className="h-5 w-px bg-border-light" />
               <ModelSelector value={model} onChange={setModel} />
               {usage && !usage.unlimited && (
@@ -273,7 +248,7 @@ export function Chat() {
                       </h1>
                       <p className="mt-1 text-sm leading-relaxed text-text-secondary">
                         Stel een vraag en ik doorzoek Kamerstukken, debatten, toezeggingen en
-                        nieuws. Selecteer je partij voor fractie-specifiek advies.
+                        nieuws. Selecteer je naam voor persoonlijk advies.
                       </p>
                     </div>
                   </div>

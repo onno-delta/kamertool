@@ -198,6 +198,17 @@ export const userSources = pgTable("user_source", {
   createdAt: timestamp("createdAt", { mode: "date" }).notNull().defaultNow(),
 })
 
+export const userHiddenSources = pgTable("user_hidden_source", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: text("userId")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  sourceName: text("source_name").notNull(),
+  createdAt: timestamp("createdAt", { mode: "date" }).notNull().defaultNow(),
+})
+
 export const usageLog = pgTable("usage_log", {
   id: text("id")
     .primaryKey()
