@@ -107,7 +107,7 @@ export default function SettingsPage() {
       </section>
 
       {/* Party selector card */}
-      <div className="mb-5 overflow-hidden rounded-xl border border-border-light bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.02)]">
+      <div className="mb-5 rounded-xl border border-border-light bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.02)]">
         <div className="flex items-center gap-3 border-b border-border-light bg-surface-muted px-5 py-3.5">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-15">
             <Vote className="h-4 w-4 text-primary" />
