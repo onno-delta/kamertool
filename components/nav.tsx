@@ -84,12 +84,12 @@ export function Nav() {
     ? [
         { href: "/", label: "Chat" },
         { href: "/agenda", label: "Agenda" },
-        { href: "/smoelenboek", label: "Smoelenboek" },
         { href: "/briefings", label: "Briefings" },
         { href: "/instructies", label: "Instructies" },
         ...(session.user.organisationId
           ? [{ href: "/dashboard", label: "Organisatie" }]
           : []),
+        { href: "/smoelenboek", label: "Smoelenboek" },
         { href: "/settings", label: "Instellingen" },
       ]
     : [

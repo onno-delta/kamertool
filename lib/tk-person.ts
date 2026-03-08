@@ -58,6 +58,7 @@ export async function getFractieStemmingen(fractie: string, top = 10) {
         zetels: stemming.FractieGrootte,
         besluit: (zaak?.Onderwerp || zaak?.Titel || b.BesluitTekst) as string,
         besluitSoort: b.BesluitSoort,
+        zaakNummer: zaak?.Nummer as string | undefined,
       }
     })
 }
@@ -133,6 +134,7 @@ export async function getPersonAgenda(commissies: string[], daysAhead = 14) {
 
   return results.map((a: Record<string, unknown>) => ({
     id: a.Id,
+    nummer: a.Nummer,
     type: a.Soort,
     onderwerp: a.Onderwerp,
     datum: a.Datum,

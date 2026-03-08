@@ -75,6 +75,7 @@ type StemItem = {
   zetels: number
   besluit: string
   besluitSoort: string
+  zaakNummer?: string
 }
 
 type ToezeggingItem = {
@@ -88,6 +89,7 @@ type ToezeggingItem = {
 
 type AgendaItem = {
   id: string
+  nummer?: string
   type: string
   onderwerp: string
   datum: string
@@ -226,9 +228,14 @@ function ActivitySection({
 
             {type === "stemmingen" &&
               (data as StemItem[]).map((s, i) => (
-                <div
+                <a
                   key={i}
-                  className="rounded-lg border border-border-light px-3 py-2"
+                  href={s.zaakNummer
+                    ? `https://www.tweedekamer.nl/zoeken?qry=${encodeURIComponent(s.zaakNummer)}`
+                    : `https://www.tweedekamer.nl/zoeken?qry=${encodeURIComponent(s.besluit)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block rounded-lg border border-border-light px-3 py-2 transition-colors hover:border-primary/30"
                 >
                   <div className="flex items-center gap-2">
                     <span
@@ -243,8 +250,9 @@ function ActivitySection({
                     <p className="min-w-0 flex-1 text-sm text-primary line-clamp-2">
                       {s.besluit}
                     </p>
+                    <ExternalLink className="h-3 w-3 shrink-0 text-text-muted" />
                   </div>
-                </div>
+                </a>
               ))}
 
             {type === "toezeggingen" &&
@@ -279,9 +287,14 @@ function ActivitySection({
 
             {type === "agenda" &&
               (data as AgendaItem[]).map((a) => (
-                <div
+                <a
                   key={a.id}
-                  className="rounded-lg border border-border-light px-3 py-2"
+                  href={a.nummer
+                    ? `https://www.tweedekamer.nl/debat_en_vergadering/plenaire_vergaderingen/details/activiteit?id=${a.nummer}`
+                    : `https://www.tweedekamer.nl/zoeken?qry=${encodeURIComponent(a.onderwerp)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block rounded-lg border border-border-light px-3 py-2 transition-colors hover:border-primary/30"
                 >
                   <div className="flex items-start gap-2">
                     <span className="shrink-0 rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-medium text-blue-800">
@@ -294,8 +307,9 @@ function ActivitySection({
                         {a.commissie && ` — ${a.commissie}`}
                       </p>
                     </div>
+                    <ExternalLink className="mt-0.5 h-3 w-3 shrink-0 text-text-muted" />
                   </div>
-                </div>
+                </a>
               ))}
 
             {type === "handelingen" &&
