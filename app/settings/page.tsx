@@ -457,7 +457,7 @@ export default function SettingsPage() {
             className="mb-3 flex w-full items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-text-muted hover:text-primary transition-colors"
           >
             <ChevronDown className={`h-3.5 w-3.5 transition-transform ${sourcesExpanded ? "" : "-rotate-90"}`} />
-            Geïntegreerde bronnen ({BUILTIN_SOURCES.length})
+            Standaard bronnen ({BUILTIN_SOURCES.length})
           </button>
           {sourcesExpanded && (
             <div className="mb-5 space-y-1.5">
