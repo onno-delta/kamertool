@@ -24,6 +24,33 @@ const BUILTIN_SOURCES = [
   { name: "Raad van State", desc: "Adviezen en uitspraken - raadvanstate.nl" },
   { name: "Algemene Rekenkamer", desc: "Controle op rijksuitgaven - rekenkamer.nl" },
   { name: "Rijksoverheid.nl", desc: "Beleidsinformatie en regelgeving" },
+  // Planbureaus & kennisinstituten
+  { name: "RIVM", desc: "Rijksinstituut voor Volksgezondheid en Milieu - rivm.nl" },
+  { name: "KNMI", desc: "Koninklijk Nederlands Meteorologisch Instituut - knmi.nl" },
+  { name: "TNO", desc: "Toegepast-natuurwetenschappelijk onderzoek - tno.nl" },
+  { name: "WODC", desc: "Wetenschappelijk Onderzoek- en Datacentrum - wodc.nl" },
+  { name: "KiM", desc: "Kennisinstituut voor Mobiliteitsbeleid - kimnet.nl" },
+  // Toezichthouders & autoriteiten
+  { name: "AFM", desc: "Autoriteit Financiële Markten - afm.nl" },
+  { name: "DNB", desc: "De Nederlandsche Bank - dnb.nl" },
+  { name: "ACM", desc: "Autoriteit Consument & Markt - acm.nl" },
+  { name: "AP", desc: "Autoriteit Persoonsgegevens - autoriteitpersoonsgegevens.nl" },
+  { name: "IGJ", desc: "Inspectie Gezondheidszorg en Jeugd - igj.nl" },
+  { name: "ILT", desc: "Inspectie Leefomgeving en Transport - ilent.nl" },
+  { name: "Onderwijsinspectie", desc: "Inspectie van het Onderwijs - inspectievanhetonderwijs.nl" },
+  // Adviesraden
+  { name: "SER", desc: "Sociaal-Economische Raad - ser.nl" },
+  { name: "ROB", desc: "Raad voor het Openbaar Bestuur - raadopenbaarbestuur.nl" },
+  { name: "Onderwijsraad", desc: "Adviesraad voor het onderwijs - onderwijsraad.nl" },
+  { name: "Gezondheidsraad", desc: "Adviesraad voor gezondheid - gezondheidsraad.nl" },
+  { name: "ACVZ", desc: "Adviescommissie voor Vreemdelingenzaken - adviescommissievoorvreemdelingenzaken.nl" },
+  { name: "ATR", desc: "Adviescollege Toetsing Regeldruk - atr-regeldruk.nl" },
+  { name: "RLi", desc: "Raad voor de leefomgeving en infrastructuur - rli.nl" },
+  // Internationaal
+  { name: "EUR-Lex", desc: "EU-wetgeving en jurisprudentie - eur-lex.europa.eu" },
+  { name: "ECB", desc: "Europese Centrale Bank - ecb.europa.eu" },
+  { name: "OECD", desc: "Organisatie voor Economische Samenwerking en Ontwikkeling - oecd.org" },
+  { name: "IMF", desc: "Internationaal Monetair Fonds - imf.org" },
 ]
 
 export default function SettingsPage() {
