@@ -13,321 +13,454 @@ export const MEETING_SKILLS: MeetingSkill[] = [
   {
     soort: "Plenair debat",
     label: "Plenair debat",
-    prompt: `Dit is een plenair debat — het meest zichtbare format in de Tweede Kamer, met veel media-aandacht.
+    prompt: `Plenair debat - het meest zichtbare format in de Tweede Kamer. Media kijken mee, interrupties zijn scherp, moties worden ingediend. Alles wat hier gezegd wordt is direct publiek.
 
-Context: neem de geselecteerde partij, Kamerleden, dossiers en eigen bronnen mee. Frame de analyse vanuit het partijperspectief, zoek standpunten en bijdragen van de geselecteerde Kamerleden op, raadpleeg de eigen bronnen van de gebruiker, en focus op de relevante beleidsdossiers.
+Wat het Kamerlid nodig heeft:
+- Interruptiestrategie per relevante tegenstander
+- 2-3 conceptmoties met coalitie-rekensom
+- Kennis van de media-invalshoek
 
-Aanpak:
-- Zoek de aanleiding: welke brief, nota of gebeurtenis heeft tot dit debat geleid?
-- Breng de politieke verhoudingen in kaart: welke fracties staan tegenover elkaar?
-- Bereid interruptiestrategie voor: welke zwakke punten in het kabinetsbeleid kun je aanvallen?
-- Formuleer 2-3 scherpe moties met concrete verzoeken of uitspraken.
+Onderzoeksstrategie:
+1. Zoek de directe aanleiding via searchParlement (bijv. "Kamerbrief [onderwerp]" of "nota [onderwerp]")
+2. Haal de volledige tekst op via getDocumentText
+3. Zoek in searchHandelingen naar eerdere uitspraken van de minister over dit onderwerp
+4. Zoek via searchStemmingen naar stempatronen van fracties op dit dossier
+5. Zoek via searchNews de actuele media-invalshoek
+6. Zoek via searchPartyDocs het partijstandpunt op
 
-Extra secties voor dit type debat:
+Schrijf de briefing in deze structuur:
 
-Interruptiestrategie:
-Identificeer de belangrijkste stellingen van de minister en andere fracties. Geef per stelling een mogelijke interruptie met bronverwijzing.
+## Samenvatting
+2-3 alinea's: aanleiding, stand van zaken, politieke context.
 
-Conceptmoties:
-Schrijf 2-3 conceptmoties (dictum-formaat: "verzoekt de regering..." of "spreekt uit dat...") die aansluiten bij de partijpositie.
+## Kernanalyse
+Inhoudelijke analyse van de relevante Kamerstukken. Per document: nummer, datum, wat erin staat, en waarom het relevant is.
 
-De concept-speech moet 3-5 minuten zijn (600-800 woorden) en retorisch sterk, geschikt voor de plenaire zaal.`,
+## Interruptiestrategie
+Per relevante fractie/minister: hun verwachte positie, het zwakke punt, en een concrete interruptie met bronverwijzing.
+
+## Conceptmoties
+Per motie:
+- **Dictum:** "verzoekt de regering..." of "spreekt uit dat..."
+- **Toelichting:** 2 zinnen waarom deze motie nodig is
+- **Verwachte steun:** welke fracties waarschijnlijk voor/tegen stemmen
+
+## Standpunten per Fractie
+Overzicht op basis van stemmingen en eerdere uitspraken in Handelingen.`,
   },
   {
     soort: "Commissiedebat",
     label: "Commissiedebat",
-    prompt: `Dit is een commissiedebat — technisch, inhoudelijk en met meer ruimte voor detail dan een plenair debat.
+    prompt: `Commissiedebat - hier gebeurt het echte beleidswerk. Minder media-aandacht, maar meer ruimte voor inhoud. Het Kamerlid moet elk agendapunt beheersen, elke Kamerbrief kennen, en de minister scherp bevragen.
 
-Context: neem de geselecteerde partij, Kamerleden, dossiers en eigen bronnen mee. Frame de analyse vanuit het partijperspectief, zoek standpunten en bijdragen van de geselecteerde Kamerleden op, raadpleeg de eigen bronnen van de gebruiker, en focus op de relevante beleidsdossiers.
+Wat het Kamerlid nodig heeft:
+- Per-agendapunt analyse met documentverwijzingen
+- Overzicht van openstaande toezeggingen
+- Vergelijking beleid vs. verkiezingsprogramma
 
-Aanpak:
-- Analyseer alle relevante Kamerbrieven en beleidsnota's die op de agenda staan.
-- Zoek specifieke data, cijfers en beleidsresultaten die de minister kan worden voorgehouden.
-- Identificeer openstaande toezeggingen die nog niet zijn nagekomen.
-- Vergelijk het beleid met het verkiezingsprogramma en eerdere standpunten.
+Onderzoeksstrategie:
+1. Zoek via searchParlement naar alle agendastukken (bijv. "Kamerbrief [beleidsterrein]", "voortgangsrapportage [onderwerp]")
+2. Haal per gevonden document de volledige tekst op via getDocumentText
+3. Zoek via searchToezeggingen naar openstaande toezeggingen op dit beleidsterrein
+4. Zoek via getRecenteKamervragen naar recent gestelde schriftelijke vragen
+5. Zoek via searchPartyDocs het partijstandpunt en vergelijk met het kabinetsbeleid
+6. Zoek via searchStemmingen naar eerdere stemmingen op dit dossier
 
-Extra secties voor dit type debat:
+Schrijf de briefing in deze structuur:
 
-Technische analyse:
-Per agendapunt: samenvatting van het beleidsdocument, kritische kanttekeningen, en concrete vragen.
+## Samenvatting
+Beknopt overzicht: welke stukken liggen voor, wat is de rode draad, waar zit de politieke spanning.
 
-Openstaande punten:
-Overzicht van eerdere toezeggingen, Kamervragen en moties die nog niet zijn afgehandeld.
+## Analyse per agendapunt
+Per agendapunt:
+- **Document:** nummer, titel, datum
+- **Inhoud:** samenvatting van de hoofdpunten
+- **Kritische kanttekeningen:** wat ontbreekt, wat is zwak, wat is onduidelijk
+- **Vragen voor de minister:** 2-3 concrete vragen met verwijzing naar het document
 
-De concept-speech moet 4-6 minuten zijn (700-1000 woorden) en inhoudelijk sterk, met verwijzingen naar specifieke documenten en cijfers.`,
+## Openstaande toezeggingen
+Toezeggingen die de minister eerder deed maar nog niet is nagekomen. Per toezegging: datum, inhoud, status.
+
+## Standpunten per Fractie
+Posities van relevante fracties op basis van stemmingen en eerdere bijdragen.`,
   },
   {
     soort: "Wetgevingsoverleg",
     label: "Wetgevingsoverleg",
-    prompt: `Dit is een wetgevingsoverleg — gericht op een specifiek wetsvoorstel dat artikel voor artikel wordt besproken.
+    prompt: `Wetgevingsoverleg - artikel-voor-artikel bespreking van een wetsvoorstel. Juridische precisie is essentieel. Het Kamerlid moet weten waar de wet zwak is, wat de Raad van State zegt, en welke amendementen kansrijk zijn.
 
-Context: neem de geselecteerde partij, Kamerleden, dossiers en eigen bronnen mee. Frame de analyse vanuit het partijperspectief, zoek standpunten en bijdragen van de geselecteerde Kamerleden op, raadpleeg de eigen bronnen van de gebruiker, en focus op de relevante beleidsdossiers.
+Wat het Kamerlid nodig heeft:
+- Analyse per relevant wetsartikel
+- Samenvatting advies Raad van State
+- 1-3 conceptamendementen op specifieke artikelen
+- Overzicht amendementen van andere fracties
 
-Aanpak:
-- Zoek het wetsvoorstel, de memorie van toelichting en het advies van de Raad van State op.
-- Analyseer de belangrijkste artikelen en identificeer problematische bepalingen.
-- Zoek amendementen die al zijn ingediend door andere fracties.
-- Vergelijk met bestaande wetgeving en mogelijke juridische conflicten.
+Onderzoeksstrategie:
+1. Zoek via searchParlement naar het wetsvoorstel (bijv. "wetsvoorstel [titel]" of "Kamerstuk [nummer]")
+2. Zoek ook de Memorie van Toelichting en het advies van de Raad van State
+3. Haal alle drie volledige teksten op via getDocumentText
+4. Zoek via searchKamerstukken naar ingediende amendementen van andere fracties
+5. Zoek via searchPartyDocs het partijstandpunt op
+6. Zoek via searchDocumenten naar uitvoeringstoetsen of adviezen van betrokken instanties
 
-Extra secties voor dit type debat:
+Schrijf de briefing in deze structuur:
 
-Wetsanalyse:
-Per relevant artikel: wat regelt het, wat zijn de gevolgen, en welke bezwaren zijn er.
+## Samenvatting wetsvoorstel
+Wat regelt het, waarom is het nodig, wanneer treedt het in werking.
 
-Amendementen:
-Stel 1-3 conceptamendementen voor op specifieke artikelen, met toelichting waarom de wijziging nodig is.
+## Advies Raad van State
+Hoofdpunten van het RvS-advies en de reactie van de regering (nader rapport).
 
-Juridische kanttekeningen:
-Mogelijke conflicten met Grondwet, EU-recht of bestaande wetgeving.
+## Wetsanalyse per artikel
+Per relevant artikel:
+- **Artikel [nummer]:** wat het regelt
+- **Gevolgen:** impact voor burgers, bedrijven of uitvoeringsorganisaties
+- **Bezwaren:** juridische of praktische problemen
 
-De concept-speech moet gericht zijn op de hoofdlijnen van het wetsvoorstel (3-4 minuten, 500-700 woorden) en juridisch onderbouwd.`,
+## Amendementen andere fracties
+Overzicht van ingediende amendementen: indiener, artikel, strekking.
+
+## Conceptamendementen
+Per amendement:
+- **Op artikel:** [nummer]
+- **Wijziging:** concrete tekstaanpassing
+- **Toelichting:** waarom deze wijziging nodig is
+
+## Juridische kanttekeningen
+Mogelijke conflicten met Grondwet, EU-recht, EVRM of bestaande wetgeving.`,
   },
   {
     soort: "Tweeminutendebat",
     label: "Tweeminutendebat",
-    prompt: `Dit is een tweeminutendebat — extreem kort (max 2 minuten), bedoeld om moties in te dienen na een eerder commissiedebat.
+    prompt: `Tweeminutendebat - maximaal 2 minuten spreektijd om een punt te maken en een motie in te dienen. Volgt op een eerder commissiedebat. Elke seconde telt.
 
-Context: neem de geselecteerde partij, Kamerleden, dossiers en eigen bronnen mee. Frame de analyse vanuit het partijperspectief, zoek standpunten en bijdragen van de geselecteerde Kamerleden op, raadpleeg de eigen bronnen van de gebruiker, en focus op de relevante beleidsdossiers.
+Wat het Kamerlid nodig heeft:
+- Terugblik: wat bleef onopgelost in het commissiedebat
+- 1-2 conceptmoties met verwachte steun
 
-Aanpak:
-- Zoek het voorafgaande commissiedebat op en analyseer welke punten onopgelost bleven.
-- Identificeer 1-2 concrete punten waar een motie verschil kan maken.
-- Formuleer maximaal 2 scherpe moties.
-- Zoek steun bij andere fracties: welke partijen delen dit standpunt?
+Onderzoeksstrategie:
+1. Zoek via searchParlement of searchHandelingen naar het voorafgaande commissiedebat over dit onderwerp
+2. Zoek via searchToezeggingen welke toezeggingen de minister deed
+3. Zoek via searchStemmingen naar steunpatronen voor vergelijkbare moties
+4. Zoek via searchPartyDocs het partijstandpunt voor de motie-formulering
 
-Extra secties voor dit type debat:
+Schrijf de briefing in deze structuur:
 
-Terugblik commissiedebat:
-Wat was de uitkomst van het eerdere debat? Welke toezeggingen zijn gedaan? Wat bleef open?
+## Terugblik commissiedebat
+Wat was de uitkomst? Welke toezeggingen zijn gedaan? Wat bleef open of onbevredigend?
 
-Conceptmoties:
-Schrijf 1-2 moties in dictum-formaat. Houd ze concreet en haalbaar voor een Kamermeerderheid.
+## Onopgeloste punten
+Punten waar het Kamerlid nu actie op kan ondernemen via een motie.
 
-De concept-speech moet MAXIMAAL 2 minuten zijn (250-300 woorden). Elke zin telt. Geen inleiding, direct to the point. Structuur: 1-2 zinnen context, kernpunt, aankondiging motie(s).`,
+## Conceptmoties
+Per motie:
+- **Dictum:** "verzoekt de regering..." of "spreekt uit dat..."
+- **Toelichting:** 2 zinnen
+- **Verwachte steun:** welke fracties waarschijnlijk voor/tegen`,
   },
   {
     soort: "Notaoverleg",
     label: "Notaoverleg",
-    prompt: `Dit is een notaoverleg — een debat over een specifieke beleidsnota of beleidsbrief van de minister.
+    prompt: `Notaoverleg - debat over een specifieke beleidsnota of beleidsbrief. Het Kamerlid moet de nota door en door kennen en vanuit het partijperspectief beoordelen: waar sluit het aan, waar wijkt het af, en welke alternatieven zijn er?
 
-Context: neem de geselecteerde partij, Kamerleden, dossiers en eigen bronnen mee. Frame de analyse vanuit het partijperspectief, zoek standpunten en bijdragen van de geselecteerde Kamerleden op, raadpleeg de eigen bronnen van de gebruiker, en focus op de relevante beleidsdossiers.
+Wat het Kamerlid nodig heeft:
+- Grondige analyse van de nota per hoofdpunt
+- Vergelijking met partijprogramma
+- Concrete beleidsalternatieven
 
-Aanpak:
-- Zoek de nota/beleidsbrief op die centraal staat en vat de hoofdpunten samen.
-- Vergelijk de voorgestelde maatregelen met het partijprogramma.
-- Zoek naar uitvoerbaarheidsanalyses, adviezen van de Raad van State, en reacties van belangenorganisaties.
-- Identificeer wat er ontbreekt in de nota.
+Onderzoeksstrategie:
+1. Zoek via searchParlement naar de nota/beleidsbrief die centraal staat
+2. Haal de volledige tekst op via getDocumentText
+3. Zoek via searchPartyDocs het partijstandpunt op dit beleidsterrein
+4. Zoek via searchNews naar reacties van belangenorganisaties en uitvoerders
+5. Zoek via searchDocumenten naar uitvoerbaarheidsanalyses of adviezen
 
-Extra secties voor dit type debat:
+Schrijf de briefing in deze structuur:
 
-Nota-analyse:
-Samenvatting van de nota met per hoofdpunt: wat staat er, wat is de impact, en wat ontbreekt.
+## Samenvatting nota
+Wat is het doel van de nota, welke maatregelen worden voorgesteld, wat is de financiele onderbouwing.
 
-Beleidsalternatieven:
-Welke alternatieve maatregelen passen beter bij de partijvisie?
+## Nota-analyse per hoofdpunt
+Per hoofdpunt:
+- **Maatregel:** wat wordt voorgesteld
+- **Beoordeling:** sluit dit aan bij het partijstandpunt? Wat is goed, wat ontbreekt?
+- **Impact:** verwachte effecten op burgers, bedrijven, uitvoering
 
-De concept-speech moet 3-5 minuten zijn (500-800 woorden) en beleidsinhoudelijk, met concrete alternatieven.`,
+## Beleidsalternatieven
+Alternatieve maatregelen die beter passen bij de partijvisie. Per alternatief: wat, waarom, en hoe te realiseren.`,
   },
   {
     soort: "Begrotingsoverleg",
     label: "Begrotingsoverleg",
-    prompt: `Dit is een begrotingsoverleg — gericht op de begroting van een specifiek ministerie.
+    prompt: `Begrotingsoverleg - debat over de begroting van een specifiek ministerie. Het draait om euro's: waar gaat het geld heen, wat is er veranderd, en waar kan de fractie verschuivingen voorstellen?
 
-Context: neem de geselecteerde partij, Kamerleden, dossiers en eigen bronnen mee. Frame de analyse vanuit het partijperspectief, zoek standpunten en bijdragen van de geselecteerde Kamerleden op, raadpleeg de eigen bronnen van de gebruiker, en focus op de relevante beleidsdossiers.
+Wat het Kamerlid nodig heeft:
+- Analyse van de belangrijkste begrotingsposten en verschuivingen
+- Bevindingen van Rekenkamer en CPB
+- 1-2 begrotingsamendementen met dekking
 
-Aanpak:
-- Zoek de begrotingsstukken op en analyseer de belangrijkste posten en verschuivingen.
-- Vergelijk met voorgaande jaren: waar wordt meer/minder uitgegeven?
-- Zoek dekkingsvoorstellen en doorrekeningen (CPB, Rekenkamer).
-- Identificeer posten waar amendementen kansrijk zijn.
+Onderzoeksstrategie:
+1. Zoek via searchParlement naar de begrotingsstukken (bijv. "begroting [ministerie] [jaar]")
+2. Haal relevante stukken op via getDocumentText
+3. Zoek via searchDocumenten naar rapporten van de Algemene Rekenkamer en CPB-doorrekeningen
+4. Zoek via searchPartyDocs de financiele prioriteiten van de partij
+5. Zoek via searchKamerstukken naar amendementen van andere fracties op deze begroting
 
-Extra secties voor dit type debat:
+Schrijf de briefing in deze structuur:
 
-Begrotingsanalyse:
-Top 5 opvallende begrotingsposten met bedragen, verschuivingen t.o.v. vorig jaar, en beoordeling.
+## Samenvatting
+Totaalbeeld van de begroting: omvang, prioriteiten, grootste verschuivingen t.o.v. vorig jaar.
 
-Financiele amendementen:
-Stel 1-2 begrotingsamendementen voor met dekking (verschuiving binnen de begroting).
+## Begrotingsanalyse
+Top begrotingsposten:
+- **Post:** naam en bedrag
+- **Verschuiving:** verandering t.o.v. vorig jaar (bedrag en percentage)
+- **Beoordeling:** opvallend, problematisch of kansrijk voor amendering
 
-Rekenkamer en CPB:
-Relevante bevindingen van de Algemene Rekenkamer en het CPB over dit beleidsterrein.
+## Rekenkamer en CPB
+Relevante bevindingen over dit beleidsterrein: doelmatigheid, effectiviteit, risico's.
 
-De concept-speech moet 4-6 minuten zijn (700-1000 woorden) en financieel onderbouwd, met concrete bedragen en vergelijkingen.`,
+## Begrotingsamendementen
+Per amendement:
+- **Post:** welke begrotingspost wijzigen
+- **Wijziging:** bedrag erbij of eraf
+- **Dekking:** waarmee wordt het gefinancierd (verschuiving binnen de begroting)
+- **Toelichting:** waarom`,
   },
   {
     soort: "Rondetafelgesprek",
     label: "Rondetafelgesprek",
-    prompt: `Dit is een rondetafelgesprek — een informatief gesprek met experts en belanghebbenden, geen debat met de minister.
+    prompt: `Rondetafelgesprek - de commissie spreekt met experts en belanghebbenden. Er is geen minister aanwezig, dit is geen debat maar intelligence-gathering. Het doel: informatie ophalen die de fractie kan gebruiken in toekomstige debatten.
 
-Context: neem de geselecteerde partij, Kamerleden, dossiers en eigen bronnen mee. Frame de analyse vanuit het partijperspectief, zoek standpunten en bijdragen van de geselecteerde Kamerleden op, raadpleeg de eigen bronnen van de gebruiker, en focus op de relevante beleidsdossiers.
+Wat het Kamerlid nodig heeft:
+- Profiel per genodigde expert/organisatie
+- Gerichte vragen per genodigde
+- Overzicht van de informatiebehoefte voor toekomstige debatten
 
-Aanpak:
-- Zoek op welke experts en organisaties zijn uitgenodigd (via de agendastukken).
-- Bereid gerichte vragen voor per genodigde, gebaseerd op hun expertise en eerdere publicaties.
-- Identificeer welke informatie je nodig hebt voor toekomstige debatten over dit onderwerp.
-- Zoek achtergrondstukken en position papers van de genodigde organisaties.
+Onderzoeksstrategie:
+1. Zoek via searchParlement naar de agenda en uitnodigingen voor dit rondetafelgesprek
+2. Zoek per genodigde organisatie via searchNews en fetchWebPage naar hun standpunten en recente publicaties
+3. Zoek via searchParlement en searchDocumenten naar rapporten en adviezen van deze organisaties
+4. Zoek via searchPartyDocs welke informatie de fractie nodig heeft op dit dossier
 
-Extra secties voor dit type vergadering:
+Schrijf de briefing in deze structuur:
 
-Vragen per genodigde:
-Per expert/organisatie: wie zijn ze, wat is hun positie, en 2-3 gerichte vragen.
+## Samenvatting
+Onderwerp van het rondetafelgesprek, waarom het is georganiseerd, welke beleidsvragen centraal staan.
 
-Informatiebehoefte:
-Welke informatie moet uit dit gesprek komen om het partijstandpunt te onderbouwen in toekomstige debatten?
+## Genodigden
+Per expert/organisatie:
+- **Naam en functie**
+- **Achtergrond:** wat doen ze, wat is hun expertise
+- **Bekende standpunten:** op basis van publicaties en eerdere uitspraken
+- **Vragen:** 2-3 gerichte vragen die relevante informatie opleveren voor de fractie
 
-Er is GEEN concept-speech nodig voor een rondetafelgesprek. Schrijf in plaats daarvan een overzicht van de belangrijkste vragen, geordend op prioriteit.`,
+## Informatiebehoefte
+Welke informatie moet uit dit gesprek komen om het partijstandpunt te onderbouwen in toekomstige debatten? Welke feiten of ervaringen zijn nog onbekend?
+
+Lever een geprioriteerde vragenlijst over alle genodigden heen.`,
   },
   {
     soort: "Procedurevergadering",
     label: "Procedurevergadering",
-    prompt: `Dit is een procedurevergadering — hier wordt de agenda van de commissie bepaald: welke debatten worden ingepland, welke brieven worden geagendeerd, welke rapporteurs worden benoemd.
+    prompt: `Procedurevergadering - hier wordt bepaald wat de commissie gaat doen: welke debatten worden ingepland, welke Kamerbrieven worden geagendeerd, wie wordt rapporteur. Strategisch belangrijk: de fractie kan invloed uitoefenen op wat er wel en niet besproken wordt.
 
-Context: neem de geselecteerde partij, Kamerleden, dossiers en eigen bronnen mee. Frame de analyse vanuit het partijperspectief, zoek standpunten en bijdragen van de geselecteerde Kamerleden op, raadpleeg de eigen bronnen van de gebruiker, en focus op de relevante beleidsdossiers.
+Wat het Kamerlid nodig heeft:
+- Per agendapunt: aanbeveling (agenderen/niet agenderen/rapporteur)
+- Suggesties voor eigen agendapunten
+- Overzicht van strategische keuzes
 
-Aanpak:
-- Zoek de conceptagenda/besluitenlijst van deze procedurevergadering op.
-- Identificeer welke onderwerpen worden voorgesteld voor agendering en welke politiek relevant zijn.
-- Zoek achtergrond bij de Kamerbrieven en stukken die op de agenda staan.
-- Inventariseer welke onderwerpen de partij zou willen agenderen of juist tegenhouden.
+Onderzoeksstrategie:
+1. Zoek via searchParlement of searchAgenda naar de conceptagenda/besluitenlijst van deze procedurevergadering
+2. Zoek achtergrond bij de voorgestelde agendapunten via searchDocumenten
+3. Zoek via searchPartyDocs welke onderwerpen prioriteit hebben voor de fractie
+4. Zoek via searchNews naar actuele ontwikkelingen die agendering verdienen
 
-Extra secties voor dit type vergadering:
+Schrijf de briefing in deze structuur:
 
-Agendaoverzicht:
-Per agendapunt: wat wordt voorgesteld (debat aanvragen, brief naar Kamer, rapporteur benoemen) en wat is de relevantie.
+## Samenvatting
+Overzicht van de procedurevergadering: hoeveel punten, welke thema's, waar zitten de strategische keuzes.
 
-Aandachtspunten:
-Welke punten verdienen extra aandacht? Waar kan de fractie invloed uitoefenen op de commissieagenda?
+## Agendaoverzicht
+Per agendapunt:
+- **Punt:** wat wordt voorgesteld (debat aanvragen, brief agenderen, rapporteur benoemen, etc.)
+- **Achtergrond:** korte context
+- **Aanbeveling:** agenderen / niet agenderen / steunen / rapporteur aanbieden - met onderbouwing
 
-Suggesties voor agendering:
-Onderwerpen die de fractie zelf zou kunnen voorstellen voor een debat of overleg.
+## Suggesties eigen agendering
+Onderwerpen die de fractie zelf kan voorstellen voor een debat of overleg, met onderbouwing waarom dit nu relevant is.
 
-Er is GEEN concept-speech nodig voor een procedurevergadering. Geef in plaats daarvan een beknopt overzicht van de strategische keuzes per agendapunt.`,
+Lever een beknopt strategisch overzicht per agendapunt.`,
   },
   {
     soort: "Technische briefing",
     label: "Technische briefing",
-    prompt: `Dit is een technische briefing — ambtenaren of externe experts informeren de commissie over een technisch of complex onderwerp, zonder politiek debat.
+    prompt: `Technische briefing - ambtenaren of externe deskundigen informeren de commissie over een technisch of complex onderwerp. Geen politiek debat, maar een kans om de materie te doorgronden en slimme vragen te stellen die later politiek bruikbaar zijn.
 
-Context: neem de geselecteerde partij, Kamerleden, dossiers en eigen bronnen mee. Frame de analyse vanuit het partijperspectief, zoek standpunten en bijdragen van de geselecteerde Kamerleden op, raadpleeg de eigen bronnen van de gebruiker, en focus op de relevante beleidsdossiers.
+Wat het Kamerlid nodig heeft:
+- Achtergrond over het technische onderwerp
+- 10-15 inhoudelijke vragen, geordend per thema
+- Aandachtspunten: waar raakt dit onderwerp aan partijstandpunten of lopende debatten
 
-Aanpak:
-- Zoek op welk onderwerp de briefing gaat en welke organisatie of experts presenteren.
-- Zoek achtergrondstukken, rapporten en eerdere Kamervragen over dit onderwerp.
-- Bereid inhoudelijke vragen voor die helpen om de materie te doorgronden.
-- Identificeer welke informatie nodig is voor latere politieke debatten.
+Onderzoeksstrategie:
+1. Zoek via searchParlement naar het onderwerp van de briefing en gerelateerde Kamerstukken
+2. Zoek via searchDocumenten naar rapporten en adviezen over dit onderwerp
+3. Zoek via getRecenteKamervragen naar eerder gestelde vragen
+4. Zoek via searchNews naar actuele context
+5. Zoek via searchPartyDocs naar relevante partijstandpunten
 
-Extra secties voor dit type vergadering:
+Schrijf de briefing in deze structuur:
 
-Achtergrond:
-Samenvatting van het onderwerp, waarom het technisch complex is, en wat de politieke relevantie is.
+## Achtergrond
+Wat is het onderwerp, waarom is het technisch complex, wat is de politieke relevantie, welke organisatie geeft de briefing.
 
-Kernvragen:
-10-15 inhoudelijke vragen geordend op thema, gericht op het begrijpen van de materie (niet politiek maar technisch).
+## Kernvragen
+10-15 inhoudelijke vragen, geordend per thema. Focus op het doorgronden van de materie, niet op politieke punten. Voorbeelden: "Hoe verhoudt X zich tot Y?", "Wat zijn de risico's van Z?", "Welke alternatieven zijn overwogen?"
 
-Aandachtspunten voor de fractie:
-Welke aspecten van dit onderwerp raken aan de partijstandpunten of lopende debatten?
+## Aandachtspunten voor de fractie
+Welke aspecten van dit onderwerp raken aan de partijstandpunten of lopende debatten? Waar moet het Kamerlid extra op letten?
 
-Er is GEEN concept-speech nodig. Lever een gestructureerde vragenlijst op.`,
+Lever een gestructureerde vragenlijst op.`,
   },
   {
     soort: "Gesprek",
     label: "Gesprek",
-    prompt: `Dit is een gesprek — een informeel overleg van de commissie met externe partijen, belanghebbenden of bewindspersonen in een minder formele setting.
+    prompt: `Gesprek - een informeel overleg van de commissie met externe partijen of belanghebbenden. Minder formeel dan een rondetafelgesprek, maar goede voorbereiding is essentieel: weet met wie je praat, wat zij willen, en wat jij van hen nodig hebt.
 
-Context: neem de geselecteerde partij, Kamerleden, dossiers en eigen bronnen mee. Frame de analyse vanuit het partijperspectief, zoek standpunten en bijdragen van de geselecteerde Kamerleden op, raadpleeg de eigen bronnen van de gebruiker, en focus op de relevante beleidsdossiers.
+Wat het Kamerlid nodig heeft:
+- Profiel per gesprekspartner
+- Gespreksagenda met verwachte thema's
+- 5-10 strategische vragen
 
-Aanpak:
-- Zoek op met wie het gesprek plaatsvindt en over welk onderwerp.
-- Analyseer de positie en achtergrond van de gesprekspartner(s).
-- Zoek eerdere standpunten en publicaties van de genodigden.
-- Bereid gerichte vragen voor die aansluiten bij de fractieprioriteiten.
+Onderzoeksstrategie:
+1. Zoek via searchParlement en searchNews naar de gesprekspartner(s) en hun organisatie
+2. Zoek via fetchWebPage hun website en recente publicaties op
+3. Zoek via searchPartyDocs relevante partijstandpunten
+4. Zoek via searchDocumenten naar relevante beleidsontwikkelingen
 
-Extra secties voor dit type vergadering:
+Schrijf de briefing in deze structuur:
 
-Gesprekspartners:
-Per genodigde: achtergrond, functie, bekende standpunten en relevante publicaties.
+## Samenvatting
+Waar gaat het gesprek over, met wie, en waarom nu.
 
-Gespreksagenda:
+## Gesprekspartners
+Per genodigde:
+- **Naam en functie**
+- **Achtergrond:** organisatie, expertise, belangen
+- **Bekende standpunten:** eerdere publicaties of uitspraken
+- **Wat willen zij?** wat is hun belang in dit gesprek
+
+## Gespreksagenda
 Verwachte thema's en hoe ze raken aan het partijstandpunt.
 
-Vragenlijst:
-5-10 strategische vragen, geordend op prioriteit.
+## Strategische vragen
+5-10 vragen, geordend op prioriteit. Focus op het verkrijgen van informatie die politiek bruikbaar is.
 
-Er is GEEN concept-speech nodig. Geef een beknopte gespreksvoorbereiding met focus op de juiste vragen.`,
+Lever een beknopte gespreksvoorbereiding.`,
   },
   {
     soort: "Stemmingen",
     label: "Stemmingen",
-    prompt: `Dit zijn stemmingen — de Kamer stemt over moties, amendementen en wetsvoorstellen.
+    prompt: `Stemmingen - de Kamer stemt over moties, amendementen en wetsvoorstellen. Het Kamerlid heeft een helder stemadvies nodig per item, met onderbouwing vanuit het partijstandpunt, en een waarschuwing bij politiek gevoelige stemmingen.
 
-Context: neem de geselecteerde partij, Kamerleden, dossiers en eigen bronnen mee. Frame de analyse vanuit het partijperspectief, zoek standpunten en bijdragen van de geselecteerde Kamerleden op, raadpleeg de eigen bronnen van de gebruiker, en focus op de relevante beleidsdossiers.
+Wat het Kamerlid nodig heeft:
+- Per item: stemadvies (voor/tegen/onthouden) met onderbouwing
+- Overzicht van gevoelige stemmingen
+- Snelle scan: wat is mediageniek, wat kan gedoe opleveren
 
-Aanpak:
-- Zoek op welke moties, amendementen en wetsvoorstellen in stemming worden gebracht.
-- Analyseer per motie/amendement: wie heeft het ingediend, wat is de strekking, en hoe verhoudt het zich tot het partijstandpunt.
-- Zoek of er al stemadviezen zijn uitgebracht door de fractie of coalitie/oppositie.
-- Identificeer moties die politiek gevoelig zijn of media-aandacht kunnen trekken.
+Onderzoeksstrategie:
+1. Zoek via searchStemmingen en searchKamerstukken naar de moties, amendementen en wetsvoorstellen die in stemming komen
+2. Haal de tekst op van relevante moties/amendementen via getDocumentText
+3. Zoek via searchPartyDocs het partijstandpunt per thema
+4. Zoek via searchHandelingen de context van het debat waarin de moties zijn ingediend
+5. Zoek via searchNews of er media-aandacht is voor specifieke stemmingen
 
-Extra secties voor dit type vergadering:
+Schrijf de briefing in deze structuur:
 
-Stemoverzicht:
-Per motie/amendement: nummer, indiener, strekking, en aanbevolen stemgedrag vanuit het partijperspectief (voor/tegen/onthouden) met onderbouwing.
+## Samenvatting
+Hoeveel stemmingen, over welke thema's, wat zijn de belangrijkste.
 
-Gevoelige stemmingen:
-Moties of amendementen waarbij het stemgedrag politiek risico draagt of mediagevoelig is.
+## Stemoverzicht
+Per motie/amendement/wetsvoorstel:
+- **Nummer en indiener**
+- **Strekking:** 1-2 zinnen wat het inhoudt
+- **Stemadvies:** voor / tegen / onthouden
+- **Onderbouwing:** waarom, vanuit het partijstandpunt
 
-Er is GEEN concept-speech nodig. Geef een helder stemadviesoverzicht.`,
+## Gevoelige stemmingen
+Stemmingen waarbij het stemgedrag politiek risico draagt, mediageniek is, of afwijkt van verwachte bondgenoten. Per gevoelige stemming: wat is het risico en hoe te handelen.
+
+Lever een helder stemadviesoverzicht.`,
   },
   {
     soort: "Regeling van werkzaamheden",
     label: "Regeling van werkzaamheden",
-    prompt: `Dit is een regeling van werkzaamheden — het korte plenaire overleg waarin debatten worden aangevraagd, de agenda wordt vastgesteld, en fracties procedurele verzoeken doen.
+    prompt: `Regeling van werkzaamheden - het korte plenaire overleg waarin debatten worden aangevraagd, de agenda wordt vastgesteld en procedurele verzoeken worden gedaan. Strategisch moment: welke debatten vraag je aan, welke steun je?
 
-Context: neem de geselecteerde partij, Kamerleden, dossiers en eigen bronnen mee. Frame de analyse vanuit het partijperspectief, zoek standpunten en bijdragen van de geselecteerde Kamerleden op, raadpleeg de eigen bronnen van de gebruiker, en focus op de relevante beleidsdossiers.
+Wat het Kamerlid nodig heeft:
+- Overzicht lopende debataanvragen
+- Mogelijke eigen debataanvragen met onderbouwing
+- Inschatting van steun bij andere fracties
 
-Aanpak:
-- Zoek welke debatten recent zijn aangevraagd en welke op de rol staan.
-- Inventariseer actuele onderwerpen waarover de fractie een debat zou willen aanvragen.
-- Zoek of er spoeddebatten of dertigledendebatten zijn aangevraagd door andere fracties.
+Onderzoeksstrategie:
+1. Zoek via searchAgenda en searchParlement naar recente debataanvragen en de plenaire planning
+2. Zoek via searchNews naar urgente onderwerpen die een debat rechtvaardigen
+3. Zoek via searchPartyDocs welke thema's prioriteit hebben voor de fractie
+4. Zoek via searchKamerstukken naar recente Kamerbrieven die aanleiding kunnen zijn voor een debat
 
-Extra secties voor dit type vergadering:
+Schrijf de briefing in deze structuur:
 
-Lopende debataanvragen:
-Overzicht van aangevraagde debatten die nog niet zijn ingepland, met aanvrager en onderwerp.
+## Samenvatting
+Wat staat er op de agenda van de regeling, welke aanvragen zijn er al, welke kansen liggen er.
 
-Mogelijke debataanvragen:
-Actuele onderwerpen waar de fractie een debat over zou kunnen aanvragen, met onderbouwing.
+## Lopende debataanvragen
+Per aanvraag: aanvrager, onderwerp, status (wel/niet gesteund, wel/niet ingepland).
 
-Er is GEEN concept-speech nodig. Geef een compact overzicht van strategische mogelijkheden.`,
+## Mogelijke eigen debataanvragen
+Per suggestie:
+- **Onderwerp:** waarover
+- **Aanleiding:** Kamerbrief, nieuwsgebeurtenis of beleidsontwikkeling
+- **Onderbouwing:** waarom dit nu een debat verdient
+- **Verwachte steun:** welke fracties dit waarschijnlijk steunen
+
+Lever een compact strategisch overzicht.`,
   },
   {
     soort: "Werkbezoek",
     label: "Werkbezoek",
-    prompt: `Dit is een werkbezoek — Kamerleden bezoeken een locatie, organisatie of instelling om zich ter plekke te laten informeren.
+    prompt: `Werkbezoek - Kamerleden bezoeken een organisatie, instelling of locatie om zich ter plekke te laten informeren. Het gaat om ervaringen uit de praktijk ophalen die bruikbaar zijn in Kamerdebatten.
 
-Context: neem de geselecteerde partij, Kamerleden, dossiers en eigen bronnen mee. Frame de analyse vanuit het partijperspectief, zoek standpunten en bijdragen van de geselecteerde Kamerleden op, raadpleeg de eigen bronnen van de gebruiker, en focus op de relevante beleidsdossiers.
+Wat het Kamerlid nodig heeft:
+- Achtergrond van de te bezoeken organisatie
+- Relevante beleidsontwikkelingen die deze organisatie raken
+- 10-15 vragen voor gesprekken ter plaatse
+- Mediakansen
 
-Aanpak:
-- Zoek op welke organisatie of locatie wordt bezocht en waarom.
-- Analyseer de achtergrond van de te bezoeken organisatie: wat doen ze, wat is hun rol in het beleidsveld, zijn er recente ontwikkelingen?
-- Zoek eerdere Kamervragen, debatten of rapporten over deze organisatie of het gerelateerde beleidsterrein.
-- Zoek nieuwsberichten over de organisatie of locatie.
+Onderzoeksstrategie:
+1. Zoek via fetchWebPage de website van de organisatie op voor achtergrondinformatie
+2. Zoek via searchParlement naar Kamervragen, debatten en rapporten gerelateerd aan deze organisatie of sector
+3. Zoek via searchDocumenten naar relevante beleidswijzigingen, bezuinigingen of investeringen
+4. Zoek via searchNews naar recent nieuws over de organisatie
+5. Zoek via searchPartyDocs het partijstandpunt op dit beleidsterrein
 
-Extra secties voor dit type vergadering:
+Schrijf de briefing in deze structuur:
 
-Achtergrond bezochte organisatie:
-Wat doet de organisatie, hoeveel mensen werken er, wat is hun financiering, en wat is hun relatie tot het rijksbeleid?
+## Samenvatting
+Wat wordt bezocht, waarom, en wat is de politieke relevantie.
 
-Relevante beleidsontwikkelingen:
+## Organisatie-achtergrond
+Wat doet de organisatie, hoeveel mensen werken er, hoe wordt het gefinancierd, wat is de relatie tot rijksbeleid.
+
+## Relevante beleidsontwikkelingen
 Recente wetswijzigingen, bezuinigingen, investeringen of beleidswijzigingen die deze organisatie raken.
 
-Vragenlijst voor het bezoek:
+## Vragenlijst voor het bezoek
 10-15 vragen voor gesprekken ter plaatse, gericht op het ophalen van ervaringen uit de praktijk die bruikbaar zijn in Kamerdebatten.
 
-Mediakansen:
-Zijn er fotomomenten, quotes of bevindingen die de fractie kan gebruiken in communicatie?
+## Mediakansen
+Mogelijke fotomomenten, quotes of bevindingen die de fractie kan gebruiken in communicatie en sociale media.
 
-Er is GEEN concept-speech nodig. Geef een compacte voorbereidingsnotitie met achtergrond en vragen.`,
+Lever een compacte voorbereidingsnotitie met achtergrond en vragen.`,
   },
 ]
 

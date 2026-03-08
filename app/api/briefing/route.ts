@@ -77,68 +77,43 @@ export async function POST(req: Request) {
     }
 
     const beyondPrompt = !searchBeyondSources
+      ? `\n\nBELANGRIJK: Gebruik ALLEEN de geïntegreerde bronnen (parlementaire databases, partijprogramma's, nieuwszoekmachine) en de eigen bronnen hierboven. Gebruik fetchWebPage NIET om andere websites te raadplegen.`
+      : ""
 
-    const prompt = `Genereer een uitgebreide debriefing over het onderwerp: "${topic}"${soort ? ` (type vergadering: ${soort})` : ""}
+    const prompt = `Genereer een uitgebreide debriefing over: "${topic}"${soort ? ` (type vergadering: ${soort})` : ""}
 
 ## Context
-${partyName ? `**Partij:** ${partyName} - frame de gehele briefing vanuit het perspectief van deze partij. Zoek hun verkiezingsprogramma en eerdere standpunten op via searchPartyDocs. Vergelijk het kabinetsbeleid met de partijpositie.` : "Geen partij geselecteerd - geef een neutraal, gebalanceerd overzicht."}
-${hasKamerleden ? `**Kamerleden:** ${kamerleden.join(", ")} - zoek hun standpunten, uitspraken, ingediende moties en schriftelijke vragen op over dit onderwerp. Vermeld hun positie in Standpunten per Fractie en betrek hun specifieke bijdragen in de suggestievragen. Analyseer hun spreekstijl uit eerdere Handelingen voor de concept-speech.` : "Geen Kamerleden geselecteerd."}
-${sources.length > 0 ? `**Eigen bronnen:** De gebruiker heeft de volgende bronnen als prioriteit ingesteld. Raadpleeg deze actief met fetchWebPage wanneer ze relevant zijn voor het onderwerp:\n${sources.map((s) => s.title ? `- ${s.title}: ${s.url}` : `- ${s.url}`).join("\n")}` : "Geen eigen bronnen ingesteld."}
+${partyName ? `**Partij:** ${partyName} - frame de gehele briefing vanuit het perspectief van deze partij. Zoek het verkiezingsprogramma op via searchPartyDocs.` : "Geen partij geselecteerd - geef een neutraal, gebalanceerd overzicht."}
+${hasKamerleden ? `**Kamerleden:** ${kamerleden.join(", ")} - zoek hun standpunten, ingediende moties en schriftelijke vragen op over dit onderwerp.` : ""}
+${sources.length > 0 ? `**Eigen bronnen:** Raadpleeg deze actief met fetchWebPage wanneer relevant:\n${sources.map((s) => s.title ? `- ${s.title}: ${s.url}` : `- ${s.url}`).join("\n")}` : ""}
+${skillPrompt ? `\n${skillPrompt}` : `
+## Onderzoeksaanpak
+1. Zoek via searchParlement naar relevante parlementaire documenten
+2. Haal volledige teksten op via getDocumentText
+3. Zoek aanvullend via searchKamerstukken, searchDocumenten, searchToezeggingen, searchStemmingen, searchHandelingen en searchNews
 
-## Aanpak
-1. Zoek eerst via searchParlement (full-text search over alle parlementaire documenten) naar relevante stukken.
-2. Haal voor de belangrijkste documenten de volledige tekst op via getDocumentText en vat samen wat erin staat.
-3. Zoek aanvullend via searchKamerstukken en searchDocumenten voor gestructureerde resultaten.
-4. Zoek toezeggingen, stemmingen, handelingen en nieuws.
-${sources.length > 0 ? "5. Raadpleeg de eigen bronnen van de gebruiker via fetchWebPage voor aanvullende context." : ""}
+Schrijf de briefing met: Samenvatting, Relevante Stukken (per stuk: nummer, datum, samenvatting), Moties en Amendementen, Openstaande Toezeggingen, Standpunten per Fractie, Suggestievragen.`}
+${beyondPrompt}
 
-## Structuur
-## Samenvatting
-Korte samenvatting van het onderwerp en de huidige stand van zaken.
-
-## Relevante Stukken naar de Kamer
-Per relevant document (Kamerbrief, nota, verslag):
-- **Documentnummer** en titel
-- **Datum** waarop het naar de Kamer is gestuurd
-- **Samenvatting** van de inhoud: wat staat erin, wat zijn de hoofdpunten, welke maatregelen of standpunten worden beschreven
-
-## Moties en Amendementen
-Overzicht van ingediende en aangenomen moties en amendementen, met indieners en strekking.
-
-## Openstaande Toezeggingen
-Toezeggingen van ministers die nog niet zijn nagekomen.
-
-## Standpunten per Fractie
-Overzicht van posities van de verschillende fracties op basis van stemmingen en uitspraken.
-
-## Suggestievragen voor het Debat
-Concrete vragen om aan de minister te stellen, met verwijzing naar specifieke documenten en bronnen.
-
-## Mogelijke Speech
-Schrijf een concept-speech voor gebruik in het debat.
-${hasKamerleden ? `Zoek eerst via searchParlement naar eerdere speeches en bijdragen van ${kamerleden[0]} in de Handelingen. Analyseer hun spreekstijl: toon, woordgebruik, lengte van zinnen, retorische patronen, hoe ze ministers aanspreken. Schrijf de concept-speech in diezelfde stijl.` : "Schrijf een zakelijke, neutrale speech die past bij een Kamerdebat."}
-De speech moet verwijzen naar concrete documenten en feiten uit de briefing hierboven.
-${skillPrompt ? `\n--- SPECIFIEKE INSTRUCTIES VOOR DIT TYPE VERGADERING (${soort}) ---\n${skillPrompt}\n--- EINDE SPECIFIEKE INSTRUCTIES ---` : ""}
-
-BELANGRIJK: Zoek de daadwerkelijke inhoud van de relevante stukken op en vat samen wat erin staat. Noem altijd het documentnummer en de datum. Gebruik je tools om actuele informatie op te zoeken.`
-      ? `\n\nBELANGRIJK: Gebruik ALLEEN de geïntegreerde bronnen (parlementaire databases, partijprogramma's, nieuwszoekmachine) en de eigen websites hierboven. Gebruik fetchWebPage NIET om andere websites te raadplegen.`
-      : ""
+Zoek de daadwerkelijke inhoud van relevante stukken op en vat samen wat erin staat. Noem altijd documentnummers en data.`
 
     const abortController = new AbortController()
 
     const result = streamText({
       model: getModel(),
       abortSignal: abortController.signal,
-      system: `Je bent een parlementair onderzoeksassistent die debatbriefings schrijft voor Kamerleden. Gebruik altijd je tools om informatie op te zoeken. Schrijf in het Nederlands. Gebruik NOOIT em dashes (—), gebruik gewone streepjes (-) of herformuleer de zin. Verwijs naar specifieke documentnummers en Kamerstuknummers.
+      system: `Je bent een parlementair onderzoeksassistent die debriefings schrijft voor Kamerleden. Schrijf in het Nederlands. Gebruik NOOIT em dashes, gebruik gewone streepjes (-) of herformuleer de zin. Verwijs naar concrete documentnummers en Kamerstuknummers.
 
 Werkwijze:
-- Gebruik searchParlement als primaire zoekmachine — dit doorzoekt alle parlementaire documenten via full-text search (Overheid.nl)
-- Gebruik getDocumentText om de volledige tekst van gevonden documenten op te halen via hun documentnummer
-- Gebruik searchDocumenten en searchKamerstukken voor aanvullende gestructureerde zoekopdrachten via de TK API
-- Gebruik searchToezeggingen, searchStemmingen en searchHandelingen voor context
-- Gebruik getRecenteKamervragen om recente schriftelijke vragen te bekijken
-- Vat de inhoud van elk relevant stuk bondig maar volledig samen
-- Voor de concept-speech: zoek altijd eerst eerdere bijdragen van het Kamerlid op in de Handelingen via searchParlement om hun spreekstijl te analyseren en te imiteren${beyondPrompt}`,
+1. Gebruik searchParlement als primaire zoekmachine - dit doorzoekt alle parlementaire documenten via full-text search op Overheid.nl
+2. Haal de volledige tekst van belangrijke documenten op via getDocumentText
+3. Gebruik searchDocumenten en searchKamerstukken voor aanvullende gestructureerde zoekopdrachten
+4. Gebruik searchToezeggingen, searchStemmingen, searchHandelingen en searchNews voor context
+5. Gebruik getRecenteKamervragen voor recente schriftelijke vragen
+6. Vat elk relevant document bondig maar volledig samen met concrete feiten en cijfers
+7. Voer meerdere zoekacties parallel uit waar mogelijk
+
+Doe eerst al je onderzoek met tools, en schrijf daarna direct de volledige briefing. Vraag niet om bevestiging tussendoor - ga altijd automatisch door van onderzoek naar het schrijven van het eindproduct.${beyondPrompt}`,
       prompt,
       stopWhen: stepCountIs(25),
       tools: {
