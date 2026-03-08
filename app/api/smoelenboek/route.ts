@@ -2,12 +2,17 @@ import { NextResponse } from "next/server"
 import { getCurrentMembers } from "@/lib/tk-members"
 import { KABINET } from "@/data/kabinet"
 
+function tkFotoUrl(personId: string, size: "thumbnail" | "medium" = "thumbnail"): string {
+  return `https://www.tweedekamer.nl/sites/default/files/styles/${size}/public/tk_external_data_ggm_sync/photos/${personId}.jpg`
+}
+
 export type SmoelenboekEntry = {
   id: string
   naam: string
   fractie: string
   rol: "Kamerlid" | "Minister" | "Staatssecretaris"
   portefeuille?: string
+  fotoUrl?: string
 }
 
 export async function GET() {
@@ -24,6 +29,7 @@ export async function GET() {
         naam: m.naam,
         fractie: m.fractie,
         rol: "Kamerlid" as const,
+        fotoUrl: tkFotoUrl(m.id),
       }))
 
     const kabinet: SmoelenboekEntry[] = KABINET.map((k) => ({
@@ -32,6 +38,7 @@ export async function GET() {
       fractie: k.partij,
       rol: k.rol,
       portefeuille: k.portefeuille,
+      fotoUrl: k.fotoUrl,
     }))
 
     const all = [...kamerleden, ...kabinet].sort((a, b) =>

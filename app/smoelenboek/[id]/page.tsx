@@ -1,7 +1,8 @@
 "use client"
 
-import { useState, useEffect, use } from "react"
+import { useState, useEffect, use, useCallback } from "react"
 import Link from "next/link"
+import { useSession } from "next-auth/react"
 import {
   ArrowLeft,
   FileText,
@@ -9,6 +10,15 @@ import {
   Handshake,
   Calendar,
   ExternalLink,
+  Mail,
+  Phone,
+  AtSign,
+  Linkedin,
+  Globe,
+  Trash2,
+  Plus,
+  UserPlus,
+  Users,
 } from "lucide-react"
 import { PARTY_COLORS } from "@/lib/parties"
 
@@ -21,6 +31,33 @@ type PersonDetail = {
   commissies?: string[]
   geboortedatum?: string
   isKabinet: boolean
+  fotoUrl?: string
+  email?: string | null
+  bio?: string | null
+  tweedekamerUrl?: string | null
+  contacten?: ContactItem[]
+  medewerkers?: MedewerkerItem[]
+}
+
+type ContactItem = {
+  id: string
+  personId: string
+  type: string
+  value: string
+  label?: string
+  submittedBy: string
+  createdAt: string
+}
+
+type MedewerkerItem = {
+  id: string
+  personId: string
+  naam: string
+  rol: string
+  email?: string | null
+  telefoon?: string | null
+  submittedBy: string
+  createdAt: string
 }
 
 type DocItem = {
@@ -64,6 +101,27 @@ function formatDate(dateStr: string) {
     month: "long",
     year: "numeric",
   })
+}
+
+const CONTACT_TYPE_ICONS: Record<string, typeof Mail> = {
+  email: Mail,
+  telefoon: Phone,
+  twitter: AtSign,
+  linkedin: Linkedin,
+  website: Globe,
+}
+
+const CONTACT_TYPE_LABELS: Record<string, string> = {
+  email: "E-mail",
+  telefoon: "Telefoon",
+  twitter: "Twitter/X",
+  linkedin: "LinkedIn",
+  website: "Website",
+}
+
+function ContactTypeIcon({ type }: { type: string }) {
+  const Icon = CONTACT_TYPE_ICONS[type] ?? Globe
+  return <Icon className="h-4 w-4 text-text-muted" />
 }
 
 function ActivitySection({
@@ -236,17 +294,379 @@ function ActivitySection({
   )
 }
 
+function ContactenSection({
+  contacten,
+  personId,
+  userId,
+  onUpdate,
+}: {
+  contacten: ContactItem[]
+  personId: string
+  userId?: string
+  onUpdate: () => void
+}) {
+  const [showForm, setShowForm] = useState(false)
+  const [type, setType] = useState("email")
+  const [value, setValue] = useState("")
+  const [label, setLabel] = useState("")
+  const [submitting, setSubmitting] = useState(false)
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!value.trim()) return
+    setSubmitting(true)
+    try {
+      const res = await fetch(`/api/smoelenboek/${personId}/contact`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type, value: value.trim(), label: label.trim() || undefined }),
+      })
+      if (res.ok) {
+        setValue("")
+        setLabel("")
+        setShowForm(false)
+        onUpdate()
+      }
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  async function handleDelete(contactId: string) {
+    const res = await fetch(
+      `/api/smoelenboek/${personId}/contact/${contactId}`,
+      { method: "DELETE" }
+    )
+    if (res.ok) onUpdate()
+  }
+
+  if (!userId && contacten.length === 0) return null
+
+  return (
+    <div className="rounded-xl border border-border-light bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.02)]">
+      <div className="flex items-center gap-2 border-b border-border-light px-4 py-3">
+        <Mail className="h-4 w-4 text-primary" />
+        <h2 className="text-sm font-semibold text-primary">Contactgegevens</h2>
+      </div>
+      <div className="px-4 py-3">
+        {contacten.length === 0 && !showForm && (
+          <p className="text-sm text-text-muted">
+            Nog geen contactgegevens toegevoegd.
+          </p>
+        )}
+
+        {contacten.length > 0 && (
+          <div className="space-y-2">
+            {contacten.map((c) => (
+              <div
+                key={c.id}
+                className="flex items-center gap-3 rounded-lg border border-border-light px-3 py-2"
+              >
+                <ContactTypeIcon type={c.type} />
+                <div className="min-w-0 flex-1">
+                  {c.type === "email" ? (
+                    <a
+                      href={`mailto:${c.value}`}
+                      className="text-sm text-primary hover:underline"
+                    >
+                      {c.value}
+                    </a>
+                  ) : c.type === "website" || c.type === "linkedin" ? (
+                    <a
+                      href={c.value.startsWith("http") ? c.value : `https://${c.value}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-primary hover:underline"
+                    >
+                      {c.value}
+                    </a>
+                  ) : (
+                    <span className="text-sm text-primary">{c.value}</span>
+                  )}
+                  {c.label && (
+                    <span className="ml-2 text-xs text-text-muted">
+                      ({c.label})
+                    </span>
+                  )}
+                </div>
+                <span className="text-[10px] text-text-muted">
+                  {CONTACT_TYPE_LABELS[c.type] ?? c.type}
+                </span>
+                {userId && c.submittedBy === userId && (
+                  <button
+                    onClick={() => handleDelete(c.id)}
+                    className="text-text-muted hover:text-red-600"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {userId && !showForm && (
+          <button
+            onClick={() => setShowForm(true)}
+            className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-text-secondary hover:border-primary/30 hover:text-primary"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Contactgegevens toevoegen
+          </button>
+        )}
+
+        {showForm && (
+          <form onSubmit={handleSubmit} className="mt-3 space-y-2">
+            <div className="flex flex-wrap gap-2">
+              <select
+                value={type}
+                onChange={(e) => setType(e.target.value)}
+                className="rounded border border-border bg-white px-2 py-1.5 text-sm text-primary"
+              >
+                {Object.entries(CONTACT_TYPE_LABELS).map(([k, v]) => (
+                  <option key={k} value={k}>
+                    {v}
+                  </option>
+                ))}
+              </select>
+              <input
+                type="text"
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
+                placeholder="Waarde"
+                required
+                className="min-w-0 flex-1 rounded border border-border bg-white px-2 py-1.5 text-sm text-primary placeholder:text-text-muted"
+              />
+              <input
+                type="text"
+                value={label}
+                onChange={(e) => setLabel(e.target.value)}
+                placeholder="Label (optioneel)"
+                className="w-32 rounded border border-border bg-white px-2 py-1.5 text-sm text-primary placeholder:text-text-muted"
+              />
+            </div>
+            <div className="flex gap-2">
+              <button
+                type="submit"
+                disabled={submitting}
+                className="rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-white hover:bg-primary/90 disabled:opacity-50"
+              >
+                Opslaan
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowForm(false)}
+                className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-text-secondary hover:text-primary"
+              >
+                Annuleren
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function MedewerkersSection({
+  medewerkers,
+  personId,
+  userId,
+  onUpdate,
+}: {
+  medewerkers: MedewerkerItem[]
+  personId: string
+  userId?: string
+  onUpdate: () => void
+}) {
+  const [showForm, setShowForm] = useState(false)
+  const [naam, setNaam] = useState("")
+  const [rol, setRol] = useState("Persoonlijk medewerker")
+  const [email, setEmail] = useState("")
+  const [telefoon, setTelefoon] = useState("")
+  const [submitting, setSubmitting] = useState(false)
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!naam.trim()) return
+    setSubmitting(true)
+    try {
+      const res = await fetch(`/api/smoelenboek/${personId}/medewerker`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          naam: naam.trim(),
+          rol,
+          email: email.trim() || undefined,
+          telefoon: telefoon.trim() || undefined,
+        }),
+      })
+      if (res.ok) {
+        setNaam("")
+        setEmail("")
+        setTelefoon("")
+        setShowForm(false)
+        onUpdate()
+      }
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  async function handleDelete(mwId: string) {
+    const res = await fetch(
+      `/api/smoelenboek/${personId}/medewerker/${mwId}`,
+      { method: "DELETE" }
+    )
+    if (res.ok) onUpdate()
+  }
+
+  if (!userId && medewerkers.length === 0) return null
+
+  return (
+    <div className="rounded-xl border border-border-light bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.02)]">
+      <div className="flex items-center gap-2 border-b border-border-light px-4 py-3">
+        <Users className="h-4 w-4 text-primary" />
+        <h2 className="text-sm font-semibold text-primary">Medewerkers</h2>
+      </div>
+      <div className="px-4 py-3">
+        {medewerkers.length === 0 && !showForm && (
+          <p className="text-sm text-text-muted">
+            Nog geen medewerkers toegevoegd.
+          </p>
+        )}
+
+        {medewerkers.length > 0 && (
+          <div className="space-y-2">
+            {medewerkers.map((mw) => (
+              <div
+                key={mw.id}
+                className="rounded-lg border border-border-light px-3 py-2"
+              >
+                <div className="flex items-start gap-2">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-primary">
+                        {mw.naam}
+                      </span>
+                      <span className="rounded-full bg-surface-muted px-2 py-0.5 text-[10px] font-medium text-text-secondary">
+                        {mw.rol}
+                      </span>
+                    </div>
+                    <div className="mt-1 flex flex-wrap gap-3">
+                      {mw.email && (
+                        <a
+                          href={`mailto:${mw.email}`}
+                          className="inline-flex items-center gap-1 text-xs text-text-muted hover:text-primary"
+                        >
+                          <Mail className="h-3 w-3" />
+                          {mw.email}
+                        </a>
+                      )}
+                      {mw.telefoon && (
+                        <span className="inline-flex items-center gap-1 text-xs text-text-muted">
+                          <Phone className="h-3 w-3" />
+                          {mw.telefoon}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  {userId && mw.submittedBy === userId && (
+                    <button
+                      onClick={() => handleDelete(mw.id)}
+                      className="mt-0.5 text-text-muted hover:text-red-600"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {userId && !showForm && (
+          <button
+            onClick={() => setShowForm(true)}
+            className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-text-secondary hover:border-primary/30 hover:text-primary"
+          >
+            <UserPlus className="h-3.5 w-3.5" />
+            Medewerker toevoegen
+          </button>
+        )}
+
+        {showForm && (
+          <form onSubmit={handleSubmit} className="mt-3 space-y-2">
+            <div className="flex flex-wrap gap-2">
+              <input
+                type="text"
+                value={naam}
+                onChange={(e) => setNaam(e.target.value)}
+                placeholder="Naam"
+                required
+                className="min-w-0 flex-1 rounded border border-border bg-white px-2 py-1.5 text-sm text-primary placeholder:text-text-muted"
+              />
+              <select
+                value={rol}
+                onChange={(e) => setRol(e.target.value)}
+                className="rounded border border-border bg-white px-2 py-1.5 text-sm text-primary"
+              >
+                <option>Persoonlijk medewerker</option>
+                <option>Politiek assistent</option>
+                <option>Beleidsmedewerker</option>
+              </select>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="E-mail (optioneel)"
+                className="min-w-0 flex-1 rounded border border-border bg-white px-2 py-1.5 text-sm text-primary placeholder:text-text-muted"
+              />
+              <input
+                type="tel"
+                value={telefoon}
+                onChange={(e) => setTelefoon(e.target.value)}
+                placeholder="Telefoon (optioneel)"
+                className="w-40 rounded border border-border bg-white px-2 py-1.5 text-sm text-primary placeholder:text-text-muted"
+              />
+            </div>
+            <div className="flex gap-2">
+              <button
+                type="submit"
+                disabled={submitting}
+                className="rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-white hover:bg-primary/90 disabled:opacity-50"
+              >
+                Opslaan
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowForm(false)}
+                className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-text-secondary hover:text-primary"
+              >
+                Annuleren
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export default function PersonDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>
 }) {
   const { id } = use(params)
+  const { data: session } = useSession()
   const [person, setPerson] = useState<PersonDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
 
-  useEffect(() => {
+  const fetchPerson = useCallback(() => {
     fetch(`/api/smoelenboek/${id}`)
       .then((r) => {
         if (!r.ok) throw new Error()
@@ -261,6 +681,10 @@ export default function PersonDetailPage({
         setLoading(false)
       })
   }, [id])
+
+  useEffect(() => {
+    fetchPerson()
+  }, [fetchPerson])
 
   if (loading) {
     return (
@@ -291,6 +715,7 @@ export default function PersonDetailPage({
   }
 
   const isMinister = person.rol === "Minister" || person.rol === "Staatssecretaris"
+  const userId = session?.user?.id
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -306,12 +731,26 @@ export default function PersonDetailPage({
       {/* Header card */}
       <div className="mb-6 rounded-xl border border-border-light bg-white px-5 py-4 shadow-[0_1px_3px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.02)]">
         <div className="flex items-start gap-4">
+          {person.fotoUrl ? (
+            <img
+              src={person.fotoUrl}
+              alt=""
+              className="mt-0.5 h-20 w-20 shrink-0 rounded-full object-cover bg-border-light"
+              onError={(e) => {
+                const target = e.currentTarget
+                target.style.display = "none"
+                const fallback = target.nextElementSibling as HTMLElement
+                if (fallback) fallback.style.display = ""
+              }}
+            />
+          ) : null}
           <span
             className="mt-1 h-4 w-4 shrink-0 rounded-full"
             style={{
               backgroundColor: person.fractie
                 ? PARTY_COLORS[person.fractie] ?? "#888"
                 : "#888",
+              display: person.fotoUrl ? "none" : undefined,
             }}
           />
           <div className="min-w-0 flex-1">
@@ -333,6 +772,17 @@ export default function PersonDetailPage({
                 {person.rol}
               </span>
             </div>
+
+            {person.email && (
+              <a
+                href={`mailto:${person.email}`}
+                className="mt-2 inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
+              >
+                <Mail className="h-3.5 w-3.5" />
+                {person.email}
+              </a>
+            )}
+
             {person.portefeuille && (
               <p className="mt-2 text-sm text-text-secondary">
                 {person.portefeuille}
@@ -350,9 +800,19 @@ export default function PersonDetailPage({
                 ))}
               </div>
             )}
+
+            {person.bio && (
+              <p className="mt-3 text-sm leading-relaxed text-text-secondary">
+                {person.bio}
+              </p>
+            )}
+
             {!person.isKabinet && (
               <a
-                href={`https://www.tweedekamer.nl/kamerleden_en_commissies/alle_kamerleden/${person.naam.toLowerCase().replace(/\s+/g, "-")}`}
+                href={
+                  person.tweedekamerUrl ??
+                  `https://www.tweedekamer.nl/kamerleden_en_commissies/alle_kamerleden/${person.naam.toLowerCase().replace(/\s+/g, "-")}`
+                }
                 target="_blank"
                 rel="noopener noreferrer"
                 className="mt-2 inline-flex items-center gap-1 text-xs text-primary hover:underline"
@@ -363,6 +823,22 @@ export default function PersonDetailPage({
             )}
           </div>
         </div>
+      </div>
+
+      {/* Contactgegevens & Medewerkers */}
+      <div className="mb-6 grid gap-4 lg:grid-cols-2">
+        <ContactenSection
+          contacten={person.contacten ?? []}
+          personId={id}
+          userId={userId}
+          onUpdate={fetchPerson}
+        />
+        <MedewerkersSection
+          medewerkers={person.medewerkers ?? []}
+          personId={id}
+          userId={userId}
+          onUpdate={fetchPerson}
+        />
       </div>
 
       {/* Activity feed */}

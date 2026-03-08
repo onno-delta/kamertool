@@ -12,6 +12,7 @@ type Entry = {
   fractie: string
   rol: "Kamerlid" | "Minister" | "Staatssecretaris"
   portefeuille?: string
+  fotoUrl?: string
 }
 
 const ROLE_OPTIONS = [
@@ -149,10 +150,24 @@ export default function SmoelenboekPage() {
                 href={`/smoelenboek/${entry.id}`}
                 className="flex items-start gap-3 rounded-xl border border-border-light bg-white px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.02)] transition-[border-color,box-shadow] hover:border-primary/30 hover:shadow-[0_2px_8px_rgba(0,0,0,0.06),0_1px_3px_rgba(0,0,0,0.04)]"
               >
+                {entry.fotoUrl ? (
+                  <img
+                    src={entry.fotoUrl}
+                    alt=""
+                    className="mt-0.5 h-10 w-10 shrink-0 rounded-full object-cover bg-border-light"
+                    onError={(e) => {
+                      const target = e.currentTarget
+                      target.style.display = "none"
+                      const fallback = target.nextElementSibling as HTMLElement
+                      if (fallback) fallback.style.display = ""
+                    }}
+                  />
+                ) : null}
                 <span
                   className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full"
                   style={{
                     backgroundColor: PARTY_COLORS[entry.fractie] ?? "#888",
+                    display: entry.fotoUrl ? "none" : undefined,
                   }}
                 />
                 <div className="min-w-0 flex-1">

@@ -209,6 +209,43 @@ export const userHiddenSources = pgTable("user_hidden_source", {
   createdAt: timestamp("createdAt", { mode: "date" }).notNull().defaultNow(),
 })
 
+export const smoelenboekProfiles = pgTable("smoelenboek_profile", {
+  personId: text("personId").primaryKey(),
+  email: text("email"),
+  bio: text("bio"),
+  tweedekamerUrl: text("tweedekamerUrl"),
+  scrapedAt: timestamp("scrapedAt", { mode: "date" }).notNull().defaultNow(),
+})
+
+export const smoelenboekContacts = pgTable("smoelenboek_contact", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  personId: text("personId").notNull(),
+  type: text("type").notNull(),
+  value: text("value").notNull(),
+  label: text("label"),
+  submittedBy: text("submittedBy")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  createdAt: timestamp("createdAt", { mode: "date" }).notNull().defaultNow(),
+})
+
+export const smoelenboekMedewerkers = pgTable("smoelenboek_medewerker", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  personId: text("personId").notNull(),
+  naam: text("naam").notNull(),
+  rol: text("rol").notNull(),
+  email: text("email"),
+  telefoon: text("telefoon"),
+  submittedBy: text("submittedBy")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  createdAt: timestamp("createdAt", { mode: "date" }).notNull().defaultNow(),
+})
+
 export const usageLog = pgTable("usage_log", {
   id: text("id")
     .primaryKey()
