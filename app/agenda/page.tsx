@@ -310,7 +310,7 @@ export default function AgendaPage() {
                       </div>
 
                       <Link
-                        href={`/voorbereiden?topic=${encodeURIComponent(item.Onderwerp)}&soort=${encodeURIComponent(item.Soort)}`}
+                        href={`/voorbereiden?topic=${encodeURIComponent(item.Onderwerp)}&soort=${encodeURIComponent(item.Soort)}&nummer=${encodeURIComponent(item.Nummer)}`}
                         className="flex shrink-0 items-center gap-1 rounded bg-primary px-2.5 py-1.5 text-xs font-medium text-white hover:bg-primary-dark active:translate-y-px"
                       >
                         Voorbereiden

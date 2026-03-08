@@ -17,6 +17,7 @@ function VoorbereidenContent() {
   const searchParams = useSearchParams()
   const topic = searchParams.get("topic") ?? ""
   const soort = searchParams.get("soort") ?? undefined
+  const nummer = searchParams.get("nummer") ?? undefined
   const { state, startBriefing, cancelBriefing, downloadPDF } = useBriefing()
   const { parties, preferences } = useDataContext()
 
@@ -100,7 +101,18 @@ function VoorbereidenContent() {
         </nav>
 
         <section className="rounded-lg border border-border bg-white px-6 py-6">
-          <h1 className="text-2xl font-semibold text-primary">{topic}</h1>
+          {nummer ? (
+            <a
+              href={`https://www.tweedekamer.nl/vergaderingen/commissievergaderingen/details?id=${nummer}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-2xl font-semibold text-primary hover:underline"
+            >
+              {topic}
+            </a>
+          ) : (
+            <h1 className="text-2xl font-semibold text-primary">{topic}</h1>
+          )}
           {soort && (
             <p className="mt-1 text-sm text-text-secondary">{soort}</p>
           )}
@@ -235,7 +247,18 @@ function VoorbereidenContent() {
           </nav>
 
           <section className="rounded-lg border border-border bg-white px-6 py-6">
-            <h1 className="text-2xl font-semibold text-primary">{topic}</h1>
+            {nummer ? (
+              <a
+                href={`https://www.tweedekamer.nl/vergaderingen/commissievergaderingen/details?id=${nummer}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-2xl font-semibold text-primary hover:underline"
+              >
+                {topic}
+              </a>
+            ) : (
+              <h1 className="text-2xl font-semibold text-primary">{topic}</h1>
+            )}
             {partyName && (
               <p className="mt-1 text-sm text-text-secondary">
                 Briefing gericht op: {partyName}

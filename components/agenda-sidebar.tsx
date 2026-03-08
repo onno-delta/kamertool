@@ -10,6 +10,7 @@ type Kamerlid = { id: string; naam: string; fractie?: string }
 type Activiteit = {
   Id: string
   Soort: string
+  Nummer: string
   Onderwerp: string
   Datum: string
   Aanvangstijd: string
@@ -202,9 +203,14 @@ export function AgendaSidebar({ onPrepare }: { onPrepare?: (text: string) => voi
                     </span>
                   )}
                 </div>
-                <p className="text-xs font-medium leading-snug text-primary line-clamp-2">
+                <a
+                  href={`https://www.tweedekamer.nl/vergaderingen/commissievergaderingen/details?id=${item.Nummer}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block text-xs font-medium leading-snug text-primary line-clamp-2 hover:underline"
+                >
                   {item.Onderwerp}
-                </p>
+                </a>
                 <div className="mt-1.5 flex items-center justify-between">
                   <span className="text-[10px] text-text-muted">
                     {formatDateShort(item.Datum)} {formatTime(item.Aanvangstijd)}
