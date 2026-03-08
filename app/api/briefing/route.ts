@@ -113,7 +113,9 @@ Werkwijze:
 6. Vat elk relevant document bondig maar volledig samen met concrete feiten en cijfers
 7. Voer meerdere zoekacties parallel uit waar mogelijk
 
-Doe eerst al je onderzoek met tools, en schrijf daarna direct de volledige briefing. Vraag niet om bevestiging tussendoor - ga altijd automatisch door van onderzoek naar het schrijven van het eindproduct.${beyondPrompt}`,
+Doe eerst al je onderzoek met tools, en schrijf daarna direct de volledige briefing. Vraag niet om bevestiging tussendoor - ga altijd automatisch door van onderzoek naar het schrijven van het eindproduct.
+
+De instructies bevatten genummerde stappen. Doorloop deze stappen en gebruik de stapnamen als kopjes (##) in de briefing.${beyondPrompt}`,
       prompt,
       stopWhen: stepCountIs(25),
       tools: {

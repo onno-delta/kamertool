@@ -20,7 +20,6 @@ export const MEETING_SKILLS: MeetingSkill[] = [
     steps: ["Aanleiding & context", "Politieke verhoudingen", "Interruptiestrategie", "Conceptmoties"],
     prompt: `Plenair debat - het meest zichtbare format, media kijken mee, moties worden ingediend.
 
-Doorloop deze stappen en gebruik de stapnamen als kopjes (##) in de briefing:
 
 Stap 1 - Aanleiding & context:
 Zoek via searchParlement de Kamerbrief, nota of gebeurtenis die tot dit debat heeft geleid. Haal de volledige tekst op via getDocumentText. Zoek via searchNews de actuele media-invalshoek.
@@ -47,7 +46,6 @@ Schrijf per motie:
     steps: ["Overzicht agendapunten", "Analyse per agendapunt", "Openstaande toezeggingen", "Standpunten fracties"],
     prompt: `Commissiedebat - hier gebeurt het echte beleidswerk, meer ruimte voor inhoud dan plenair.
 
-Doorloop deze stappen en gebruik de stapnamen als kopjes (##) in de briefing:
 
 Stap 1 - Overzicht agendapunten:
 Zoek via searchParlement naar alle agendastukken (bijv. "Kamerbrief [beleidsterrein]"). Haal de volledige teksten op via getDocumentText.
@@ -71,7 +69,6 @@ Schrijf per relevante fractie: hun positie en stemgedrag op dit dossier.`,
     steps: ["Wetsvoorstel & advies RvS", "Artikelanalyse", "Amendementen", "Juridische kanttekeningen"],
     prompt: `Wetgevingsoverleg - artikel-voor-artikel bespreking van een wetsvoorstel, juridische precisie is essentieel.
 
-Doorloop deze stappen en gebruik de stapnamen als kopjes (##) in de briefing:
 
 Stap 1 - Wetsvoorstel & advies RvS:
 Zoek via searchParlement het wetsvoorstel, de Memorie van Toelichting en het advies van de Raad van State. Haal volledige teksten op via getDocumentText.
@@ -95,7 +92,6 @@ Schrijf: mogelijke conflicten met Grondwet, EU-recht, EVRM of bestaande wetgevin
     steps: ["Terugblik commissiedebat", "Onopgeloste punten", "Conceptmoties"],
     prompt: `Tweeminutendebat - max 2 minuten, volgt op een eerder commissiedebat, alleen ruimte voor een motie.
 
-Doorloop deze stappen en gebruik de stapnamen als kopjes (##) in de briefing:
 
 Stap 1 - Terugblik commissiedebat:
 Zoek via searchParlement of searchHandelingen het voorafgaande commissiedebat. Zoek via searchToezeggingen de gedane toezeggingen.
@@ -118,7 +114,6 @@ Schrijf per motie (max 2):
     steps: ["Samenvatting nota", "Analyse per hoofdpunt", "Beleidsalternatieven"],
     prompt: `Notaoverleg - debat over een specifieke beleidsnota of beleidsbrief van de minister.
 
-Doorloop deze stappen en gebruik de stapnamen als kopjes (##) in de briefing:
 
 Stap 1 - Samenvatting nota:
 Zoek via searchParlement de nota/beleidsbrief die centraal staat. Haal de volledige tekst op via getDocumentText.
@@ -138,7 +133,6 @@ Schrijf: alternatieve maatregelen die beter passen bij de partijvisie. Per alter
     steps: ["Begrotingsanalyse", "Rekenkamer & CPB", "Begrotingsamendementen"],
     prompt: `Begrotingsoverleg - debat over de begroting van een specifiek ministerie, het draait om euro's.
 
-Doorloop deze stappen en gebruik de stapnamen als kopjes (##) in de briefing:
 
 Stap 1 - Begrotingsanalyse:
 Zoek via searchParlement de begrotingsstukken. Haal op via getDocumentText. Zoek via searchPartyDocs de financiele prioriteiten van de partij.
@@ -158,7 +152,6 @@ Schrijf 1-2 eigen begrotingsamendementen. Per amendement: welke post, bedrag erb
     steps: ["Achtergrond", "Profiel per genodigde", "Informatiebehoefte"],
     prompt: `Rondetafelgesprek - de commissie spreekt met experts en belanghebbenden, geen minister aanwezig, dit is intelligence-gathering.
 
-Doorloop deze stappen en gebruik de stapnamen als kopjes (##) in de briefing:
 
 Stap 1 - Achtergrond:
 Zoek via searchParlement naar de agenda en achtergrond van dit rondetafelgesprek.
@@ -178,7 +171,6 @@ Schrijf: welke informatie uit dit gesprek moet komen voor toekomstige debatten, 
     steps: ["Agendaoverzicht", "Aanbevelingen per punt", "Suggesties eigen agendering"],
     prompt: `Procedurevergadering - hier wordt de commissieagenda bepaald, strategisch belangrijk voor de fractie.
 
-Doorloop deze stappen en gebruik de stapnamen als kopjes (##) in de briefing:
 
 Stap 1 - Agendaoverzicht:
 Zoek via searchParlement of searchAgenda de conceptagenda/besluitenlijst. Zoek achtergrond bij voorgestelde punten via searchDocumenten.
@@ -198,7 +190,6 @@ Schrijf: onderwerpen die de fractie kan voorstellen voor een debat of overleg, m
     steps: ["Achtergrond", "Kernvragen", "Aandachtspunten fractie"],
     prompt: `Technische briefing - experts informeren de commissie over een technisch onderwerp, geen politiek debat.
 
-Doorloop deze stappen en gebruik de stapnamen als kopjes (##) in de briefing:
 
 Stap 1 - Achtergrond:
 Zoek via searchParlement en searchDocumenten naar het onderwerp en gerelateerde rapporten. Zoek via searchNews actuele context.
@@ -218,7 +209,6 @@ Schrijf: welke aspecten raken aan partijstandpunten of lopende debatten, waar he
     steps: ["Gesprekspartners", "Gespreksagenda", "Strategische vragen"],
     prompt: `Gesprek - informeel overleg met externe partijen, goede voorbereiding is essentieel.
 
-Doorloop deze stappen en gebruik de stapnamen als kopjes (##) in de briefing:
 
 Stap 1 - Gesprekspartners:
 Zoek via searchParlement en searchNews de gesprekspartner(s). Zoek via fetchWebPage hun website en publicaties.
@@ -238,7 +228,6 @@ Schrijf: 5-10 vragen geordend op prioriteit, gericht op het verkrijgen van polit
     steps: ["Overzicht", "Stemadvies per item", "Gevoelige stemmingen"],
     prompt: `Stemmingen - de Kamer stemt over moties, amendementen en wetsvoorstellen.
 
-Doorloop deze stappen en gebruik de stapnamen als kopjes (##) in de briefing:
 
 Stap 1 - Overzicht:
 Zoek via searchStemmingen en searchKamerstukken welke items in stemming komen. Haal teksten op via getDocumentText.
@@ -258,7 +247,6 @@ Schrijf: stemmingen met politiek risico, media-gevoeligheid, of onverwachte bond
     steps: ["Overzicht", "Lopende debataanvragen", "Mogelijke eigen aanvragen"],
     prompt: `Regeling van werkzaamheden - kort plenair overleg voor debataanvragen en procedurele verzoeken.
 
-Doorloop deze stappen en gebruik de stapnamen als kopjes (##) in de briefing:
 
 Stap 1 - Overzicht:
 Zoek via searchAgenda en searchParlement de huidige planning en recente debataanvragen.
@@ -278,7 +266,6 @@ Schrijf per suggestie: onderwerp, aanleiding, onderbouwing waarom dit nu een deb
     steps: ["Organisatie-achtergrond", "Beleidsontwikkelingen", "Vragenlijst", "Mediakansen"],
     prompt: `Werkbezoek - Kamerleden bezoeken een organisatie of instelling om ervaringen uit de praktijk op te halen.
 
-Doorloop deze stappen en gebruik de stapnamen als kopjes (##) in de briefing:
 
 Stap 1 - Organisatie-achtergrond:
 Zoek via fetchWebPage de website van de organisatie. Zoek via searchParlement gerelateerde Kamervragen en debatten.
