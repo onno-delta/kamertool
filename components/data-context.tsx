@@ -1,7 +1,6 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, useCallback } from "react"
-import { useSession } from "next-auth/react"
 
 type Party = { id: string; name: string; shortName: string }
 
@@ -29,16 +28,8 @@ export function useDataContext() {
 }
 
 export function DataProvider({ children }: { children: React.ReactNode }) {
-  const { status } = useSession()
   const [parties, setParties] = useState<Party[]>([])
   const [preferences, setPreferences] = useState<Preferences | null>(null)
-
-  useEffect(() => {
-    fetch("/api/parties")
-      .then((r) => r.json())
-      .then(setParties)
-      .catch(() => {})
-  }, [])
 
   const fetchPreferences = useCallback(async () => {
     try {
@@ -49,11 +40,17 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     } catch { /* unauthenticated or network error */ }
   }, [])
 
+  // Fetch both in parallel on mount — no need to wait for useSession().
+  // The preferences endpoint uses server-side auth() which reads the
+  // session cookie directly; returns 401 for unauthenticated users
+  // which fetchPreferences handles gracefully.
   useEffect(() => {
-    if (status === "authenticated") {
-      fetchPreferences()
-    }
-  }, [status, fetchPreferences])
+    fetch("/api/parties")
+      .then((r) => r.json())
+      .then(setParties)
+      .catch(() => {})
+    fetchPreferences()
+  }, [fetchPreferences])
 
   return (
     <DataContext.Provider value={{ parties, preferences, refreshPreferences: fetchPreferences }}>
