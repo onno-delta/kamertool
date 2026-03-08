@@ -231,7 +231,8 @@ function VoorbereidenContent() {
   const content = state?.topic === topic ? state.content : null
   const error = state?.topic === topic ? state.error : null
   const partyName = state?.topic === topic ? state.partyName : null
-  const steps = state?.topic === topic ? state.steps : []
+  const phases = state?.topic === topic ? state.phases : []
+  const toolCount = state?.topic === topic ? state.toolCount : 0
 
   return (
     <div className="flex min-h-0 flex-1 gap-6 lg:grid lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
@@ -321,7 +322,7 @@ function VoorbereidenContent() {
 
       {/* Progress sidebar */}
       <div className="hidden min-h-0 lg:block">
-        <ProgressSidebar steps={steps} isStreaming={loading ?? false} hasAssistantText={!!content} />
+        <ProgressSidebar phases={phases} isStreaming={loading ?? false} toolCount={toolCount} />
       </div>
     </div>
   )

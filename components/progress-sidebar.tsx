@@ -3,6 +3,11 @@
 import { useState } from "react"
 import { Activity, CheckCircle2, ChevronDown } from "lucide-react"
 
+export type Phase = {
+  label: string
+  status: "idle" | "running" | "done"
+}
+
 export type ToolStep = {
   id: string
   tool: string
@@ -53,7 +58,7 @@ export function getStepDetail(
   return undefined
 }
 
-// --- Phase grouping ---
+// --- Phase grouping for chat mode (old ToolStep-based) ---
 
 type PhaseKey = "search" | "fetch" | "summarize"
 
@@ -100,12 +105,11 @@ type PhaseItem = {
 
 const PREVIEW_COUNT = 3
 
-function processPhases(
+function processToolPhases(
   steps: ToolStep[],
   isStreaming: boolean,
   hasAssistantText: boolean
 ): PhaseItem[] {
-  // Group steps by phase
   const byPhase: Record<PhaseKey, ToolStep[]> = { search: [], fetch: [], summarize: [] }
   for (const step of steps) {
     const phase = TOOL_PHASE[step.tool]
@@ -114,7 +118,6 @@ function processPhases(
 
   const phases: PhaseItem[] = []
 
-  // Search phase
   if (byPhase.search.length > 0) {
     const anyRunning = byPhase.search.some((s) => s.status === "running")
     const allSettled = byPhase.search.every((s) => s.status === "done" || s.status === "error")
@@ -128,7 +131,6 @@ function processPhases(
     })
   }
 
-  // Fetch phase
   if (byPhase.fetch.length > 0) {
     const anyRunning = byPhase.fetch.some((s) => s.status === "running")
     const allSettled = byPhase.fetch.every((s) => s.status === "done" || s.status === "error")
@@ -142,7 +144,6 @@ function processPhases(
     })
   }
 
-  // Summarize phase: derived from streaming state
   const noRunningTools = steps.length > 0 && steps.every((s) => s.status === "done" || s.status === "error")
   if (isStreaming && noRunningTools && steps.length > 0) {
     phases.push({
@@ -164,17 +165,112 @@ function processPhases(
   return phases
 }
 
+// --- Component ---
+
 type ProgressSidebarProps = {
-  steps: ToolStep[]
+  // Briefing mode: deliverable phases from meeting skill
+  phases?: Phase[]
+  toolCount?: number
+  // Chat mode: tool steps grouped into phases
+  steps?: ToolStep[]
+  // Shared
   isStreaming?: boolean
   hasAssistantText?: boolean
 }
 
-export function ProgressSidebar({ steps, isStreaming = false, hasAssistantText = false }: ProgressSidebarProps) {
-  const [expanded, setExpanded] = useState<Record<string, boolean>>({})
-  if (steps.length === 0) return null
+export function ProgressSidebar({ phases, toolCount = 0, steps, isStreaming = false, hasAssistantText = false }: ProgressSidebarProps) {
+  // Briefing mode: show deliverable phases
+  if (phases && phases.length > 0) {
+    return <BriefingProgress phases={phases} isStreaming={isStreaming} toolCount={toolCount} />
+  }
 
-  const phases = processPhases(steps, isStreaming, hasAssistantText)
+  // Chat mode: show tool-grouped phases
+  if (steps && steps.length > 0) {
+    return <ChatProgress steps={steps} isStreaming={isStreaming} hasAssistantText={hasAssistantText} />
+  }
+
+  return null
+}
+
+function BriefingProgress({ phases, isStreaming, toolCount }: { phases: Phase[]; isStreaming: boolean; toolCount: number }) {
+  const doneCount = phases.filter((p) => p.status === "done").length
+  const totalCount = phases.length
+  const allDone = totalCount > 0 && doneCount === totalCount && !isStreaming
+
+  return (
+    <div className="sticky top-4 max-h-[calc(100vh-2rem)] overflow-y-auto">
+      <div className="rounded-xl border border-border-light bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+        <h3 className="mb-3.5 flex items-center gap-1.5 text-[0.6875rem] font-semibold uppercase tracking-[0.075em] text-text-muted">
+          {allDone ? (
+            <CheckCircle2 className="h-[13px] w-[13px] text-green-600" />
+          ) : (
+            <Activity className="h-[13px] w-[13px]" />
+          )}
+          Voortgang
+          <span className="ml-auto text-[0.625rem] font-medium normal-case tracking-normal">
+            {doneCount}/{totalCount}
+          </span>
+        </h3>
+
+        {allDone ? (
+          <div className="flex items-center gap-2 rounded-lg bg-green-50 px-3 py-2.5">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-green-100">
+              <svg className="h-[11px] w-[11px] text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            </span>
+            <span className="text-[0.8125rem] font-medium text-green-800">
+              Briefing compleet
+            </span>
+          </div>
+        ) : (
+          <div className="space-y-0">
+            {phases.map((phase, idx) => (
+              <div
+                key={phase.label}
+                className={`py-2.5 animate-[fadeIn_0.3s_ease-out] ${idx > 0 ? "border-t border-border-light" : ""}`}
+              >
+                <div className="flex items-start gap-2.5">
+                  <div className="mt-0.5 shrink-0">
+                    {phase.status === "running" ? (
+                      <span className="block h-5 w-5 animate-spin rounded-full border-2 border-border border-t-primary" />
+                    ) : phase.status === "done" ? (
+                      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-green-100">
+                        <svg className="h-[11px] w-[11px] text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      </span>
+                    ) : (
+                      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gray-100">
+                        <span className="h-1.5 w-1.5 rounded-full bg-gray-300" />
+                      </span>
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className={`text-[0.8125rem] font-medium ${
+                      phase.status === "running" ? "text-primary"
+                        : phase.status === "done" ? "text-text-muted"
+                        : "text-text-muted/60"
+                    }`}>
+                      {phase.label}
+                    </p>
+                    {phase.status === "running" && toolCount > 0 && idx === phases.findIndex((p) => p.status === "running") && (
+                      <p className="text-xs text-text-muted">{toolCount} {toolCount === 1 ? "bron" : "bronnen"} doorzocht</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function ChatProgress({ steps, isStreaming, hasAssistantText }: { steps: ToolStep[]; isStreaming: boolean; hasAssistantText: boolean }) {
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({})
+  const phases = processToolPhases(steps, isStreaming, hasAssistantText)
   if (phases.length === 0) return null
 
   const doneCount = phases.filter((p) => p.status === "done").length
@@ -197,7 +293,6 @@ export function ProgressSidebar({ steps, isStreaming = false, hasAssistantText =
         </h3>
 
         {allDone ? (
-          /* Compact done state */
           <div className="flex items-center gap-2 rounded-lg bg-green-50 px-3 py-2.5">
             <span className="flex h-5 w-5 items-center justify-center rounded-full bg-green-100">
               <svg className="h-[11px] w-[11px] text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
@@ -249,7 +344,6 @@ export function ProgressSidebar({ steps, isStreaming = false, hasAssistantText =
                     </div>
                   </div>
 
-                  {/* Sub-steps: show first 3 by default */}
                   {hasSubSteps && (
                     <div className="ml-[30px] mt-1.5">
                       {visibleSteps.map((step) => (

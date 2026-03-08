@@ -2,8 +2,7 @@
 
 import { createContext, useContext, useState, useCallback, useRef, type ReactNode } from "react"
 import { downloadBriefingPDF } from "@/lib/download-pdf"
-import type { ToolStep } from "./progress-sidebar"
-import { getStepLabel } from "./progress-sidebar"
+import type { Phase } from "./progress-sidebar"
 
 export type BriefingState = {
   topic: string
@@ -11,7 +10,8 @@ export type BriefingState = {
   content: string | null
   error: string | null
   partyName: string | null
-  steps: ToolStep[]
+  phases: Phase[]
+  toolCount: number
   cancelled?: boolean
 }
 
@@ -48,7 +48,7 @@ export function BriefingProvider({ children }: { children: ReactNode }) {
       const controller = new AbortController()
       abortRef.current = controller
 
-      setState({ topic, loading: true, content: null, error: null, partyName: null, steps: [] })
+      setState({ topic, loading: true, content: null, error: null, partyName: null, phases: [], toolCount: 0 })
 
       // Load preferences then generate
       fetch("/api/settings/preferences", { signal: controller.signal })
@@ -122,43 +122,53 @@ export function BriefingProvider({ children }: { children: ReactNode }) {
               try {
                 const event = JSON.parse(line)
 
-                if (event.type === "tool-start") {
+                if (event.type === "steps") {
+                  // Initialize deliverable phases from server
+                  const steps = event.steps as string[]
                   setState((s) => {
                     if (!s || s.topic !== topic) return s
                     return {
                       ...s,
-                      steps: [
-                        ...s.steps,
-                        {
-                          id: event.id,
-                          tool: event.tool,
-                          label: getStepLabel(event.tool, event.args ?? {}),
-                          status: "running",
-                        },
-                      ],
+                      phases: steps.map((label: string, i: number) => ({
+                        label,
+                        status: i === 0 ? "running" as const : "idle" as const,
+                      })),
                     }
                   })
-                } else if (event.type === "tool-done") {
+                } else if (event.type === "section") {
+                  // A section header was detected — advance progress
+                  const title = (event.title as string).toLowerCase().trim()
                   setState((s) => {
                     if (!s || s.topic !== topic) return s
-                    const steps = s.steps.map((step) =>
-                      step.id === event.id
-                        ? {
-                            ...step,
-                            status: "done" as const,
-                            detail:
-                              event.tool === "fetchWebPage"
-                                ? "opgehaald"
-                                : `${event.count ?? 0} resultaten`,
-                          }
-                        : step
+                    const sectionIdx = s.phases.findIndex(
+                      (p) => p.label.toLowerCase().trim() === title
                     )
-                    return { ...s, steps }
+                    if (sectionIdx === -1) return s
+                    return {
+                      ...s,
+                      phases: s.phases.map((p, i) => ({
+                        ...p,
+                        status: i < sectionIdx ? "done" as const
+                          : i === sectionIdx ? "running" as const
+                          : p.status,
+                      })),
+                    }
+                  })
+                } else if (event.type === "tool-call") {
+                  // Track tool call count for progress display
+                  setState((s) => {
+                    if (!s || s.topic !== topic) return s
+                    return { ...s, toolCount: s.toolCount + 1 }
                   })
                 } else if (event.type === "done") {
                   setState((s) =>
                     s?.topic === topic
-                      ? { ...s, loading: false, content: event.content }
+                      ? {
+                          ...s,
+                          loading: false,
+                          content: event.content,
+                          phases: s.phases.map((p) => ({ ...p, status: "done" as const })),
+                        }
                       : s
                   )
                 } else if (event.type === "error") {

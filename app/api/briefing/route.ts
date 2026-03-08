@@ -21,7 +21,7 @@ import {
   getRecenteKamervragen,
 } from "@/lib/tools"
 import { NextResponse } from "next/server"
-import { getDefaultSkill } from "@/lib/meeting-skills"
+import { getDefaultSkill, getDefaultSteps } from "@/lib/meeting-skills"
 import { briefingBodySchema } from "@/lib/validation"
 
 export const maxDuration = 300
@@ -144,40 +144,60 @@ Doe eerst al je onderzoek met tools, en schrijf daarna direct de volledige brief
         try {
           let fullText = ""
 
+          // Send deliverable steps to client for progress sidebar
+          const skillSteps = soort ? getDefaultSteps(soort) : []
+          const normalizedSteps = new Set(skillSteps.map((s) => s.toLowerCase().trim()))
+          const sentSections = new Set<string>()
+
+          if (skillSteps.length > 0) {
+            controller.enqueue(
+              encoder.encode(JSON.stringify({ type: "steps", steps: skillSteps }) + "\n")
+            )
+          }
+
           for await (const part of result.fullStream) {
             if (part.type === "start-step") {
               // Reset text at each new step — only the final step's text
               // is the actual briefing; intermediate steps contain
               // "thinking-out-loud" text between tool calls (#21)
               fullText = ""
+              sentSections.clear()
             } else if (part.type === "tool-call") {
               controller.enqueue(
                 encoder.encode(
                   JSON.stringify({
-                    type: "tool-start",
+                    type: "tool-call",
                     id: part.toolCallId,
                     tool: part.toolName,
-                    args: part.input,
                   }) + "\n"
                 )
               )
             } else if (part.type === "tool-result") {
-              const output = part.output as Record<string, unknown> | undefined
               controller.enqueue(
                 encoder.encode(
                   JSON.stringify({
                     type: "tool-done",
                     id: part.toolCallId,
                     tool: part.toolName,
-                    count:
-                      (output?.count as number) ??
-                      (output?.results as unknown[] | undefined)?.length ??
-                      0,
                   }) + "\n"
                 )
               )
             } else if (part.type === "text-delta") {
               fullText += part.text
+
+              // Detect section headers matching skill steps
+              const headerRegex = /^## (.+)$/gm
+              let match
+              while ((match = headerRegex.exec(fullText)) !== null) {
+                const title = match[1].trim()
+                const normalized = title.toLowerCase()
+                if (normalizedSteps.has(normalized) && !sentSections.has(normalized)) {
+                  sentSections.add(normalized)
+                  controller.enqueue(
+                    encoder.encode(JSON.stringify({ type: "section", title }) + "\n")
+                  )
+                }
+              }
             }
           }
 
