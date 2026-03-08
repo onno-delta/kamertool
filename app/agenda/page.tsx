@@ -258,8 +258,8 @@ export default function AgendaPage() {
                 onChange={(e) => setKamerleidSearch(e.target.value)}
                 onFocus={() => setKamerleidFocused(true)}
                 onBlur={() => setTimeout(() => setKamerleidFocused(false), 200)}
-                placeholder="Zoek Kamerlid..."
-                className="w-28 border-none bg-transparent text-sm text-primary placeholder:text-text-muted focus:outline-none"
+                placeholder={sessionKamerleden.length > 0 ? "" : "Kamerlid"}
+                className="w-16 border-none bg-transparent text-sm text-primary placeholder:text-text-muted focus:outline-none"
               />
             </div>
             {kamerleidFocused && kamerleidResults.length > 0 && (
@@ -301,17 +301,15 @@ export default function AgendaPage() {
             />
           </div>
 
-          <div className="ml-auto flex items-center gap-2">
-            <div className="relative">
-              <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-text-muted" />
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Zoeken"
-                className="w-52 rounded border border-border bg-white py-1.5 pl-8 pr-3 text-sm text-primary placeholder:text-text-muted focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20"
-              />
-            </div>
+          <div className="relative ml-auto">
+            <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-text-muted" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Zoeken"
+              className="w-36 rounded border border-border bg-white py-1.5 pl-8 pr-3 text-sm text-primary placeholder:text-text-muted focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20"
+            />
           </div>
         </div>
       </div>
