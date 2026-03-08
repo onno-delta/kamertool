@@ -4,6 +4,7 @@ import {
   getFractieStemmingen,
   getPersonToezeggingen,
   getPersonAgenda,
+  getPersonHandelingen,
 } from "@/lib/tk-person"
 
 export async function GET(
@@ -40,6 +41,14 @@ export async function GET(
         if (commissies.length === 0) return NextResponse.json([])
         const agenda = await getPersonAgenda(commissies)
         return NextResponse.json(agenda)
+      }
+      case "handelingen": {
+        if (!naam) return NextResponse.json([])
+        // Use last name for more precise matching
+        const parts = naam.split(" ")
+        const achternaam = parts[parts.length - 1]
+        const handelingen = await getPersonHandelingen(achternaam)
+        return NextResponse.json(handelingen)
       }
       default:
         return NextResponse.json(

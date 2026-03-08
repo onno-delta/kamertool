@@ -18,6 +18,7 @@ import {
   Trash2,
   Plus,
   UserPlus,
+  MessageSquare,
   Users,
 } from "lucide-react"
 import { PARTY_COLORS } from "@/lib/parties"
@@ -93,6 +94,14 @@ type AgendaItem = {
   datum: string
   aanvang: string
   commissie: string
+}
+
+type HandelingItem = {
+  nummer: string
+  onderwerp: string
+  datum: string
+  type: string
+  url: string
 }
 
 function formatDate(dateStr: string) {
@@ -286,6 +295,32 @@ function ActivitySection({
                     </div>
                   </div>
                 </div>
+              ))}
+
+            {type === "handelingen" &&
+              (data as HandelingItem[]).map((h) => (
+                <a
+                  key={h.nummer}
+                  href={h.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block rounded-lg border border-border-light px-3 py-2 transition-colors hover:border-primary/30"
+                >
+                  <div className="flex items-start gap-2">
+                    <span className="shrink-0 rounded-full bg-purple-100 px-2 py-0.5 text-[10px] font-medium text-purple-800">
+                      {h.type || "Handeling"}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm text-primary line-clamp-2">{h.onderwerp}</p>
+                      {h.datum && (
+                        <p className="mt-0.5 text-xs text-text-muted">
+                          {formatDate(h.datum)}
+                        </p>
+                      )}
+                    </div>
+                    <ExternalLink className="mt-0.5 h-3 w-3 shrink-0 text-text-muted" />
+                  </div>
+                </a>
               ))}
           </div>
         )}
@@ -851,6 +886,14 @@ export default function PersonDetailPage({
             type="documenten"
           />
         )}
+
+        <ActivitySection
+          title="Debatbijdragen"
+          icon={<MessageSquare className="h-4 w-4 text-primary" />}
+          personId={id}
+          type="handelingen"
+          naam={person.naam}
+        />
 
         <ActivitySection
           title={`Stemgedrag ${person.fractie ?? ""}`}

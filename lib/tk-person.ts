@@ -1,4 +1,5 @@
 import { queryTK } from "@/lib/tk-api"
+import { querySRU } from "@/lib/sru-api"
 
 /**
  * Get recent documents (moties, amendementen, kamervragen) a person submitted.
@@ -76,6 +77,26 @@ export async function getPersonToezeggingen(naam: string, top = 10) {
     ministerie: t.Ministerie,
     minister: t.Naam,
     functie: t.Functie,
+  }))
+}
+
+/**
+ * Get recent debate contributions (Handelingen) for a person.
+ * Searches the Overheid.nl SRU API for Handelingen mentioning the person's name.
+ */
+export async function getPersonHandelingen(achternaam: string, maxResults = 10) {
+  // Escape single quotes and search by last name in Handelingen
+  const escapedName = achternaam.replace(/'/g, "''")
+  const cql = `overheidop.publicationName="Handelingen" AND "${escapedName}"`
+
+  const { records } = await querySRU(cql, maxResults)
+
+  return records.map((r) => ({
+    nummer: r.docId !== r.identifier ? r.docId : r.identifier,
+    onderwerp: r.title,
+    datum: r.date,
+    type: r.subrubriek || r.type,
+    url: r.url,
   }))
 }
 
