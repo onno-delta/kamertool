@@ -22,25 +22,24 @@ export const searchHandelingen = tool({
       $top: String(maxResults),
     })
 
-    const results = []
-    for (const ap of agendapunten.slice(0, maxResults)) {
-      if (!ap.Activiteit_Id) continue
-      const activiteit = await queryTKSingle(
-        `Activiteit(${ap.Activiteit_Id})`,
-        { $select: "Id,Soort,Datum,Onderwerp,Aanvang,Einde" },
-      ).catch(() => null)
-
-      results.push({
-        onderwerp: ap.Onderwerp,
-        activiteit: activiteit
-          ? {
+    const results = await Promise.all(
+      agendapunten.slice(0, maxResults)
+        .filter((ap: Record<string, unknown>) => ap.Activiteit_Id)
+        .map(async (ap: Record<string, unknown>) => {
+          const activiteit = await queryTKSingle(
+            `Activiteit(${ap.Activiteit_Id})`,
+            { $select: "Id,Soort,Datum,Onderwerp,Aanvang,Einde" },
+          ).catch(() => null)
+          return {
+            onderwerp: ap.Onderwerp,
+            activiteit: activiteit ? {
               soort: activiteit.Soort,
               datum: activiteit.Datum,
               onderwerp: activiteit.Onderwerp,
-            }
-          : null,
-      })
-    }
+            } : null,
+          }
+        })
+    )
 
     return { count: results.length, results }
   },
