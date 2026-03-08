@@ -217,7 +217,7 @@ export default function AgendaPage() {
 
       {/* Filters */}
       <div className="shrink-0 rounded-xl border border-border-light bg-white px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.02)] sm:px-6">
-        <div className="mx-auto flex max-w-4xl flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <MultiSelect
             label="Type"
             options={availableTypes}
@@ -301,7 +301,7 @@ export default function AgendaPage() {
             />
           </div>
 
-          <div className="relative ml-auto">
+          <div className="relative">
             <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-text-muted" />
             <input
               type="text"
