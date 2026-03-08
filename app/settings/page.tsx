@@ -131,7 +131,7 @@ export default function SettingsPage() {
       <section className="mb-8">
         <h1 className="text-4xl font-bold tracking-tight text-primary">Instellingen</h1>
         <p className="mt-2 text-sm text-text-secondary">
-          Beheer je standaardpartij, dossiers en Kamerleden.
+          Beheer je standaardpartij, commissies en Kamerleden.
         </p>
       </section>
 
@@ -243,14 +243,14 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* Dossier card */}
+      {/* Commissies card */}
       <div className="mb-8 overflow-hidden rounded-xl border border-border-light bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.02)]">
         <div className="flex items-center gap-3 border-b border-border-light bg-surface-muted px-5 py-3.5">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-15">
             <FolderOpen className="h-4 w-4 text-primary" />
           </div>
           <div>
-            <h2 className="text-sm font-semibold text-primary">Dossiers</h2>
+            <h2 className="text-sm font-semibold text-primary">Commissies</h2>
             <p className="text-xs text-text-muted">
               {selectedDossiers.length} van {DOSSIERS.length} geselecteerd
             </p>
@@ -259,7 +259,7 @@ export default function SettingsPage() {
 
         <div className="px-5 py-5">
           <p className="mb-4 text-xs leading-relaxed text-text-muted">
-            Selecteer de beleidsterreinen die je volgt. Deze worden meegenomen in briefings.
+            Selecteer de commissies die je volgt. Deze worden meegenomen in briefings.
           </p>
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             {DOSSIERS.map((d) => {

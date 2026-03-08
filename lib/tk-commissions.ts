@@ -6,6 +6,7 @@ let cachedVast: CommissionRecord[] | null = null
 let cachedVervanger: CommissionRecord[] | null = null
 let cacheTime = 0
 const CACHE_TTL = 3600_000
+const PAGE_SIZE = "250" // TK API silently returns 0 for $top > ~300
 
 const extract = (records: Record<string, unknown>[]): CommissionRecord[] =>
   records
@@ -18,22 +19,31 @@ const extract = (records: Record<string, unknown>[]): CommissionRecord[] =>
     })
     .filter(Boolean) as CommissionRecord[]
 
+async function fetchAll(entity: string): Promise<Record<string, unknown>[]> {
+  const all: Record<string, unknown>[] = []
+  let skip = 0
+  while (true) {
+    const page = await queryTK(entity, {
+      $filter: "TotEnMet eq null",
+      $expand: "CommissieZetel($expand=Commissie($select=Afkorting))",
+      $select: "Persoon_Id",
+      $top: PAGE_SIZE,
+      $skip: String(skip),
+    })
+    if (page.length === 0) break
+    all.push(...page)
+    skip += page.length
+    if (page.length < Number(PAGE_SIZE)) break
+  }
+  return all
+}
+
 async function ensureCache() {
   if (cachedVast && cachedVervanger && Date.now() - cacheTime < CACHE_TTL) return
 
   const [vast, vervanger] = await Promise.all([
-    queryTK("CommissieZetelVastPersoon", {
-      $filter: "TotEnMet eq null",
-      $expand: "CommissieZetel($expand=Commissie($select=Afkorting))",
-      $select: "Persoon_Id",
-      $top: "1000",
-    }),
-    queryTK("CommissieZetelVervangerPersoon", {
-      $filter: "TotEnMet eq null",
-      $expand: "CommissieZetel($expand=Commissie($select=Afkorting))",
-      $select: "Persoon_Id",
-      $top: "1000",
-    }),
+    fetchAll("CommissieZetelVastPersoon"),
+    fetchAll("CommissieZetelVervangerPersoon"),
   ])
 
   cachedVast = extract(vast)
