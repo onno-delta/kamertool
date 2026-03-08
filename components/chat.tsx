@@ -172,12 +172,13 @@ export function Chat() {
 
   const toolSteps = useMemo(() => extractToolSteps(messages), [messages])
 
-  // Show thinking indicator when loading and no assistant text visible yet
+  // Show thinking indicator only before first tool call or text appears
   const lastMsg = messages[messages.length - 1]
   const hasAssistantText =
     lastMsg?.role === "assistant" &&
     lastMsg.parts.some((p) => p.type === "text" && p.text)
-  const showThinking = isLoading && !hasAssistantText
+  const hasActiveTools = toolSteps.length > 0
+  const showThinking = isLoading && !hasAssistantText && !hasActiveTools
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -271,9 +272,7 @@ export function Chat() {
                       <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-primary-75 [animation-delay:300ms]" />
                     </span>
                     <span className="text-xs font-medium text-text-muted">
-                      {toolSteps.some((s) => s.status === "running")
-                        ? "Bronnen doorzoeken..."
-                        : "Aan het nadenken..."}
+                      Aan het nadenken...
                     </span>
                   </div>
                 </div>

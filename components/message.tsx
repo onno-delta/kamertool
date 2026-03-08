@@ -6,6 +6,7 @@ import ReactMarkdown from "react-markdown"
 import { Layers, Download } from "lucide-react"
 import type { ToolStep } from "./progress-sidebar"
 import { getStepLabel, getStepDetail } from "./progress-sidebar"
+import { InlineToolStep } from "./inline-tool-step"
 
 type ToolPart = {
   type: string
@@ -25,6 +26,22 @@ function getToolName(part: ToolPart): string {
   return "unknown"
 }
 
+function isToolPart(p: ToolPart): boolean {
+  return (
+    p.type === "dynamic-tool" ||
+    (typeof p.type === "string" && p.type.startsWith("tool-"))
+  )
+}
+
+function isVisibleToolState(state?: string): boolean {
+  return (
+    state === "input-streaming" ||
+    state === "input-available" ||
+    state === "output-available" ||
+    state === "output-error"
+  )
+}
+
 /** Extract ToolStep[] from UIMessage[] for the progress sidebar */
 export function extractToolSteps(messages: UIMessage[]): ToolStep[] {
   const steps: ToolStep[] = []
@@ -34,19 +51,10 @@ export function extractToolSteps(messages: UIMessage[]): ToolStep[] {
 
     for (const part of msg.parts) {
       const p = part as unknown as ToolPart
-      const isToolPart =
-        p.type === "dynamic-tool" ||
-        (typeof p.type === "string" && p.type.startsWith("tool-"))
-      if (!isToolPart) continue
+      if (!isToolPart(p)) continue
 
       const state = p.state
-      if (
-        state !== "input-streaming" &&
-        state !== "input-available" &&
-        state !== "output-available" &&
-        state !== "output-error"
-      )
-        continue
+      if (!isVisibleToolState(state)) continue
 
       const toolName = getToolName(p)
       const args = p.input ?? p.args ?? {}
@@ -58,7 +66,7 @@ export function extractToolSteps(messages: UIMessage[]): ToolStep[] {
         tool: toolName,
         label: getStepLabel(toolName, args),
         status: isDone ? "done" : isError ? "error" : "running",
-        detail: getStepDetail(toolName, state, p.output as Record<string, unknown> | undefined),
+        detail: getStepDetail(toolName, state!, p.output as Record<string, unknown> | undefined),
       })
     }
   }
@@ -71,14 +79,23 @@ export function Message({ message, topic }: { message: UIMessage; topic?: string
   const isUser = role === "user"
   const [pdfBusy, setPdfBusy] = useState(false)
 
+  // Check if there's any visible content (text, reasoning, or tool parts)
+  const hasVisibleContent = parts.some((p) => {
+    if (p.type === "text" && p.text) return true
+    if (p.type === "reasoning" && p.text) return true
+    const tp = p as unknown as ToolPart
+    if (isToolPart(tp) && isVisibleToolState(tp.state)) return true
+    return false
+  })
+
+  // Don't render empty assistant messages
+  if (!isUser && !hasVisibleContent) {
+    return null
+  }
+
   const textParts = parts.filter(
     (p) => p.type === "text" || p.type === "reasoning"
   )
-
-  // Don't render empty assistant messages (tool-only, no text yet)
-  if (!isUser && textParts.every((p) => p.type === "text" && !p.text)) {
-    return null
-  }
 
   const fullText = !isUser
     ? textParts
@@ -120,7 +137,7 @@ export function Message({ message, topic }: { message: UIMessage; topic?: string
         <Layers className="h-3.5 w-3.5 text-primary" />
       </div>
       <div className="min-w-0 max-w-[85%] space-y-2">
-        {textParts.map((part, i) => {
+        {parts.map((part, i) => {
           if (part.type === "reasoning") {
             if (!part.text) return null
             return (
@@ -140,6 +157,19 @@ export function Message({ message, topic }: { message: UIMessage; topic?: string
               >
                 <ReactMarkdown>{part.text}</ReactMarkdown>
               </div>
+            )
+          }
+          // Render tool parts inline
+          const tp = part as unknown as ToolPart
+          if (isToolPart(tp) && isVisibleToolState(tp.state)) {
+            return (
+              <InlineToolStep
+                key={tp.toolCallId ?? i}
+                toolName={getToolName(tp)}
+                state={tp.state!}
+                input={tp.input ?? tp.args ?? {}}
+                output={tp.output}
+              />
             )
           }
           return null
