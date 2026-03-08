@@ -18,24 +18,19 @@ export const MEETING_SKILLS: MeetingSkill[] = [
     soort: "Plenair debat",
     label: "Plenair debat",
     steps: ["Aanleiding & context", "Politieke verhoudingen", "Interruptiestrategie", "Conceptmoties"],
-    prompt: `Plenair debat - het meest zichtbare format, media kijken mee, moties worden ingediend.
-
+    prompt: `Plenair debat - het meest zichtbare format in de Kamer. Media kijken mee, interrupties zijn scherp, moties worden ingediend.
 
 Stap 1 - Aanleiding & context:
-Zoek via searchParlement de Kamerbrief, nota of gebeurtenis die tot dit debat heeft geleid. Haal de volledige tekst op via getDocumentText. Zoek via searchNews de actuele media-invalshoek.
-Schrijf: wat er aan de hand is, waarom dit debat nu plaatsvindt, huidige stand van zaken, media-context.
+Zoek de Kamerbrief, nota of gebeurtenis die tot dit debat heeft geleid en lees de volledige tekst. Bekijk ook het actuele nieuws voor de media-invalshoek. Beschrijf wat er aan de hand is, waarom dit debat nu plaatsvindt, en wat de huidige stand van zaken is.
 
 Stap 2 - Politieke verhoudingen:
-Zoek via searchStemmingen stempatronen van fracties op dit dossier. Zoek via searchHandelingen eerdere uitspraken van de minister. Zoek via searchPartyDocs het partijstandpunt.
-Schrijf: per relevante fractie hun positie, stemgedrag en waar ze tegenover de partij staan. Inclusief de positie van de minister.
+Onderzoek hoe de fracties op dit dossier hebben gestemd en wat de minister er eerder over heeft gezegd in debatten. Vergelijk met het eigen partijstandpunt. Beschrijf per relevante fractie hun positie, stemgedrag en waar ze tegenover de partij staan - inclusief de positie van de minister.
 
 Stap 3 - Interruptiestrategie:
-Analyseer op basis van stap 2 de zwakke punten van de minister en andere fracties.
-Schrijf: per relevante tegenstander hun verwachte positie, het zwakke punt, en een concrete interruptie met bronverwijzing.
+Analyseer op basis van de politieke verhoudingen de zwakke punten van de minister en andere fracties. Beschrijf per relevante tegenstander hun verwachte positie, het zwakke punt, en een concrete interruptie met bronverwijzing.
 
 Stap 4 - Conceptmoties:
-Formuleer 2-3 moties die aansluiten bij het partijstandpunt en kansrijk zijn voor een meerderheid.
-Schrijf per motie:
+Formuleer 2-3 moties die aansluiten bij het partijstandpunt en kansrijk zijn voor een meerderheid. Schrijf per motie:
 - Dictum: "verzoekt de regering..." of "spreekt uit dat..."
 - Toelichting: 2 zinnen
 - Verwachte steun: welke fracties waarschijnlijk voor/tegen`,
@@ -46,22 +41,17 @@ Schrijf per motie:
     steps: ["Overzicht agendapunten", "Analyse per agendapunt", "Openstaande toezeggingen", "Standpunten fracties"],
     prompt: `Commissiedebat - hier gebeurt het echte beleidswerk, meer ruimte voor inhoud dan plenair.
 
-
 Stap 1 - Overzicht agendapunten:
-Zoek via searchParlement naar alle agendastukken (bijv. "Kamerbrief [beleidsterrein]"). Haal de volledige teksten op via getDocumentText.
-Schrijf: per document het nummer, titel, datum, en een beknopte samenvatting van de inhoud.
+Zoek alle Kamerbrieven en beleidsdocumenten die op de agenda staan en lees de volledige teksten. Geef per document het nummer, titel, datum en een beknopte samenvatting van de inhoud.
 
 Stap 2 - Analyse per agendapunt:
-Vergelijk de stukken met het partijstandpunt via searchPartyDocs. Zoek via getRecenteKamervragen naar recent gestelde vragen.
-Schrijf per agendapunt: kritische kanttekeningen (wat ontbreekt, wat is zwak), en 2-3 concrete vragen voor de minister met documentverwijzing.
+Vergelijk de stukken met het partijstandpunt. Bekijk ook welke schriftelijke vragen er recent over dit onderwerp zijn gesteld. Geef per agendapunt kritische kanttekeningen (wat ontbreekt, wat is zwak) en 2-3 concrete vragen voor de minister met documentverwijzing.
 
 Stap 3 - Openstaande toezeggingen:
-Zoek via searchToezeggingen naar toezeggingen op dit beleidsterrein.
-Schrijf per toezegging: datum, inhoud, status (nagekomen/niet nagekomen).
+Zoek op welke toezeggingen de minister eerder heeft gedaan op dit beleidsterrein. Geef per toezegging de datum, inhoud en status (nagekomen of niet nagekomen).
 
 Stap 4 - Standpunten fracties:
-Zoek via searchStemmingen en searchHandelingen naar posities van fracties.
-Schrijf per relevante fractie: hun positie en stemgedrag op dit dossier.`,
+Onderzoek hoe de verschillende fracties op dit dossier hebben gestemd en wat ze in eerdere debatten hebben gezegd. Beschrijf per relevante fractie hun positie en stemgedrag.`,
   },
   {
     soort: "Wetgevingsoverleg",
@@ -69,41 +59,32 @@ Schrijf per relevante fractie: hun positie en stemgedrag op dit dossier.`,
     steps: ["Wetsvoorstel & advies RvS", "Artikelanalyse", "Amendementen", "Juridische kanttekeningen"],
     prompt: `Wetgevingsoverleg - artikel-voor-artikel bespreking van een wetsvoorstel, juridische precisie is essentieel.
 
-
 Stap 1 - Wetsvoorstel & advies RvS:
-Zoek via searchParlement het wetsvoorstel, de Memorie van Toelichting en het advies van de Raad van State. Haal volledige teksten op via getDocumentText.
-Schrijf: wat het wetsvoorstel regelt, waarom het nodig is, en de hoofdpunten van het RvS-advies met de reactie van de regering.
+Zoek het wetsvoorstel, de Memorie van Toelichting en het advies van de Raad van State op en lees de volledige teksten. Beschrijf wat het wetsvoorstel regelt, waarom het nodig is, en wat de hoofdpunten zijn van het RvS-advies met de reactie van de regering.
 
 Stap 2 - Artikelanalyse:
-Analyseer de belangrijkste artikelen. Vergelijk met het partijstandpunt via searchPartyDocs.
-Schrijf per relevant artikel: wat het regelt, impact voor burgers/bedrijven/uitvoering, en bezwaren.
+Analyseer de belangrijkste artikelen en vergelijk ze met het partijstandpunt. Beschrijf per relevant artikel wat het regelt, de impact voor burgers, bedrijven en uitvoeringsorganisaties, en eventuele bezwaren.
 
 Stap 3 - Amendementen:
-Zoek via searchKamerstukken naar ingediende amendementen van andere fracties. Formuleer 1-3 eigen conceptamendementen.
-Schrijf: overzicht ingediende amendementen (indiener, artikel, strekking), gevolgd door conceptamendementen met artikelnummer, wijziging en toelichting.
+Zoek welke amendementen andere fracties al hebben ingediend. Formuleer daarnaast 1-3 eigen conceptamendementen. Geef een overzicht van ingediende amendementen (indiener, artikel, strekking), gevolgd door de eigen conceptamendementen met artikelnummer, voorgestelde wijziging en toelichting.
 
 Stap 4 - Juridische kanttekeningen:
-Zoek via searchDocumenten naar uitvoeringstoetsen of adviezen. Analyseer juridische risico's.
-Schrijf: mogelijke conflicten met Grondwet, EU-recht, EVRM of bestaande wetgeving.`,
+Zoek uitvoeringstoetsen en adviezen van betrokken instanties op. Beschrijf mogelijke conflicten met de Grondwet, EU-recht, het EVRM of bestaande wetgeving.`,
   },
   {
     soort: "Tweeminutendebat",
     label: "Tweeminutendebat",
     steps: ["Terugblik commissiedebat", "Onopgeloste punten", "Conceptmoties"],
-    prompt: `Tweeminutendebat - max 2 minuten, volgt op een eerder commissiedebat, alleen ruimte voor een motie.
-
+    prompt: `Tweeminutendebat - maximaal 2 minuten spreektijd, volgt op een eerder commissiedebat, alleen ruimte voor een motie.
 
 Stap 1 - Terugblik commissiedebat:
-Zoek via searchParlement of searchHandelingen het voorafgaande commissiedebat. Zoek via searchToezeggingen de gedane toezeggingen.
-Schrijf: uitkomst van het debat, gedane toezeggingen, wat onbevredigend bleef.
+Zoek het voorafgaande commissiedebat op en bekijk welke toezeggingen de minister toen heeft gedaan. Beschrijf de uitkomst van het debat, de gedane toezeggingen en wat onbevredigend bleef.
 
 Stap 2 - Onopgeloste punten:
-Analyseer wat onopgelost bleef en waar een motie verschil kan maken.
-Schrijf: concrete punten waar het Kamerlid actie op kan ondernemen.
+Analyseer wat onopgelost bleef en waar een motie verschil kan maken. Beschrijf de concrete punten waar het Kamerlid actie op kan ondernemen.
 
 Stap 3 - Conceptmoties:
-Zoek via searchStemmingen steunpatronen voor vergelijkbare moties. Zoek via searchPartyDocs het partijstandpunt.
-Schrijf per motie (max 2):
+Onderzoek steunpatronen bij vergelijkbare moties en vergelijk met het partijstandpunt. Formuleer maximaal 2 moties:
 - Dictum: "verzoekt de regering..." of "spreekt uit dat..."
 - Toelichting: 2 zinnen
 - Verwachte steun: welke fracties voor/tegen`,
@@ -114,18 +95,14 @@ Schrijf per motie (max 2):
     steps: ["Samenvatting nota", "Analyse per hoofdpunt", "Beleidsalternatieven"],
     prompt: `Notaoverleg - debat over een specifieke beleidsnota of beleidsbrief van de minister.
 
-
 Stap 1 - Samenvatting nota:
-Zoek via searchParlement de nota/beleidsbrief die centraal staat. Haal de volledige tekst op via getDocumentText.
-Schrijf: doel van de nota, voorgestelde maatregelen, financiele onderbouwing.
+Zoek de nota of beleidsbrief die centraal staat op en lees de volledige tekst. Beschrijf het doel van de nota, de voorgestelde maatregelen en de financiele onderbouwing.
 
 Stap 2 - Analyse per hoofdpunt:
-Vergelijk met het partijstandpunt via searchPartyDocs. Zoek via searchNews reacties van belangenorganisaties. Zoek via searchDocumenten uitvoerbaarheidsanalyses.
-Schrijf per hoofdpunt: maatregel, beoordeling vanuit partijstandpunt (wat is goed, wat ontbreekt), verwachte impact.
+Vergelijk de nota met het partijstandpunt. Zoek ook naar reacties van belangenorganisaties en uitvoerbaarheidsanalyses. Beschrijf per hoofdpunt de voorgestelde maatregel, de beoordeling vanuit het partijstandpunt (wat is goed, wat ontbreekt) en de verwachte impact.
 
 Stap 3 - Beleidsalternatieven:
-Analyseer vanuit het partijprogramma welke alternatieven er zijn.
-Schrijf: alternatieve maatregelen die beter passen bij de partijvisie. Per alternatief: wat, waarom, en hoe te realiseren.`,
+Analyseer vanuit het partijprogramma welke alternatieven er zijn. Beschrijf alternatieve maatregelen die beter passen bij de partijvisie - per alternatief: wat het inhoudt, waarom het beter is, en hoe het te realiseren is.`,
   },
   {
     soort: "Begrotingsoverleg",
@@ -133,94 +110,74 @@ Schrijf: alternatieve maatregelen die beter passen bij de partijvisie. Per alter
     steps: ["Begrotingsanalyse", "Rekenkamer & CPB", "Begrotingsamendementen"],
     prompt: `Begrotingsoverleg - debat over de begroting van een specifiek ministerie, het draait om euro's.
 
-
 Stap 1 - Begrotingsanalyse:
-Zoek via searchParlement de begrotingsstukken. Haal op via getDocumentText. Zoek via searchPartyDocs de financiele prioriteiten van de partij.
-Schrijf: totaalbeeld van de begroting, en per opvallende post: naam, bedrag, verschuiving t.o.v. vorig jaar, en beoordeling.
+Zoek de begrotingsstukken op en lees ze. Vergelijk met de financiele prioriteiten van de partij. Geef een totaalbeeld van de begroting en beschrijf per opvallende post: naam, bedrag, verschuiving t.o.v. vorig jaar, en beoordeling.
 
 Stap 2 - Rekenkamer & CPB:
-Zoek via searchDocumenten rapporten van de Algemene Rekenkamer en CPB-doorrekeningen.
-Schrijf: relevante bevindingen over dit beleidsterrein - doelmatigheid, effectiviteit, risico's.
+Zoek rapporten van de Algemene Rekenkamer en CPB-doorrekeningen over dit beleidsterrein op. Beschrijf de relevante bevindingen: doelmatigheid, effectiviteit en risico's.
 
 Stap 3 - Begrotingsamendementen:
-Zoek via searchKamerstukken naar amendementen van andere fracties.
-Schrijf 1-2 eigen begrotingsamendementen. Per amendement: welke post, bedrag erbij/eraf, dekking (verschuiving binnen begroting), toelichting.`,
+Zoek op welke amendementen andere fracties al hebben ingediend. Formuleer daarnaast 1-2 eigen begrotingsamendementen. Geef per amendement aan welke post wordt gewijzigd, het bedrag erbij of eraf, de dekking (verschuiving binnen de begroting) en de toelichting.`,
   },
   {
     soort: "Rondetafelgesprek",
     label: "Rondetafelgesprek",
     steps: ["Achtergrond", "Profiel per genodigde", "Informatiebehoefte"],
-    prompt: `Rondetafelgesprek - de commissie spreekt met experts en belanghebbenden, geen minister aanwezig, dit is intelligence-gathering.
-
+    prompt: `Rondetafelgesprek - de commissie spreekt met experts en belanghebbenden. Er is geen minister aanwezig; dit is intelligence-gathering.
 
 Stap 1 - Achtergrond:
-Zoek via searchParlement naar de agenda en achtergrond van dit rondetafelgesprek.
-Schrijf: onderwerp, waarom het is georganiseerd, welke beleidsvragen centraal staan.
+Zoek op wat het onderwerp van het rondetafelgesprek is en waarom het is georganiseerd. Beschrijf het onderwerp, de aanleiding en welke beleidsvragen centraal staan.
 
 Stap 2 - Profiel per genodigde:
-Zoek per genodigde via searchNews en fetchWebPage naar hun standpunten en publicaties. Zoek via searchDocumenten naar rapporten van deze organisaties.
-Schrijf per expert/organisatie: naam en functie, achtergrond, bekende standpunten, en 2-3 gerichte vragen.
+Zoek per genodigde expert of organisatie op wat hun standpunten zijn, welke publicaties ze hebben gedaan en welke rapporten of adviezen ze hebben uitgebracht. Beschrijf per genodigde: naam en functie, achtergrond, bekende standpunten, en 2-3 gerichte vragen die relevante informatie opleveren voor de fractie.
 
 Stap 3 - Informatiebehoefte:
-Zoek via searchPartyDocs welke informatie de fractie nodig heeft op dit dossier.
-Schrijf: welke informatie uit dit gesprek moet komen voor toekomstige debatten, geprioriteerde vragenlijst over alle genodigden heen.`,
+Analyseer vanuit het partijstandpunt welke informatie de fractie nodig heeft op dit dossier. Beschrijf welke informatie uit dit gesprek moet komen voor toekomstige debatten en lever een geprioriteerde vragenlijst over alle genodigden heen.`,
   },
   {
     soort: "Procedurevergadering",
     label: "Procedurevergadering",
     steps: ["Agendaoverzicht", "Aanbevelingen per punt", "Suggesties eigen agendering"],
-    prompt: `Procedurevergadering - hier wordt de commissieagenda bepaald, strategisch belangrijk voor de fractie.
-
+    prompt: `Procedurevergadering - hier wordt de commissieagenda bepaald. Strategisch belangrijk: de fractie kan invloed uitoefenen op wat er wel en niet besproken wordt.
 
 Stap 1 - Agendaoverzicht:
-Zoek via searchParlement of searchAgenda de conceptagenda/besluitenlijst. Zoek achtergrond bij voorgestelde punten via searchDocumenten.
-Schrijf: overzicht van alle agendapunten met korte context per punt.
+Zoek de conceptagenda of besluitenlijst van deze procedurevergadering op en bekijk de achtergrond van de voorgestelde punten. Geef een overzicht van alle agendapunten met korte context per punt.
 
 Stap 2 - Aanbevelingen per punt:
-Zoek via searchPartyDocs welke onderwerpen prioriteit hebben. Zoek via searchNews actuele ontwikkelingen.
-Schrijf per agendapunt: wat wordt voorgesteld, en aanbeveling (agenderen/niet agenderen/steunen/rapporteur) met onderbouwing.
+Vergelijk de agendapunten met de prioriteiten van de fractie en kijk naar actuele ontwikkelingen in het nieuws. Geef per agendapunt aan wat wordt voorgesteld en doe een aanbeveling (agenderen, niet agenderen, steunen, of rapporteur aanbieden) met onderbouwing.
 
 Stap 3 - Suggesties eigen agendering:
-Analyseer welke onderwerpen de fractie zelf kan agenderen.
-Schrijf: onderwerpen die de fractie kan voorstellen voor een debat of overleg, met onderbouwing waarom dit nu relevant is.`,
+Analyseer welke onderwerpen de fractie zelf op de agenda kan zetten. Beschrijf per suggestie het onderwerp en waarom het nu relevant is om dit te agenderen.`,
   },
   {
     soort: "Technische briefing",
     label: "Technische briefing",
     steps: ["Achtergrond", "Kernvragen", "Aandachtspunten fractie"],
-    prompt: `Technische briefing - experts informeren de commissie over een technisch onderwerp, geen politiek debat.
-
+    prompt: `Technische briefing - experts of ambtenaren informeren de commissie over een technisch onderwerp. Geen politiek debat, maar een kans om de materie te doorgronden.
 
 Stap 1 - Achtergrond:
-Zoek via searchParlement en searchDocumenten naar het onderwerp en gerelateerde rapporten. Zoek via searchNews actuele context.
-Schrijf: wat het onderwerp is, waarom het technisch complex is, politieke relevantie, welke organisatie de briefing geeft.
+Zoek parlementaire documenten, rapporten en actueel nieuws op over het onderwerp. Beschrijf wat het onderwerp is, waarom het technisch complex is, wat de politieke relevantie is en welke organisatie de briefing geeft.
 
 Stap 2 - Kernvragen:
-Zoek via getRecenteKamervragen eerder gestelde vragen. Analyseer welke informatie nog ontbreekt.
-Schrijf: 10-15 inhoudelijke vragen geordend per thema, gericht op het doorgronden van de materie.
+Bekijk welke Kamervragen er eerder over dit onderwerp zijn gesteld en analyseer welke informatie nog ontbreekt. Formuleer 10-15 inhoudelijke vragen geordend per thema, gericht op het doorgronden van de materie.
 
 Stap 3 - Aandachtspunten fractie:
-Zoek via searchPartyDocs relevante partijstandpunten.
-Schrijf: welke aspecten raken aan partijstandpunten of lopende debatten, waar het Kamerlid extra op moet letten.`,
+Vergelijk het onderwerp met de relevante partijstandpunten. Beschrijf welke aspecten raken aan de partijpositie of lopende debatten en waar het Kamerlid extra op moet letten.`,
   },
   {
     soort: "Gesprek",
     label: "Gesprek",
     steps: ["Gesprekspartners", "Gespreksagenda", "Strategische vragen"],
-    prompt: `Gesprek - informeel overleg met externe partijen, goede voorbereiding is essentieel.
-
+    prompt: `Gesprek - informeel overleg met externe partijen of belanghebbenden. Goede voorbereiding is essentieel: weet met wie je praat, wat zij willen, en wat jij van hen nodig hebt.
 
 Stap 1 - Gesprekspartners:
-Zoek via searchParlement en searchNews de gesprekspartner(s). Zoek via fetchWebPage hun website en publicaties.
-Schrijf per genodigde: naam en functie, achtergrond, bekende standpunten, en wat hun belang is in dit gesprek.
+Zoek op wie de gesprekspartners zijn, bekijk hun website en recente publicaties, en zoek in parlementaire documenten en het nieuws naar hun eerdere standpunten. Beschrijf per genodigde: naam en functie, achtergrond, bekende standpunten, en wat hun belang is in dit gesprek.
 
 Stap 2 - Gespreksagenda:
-Zoek via searchDocumenten relevante beleidsontwikkelingen. Zoek via searchPartyDocs het partijstandpunt.
-Schrijf: verwachte thema's en hoe ze raken aan het partijstandpunt.
+Zoek relevante beleidsontwikkelingen op en vergelijk met het partijstandpunt. Beschrijf de verwachte thema's en hoe ze raken aan de partijpositie.
 
 Stap 3 - Strategische vragen:
-Analyseer welke informatie politiek bruikbaar is.
-Schrijf: 5-10 vragen geordend op prioriteit, gericht op het verkrijgen van politiek bruikbare informatie.`,
+Analyseer welke informatie politiek bruikbaar is. Formuleer 5-10 vragen geordend op prioriteit, gericht op het verkrijgen van informatie die de fractie kan inzetten in toekomstige debatten.`,
   },
   {
     soort: "Stemmingen",
@@ -228,18 +185,14 @@ Schrijf: 5-10 vragen geordend op prioriteit, gericht op het verkrijgen van polit
     steps: ["Overzicht", "Stemadvies per item", "Gevoelige stemmingen"],
     prompt: `Stemmingen - de Kamer stemt over moties, amendementen en wetsvoorstellen.
 
-
 Stap 1 - Overzicht:
-Zoek via searchStemmingen en searchKamerstukken welke items in stemming komen. Haal teksten op via getDocumentText.
-Schrijf: hoeveel stemmingen, over welke thema's, wat zijn de belangrijkste.
+Zoek op welke moties, amendementen en wetsvoorstellen in stemming komen en lees de teksten. Beschrijf hoeveel stemmingen er zijn, over welke thema's, en welke de belangrijkste zijn.
 
 Stap 2 - Stemadvies per item:
-Zoek via searchPartyDocs het partijstandpunt per thema. Zoek via searchHandelingen de debatcontext.
-Schrijf per motie/amendement/wetsvoorstel: nummer en indiener, strekking (1-2 zinnen), stemadvies (voor/tegen/onthouden), onderbouwing vanuit partijstandpunt.
+Vergelijk elk item met het partijstandpunt en bekijk de context van het debat waarin het is ingediend. Geef per motie, amendement of wetsvoorstel: nummer en indiener, strekking (1-2 zinnen), stemadvies (voor/tegen/onthouden) en onderbouwing vanuit het partijstandpunt.
 
 Stap 3 - Gevoelige stemmingen:
-Zoek via searchNews of er media-aandacht is voor specifieke stemmingen.
-Schrijf: stemmingen met politiek risico, media-gevoeligheid, of onverwachte bondgenoten. Per gevoelige stemming: risico en hoe te handelen.`,
+Bekijk of er media-aandacht is voor specifieke stemmingen. Beschrijf stemmingen die politiek risico dragen, mediagevoelig zijn of onverwachte bondgenoten opleveren. Geef per gevoelige stemming aan wat het risico is en hoe te handelen.`,
   },
   {
     soort: "Regeling van werkzaamheden",
@@ -247,18 +200,14 @@ Schrijf: stemmingen met politiek risico, media-gevoeligheid, of onverwachte bond
     steps: ["Overzicht", "Lopende debataanvragen", "Mogelijke eigen aanvragen"],
     prompt: `Regeling van werkzaamheden - kort plenair overleg voor debataanvragen en procedurele verzoeken.
 
-
 Stap 1 - Overzicht:
-Zoek via searchAgenda en searchParlement de huidige planning en recente debataanvragen.
-Schrijf: wat er op de agenda staat, welke kansen er liggen.
+Zoek de huidige plenaire planning en recente debataanvragen op. Beschrijf wat er op de agenda staat en welke kansen er liggen.
 
 Stap 2 - Lopende debataanvragen:
-Zoek via searchParlement recente debataanvragen van alle fracties.
-Schrijf per aanvraag: aanvrager, onderwerp, status (wel/niet gesteund, wel/niet ingepland).
+Zoek op welke debatten er recent zijn aangevraagd door alle fracties. Beschrijf per aanvraag: aanvrager, onderwerp en status (wel/niet gesteund, wel/niet ingepland).
 
 Stap 3 - Mogelijke eigen aanvragen:
-Zoek via searchNews urgente onderwerpen. Zoek via searchPartyDocs fractiethema's. Zoek via searchKamerstukken recente Kamerbrieven als aanleiding.
-Schrijf per suggestie: onderwerp, aanleiding, onderbouwing waarom dit nu een debat verdient, verwachte steun van andere fracties.`,
+Bekijk het nieuws voor urgente onderwerpen, vergelijk met de thema's van de fractie en zoek recente Kamerbrieven die als aanleiding kunnen dienen. Beschrijf per suggestie: het onderwerp, de aanleiding, waarom dit nu een debat verdient, en welke fracties het waarschijnlijk steunen.`,
   },
   {
     soort: "Werkbezoek",
@@ -266,22 +215,17 @@ Schrijf per suggestie: onderwerp, aanleiding, onderbouwing waarom dit nu een deb
     steps: ["Organisatie-achtergrond", "Beleidsontwikkelingen", "Vragenlijst", "Mediakansen"],
     prompt: `Werkbezoek - Kamerleden bezoeken een organisatie of instelling om ervaringen uit de praktijk op te halen.
 
-
 Stap 1 - Organisatie-achtergrond:
-Zoek via fetchWebPage de website van de organisatie. Zoek via searchParlement gerelateerde Kamervragen en debatten.
-Schrijf: wat de organisatie doet, hoeveel mensen er werken, financiering, relatie tot rijksbeleid.
+Bekijk de website van de organisatie en zoek in parlementaire documenten naar gerelateerde Kamervragen en debatten. Beschrijf wat de organisatie doet, hoeveel mensen er werken, hoe het wordt gefinancierd en wat de relatie is tot het rijksbeleid.
 
 Stap 2 - Beleidsontwikkelingen:
-Zoek via searchDocumenten relevante beleidswijzigingen. Zoek via searchNews recent nieuws.
-Schrijf: recente wetswijzigingen, bezuinigingen, investeringen of beleidswijzigingen die deze organisatie raken.
+Zoek relevante beleidswijzigingen en recent nieuws over deze organisatie of sector op. Beschrijf recente wetswijzigingen, bezuinigingen, investeringen of beleidswijzigingen die deze organisatie raken.
 
 Stap 3 - Vragenlijst:
-Zoek via searchPartyDocs het partijstandpunt op dit beleidsterrein.
-Schrijf: 10-15 vragen voor gesprekken ter plaatse, gericht op ervaringen uit de praktijk die bruikbaar zijn in Kamerdebatten.
+Vergelijk met het partijstandpunt op dit beleidsterrein. Formuleer 10-15 vragen voor gesprekken ter plaatse, gericht op het ophalen van ervaringen uit de praktijk die bruikbaar zijn in Kamerdebatten.
 
 Stap 4 - Mediakansen:
-Analyseer welke bevindingen mediageniek zijn.
-Schrijf: mogelijke fotomomenten, quotes of bevindingen voor communicatie en sociale media.`,
+Analyseer welke bevindingen mediageniek kunnen zijn. Beschrijf mogelijke fotomomenten, quotes of bevindingen die de fractie kan inzetten voor communicatie en sociale media.`,
   },
 ]
 
