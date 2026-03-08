@@ -13,6 +13,7 @@ import {
   FileText,
   PenLine,
   Cpu,
+  Trash2,
 } from "lucide-react"
 import { PartySelector } from "./party-selector"
 import { Message, extractToolSteps } from "./message"
@@ -144,7 +145,7 @@ export function Chat() {
       }),
   )
 
-  const { messages, sendMessage, status, error: chatError } = useChat({
+  const { messages, setMessages, sendMessage, status, error: chatError } = useChat({
     transport,
     onError(error) {
       console.error("[chat] error:", error)
@@ -211,6 +212,16 @@ export function Chat() {
                 </span>
               )}
             </div>
+            {messages.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setMessages([])}
+                className="flex shrink-0 items-center gap-1.5 rounded-md border border-border-light px-2.5 py-1.5 text-xs font-medium text-text-muted transition-colors hover:border-border hover:text-primary"
+              >
+                <Trash2 className="h-3 w-3" />
+                Wissen
+              </button>
+            )}
           </header>
 
           {/* Messages */}
