@@ -148,7 +148,8 @@ De instructies bevatten genummerde stappen. Doorloop deze stappen en gebruik de 
 
           // Send deliverable steps to client for progress sidebar
           const skillSteps = soort ? getDefaultSteps(soort) : []
-          const normalizedSteps = new Set(skillSteps.map((s) => s.toLowerCase().trim()))
+          // Map normalized step name → original label for display
+          const stepMap = new Map(skillSteps.map((s) => [s.toLowerCase().trim(), s]))
           const sentSections = new Set<string>()
 
           if (skillSteps.length > 0) {
@@ -187,17 +188,21 @@ De instructies bevatten genummerde stappen. Doorloop deze stappen en gebruik de 
             } else if (part.type === "text-delta") {
               fullText += part.text
 
-              // Detect section headers matching skill steps
+              // Detect section headers matching skill steps.
+              // The AI may write "## Stap 1 - Agendaoverzicht" or just "## Agendaoverzicht",
+              // so we check if the header *contains* any step name rather than exact match.
               const headerRegex = /^## (.+)$/gm
               let match
               while ((match = headerRegex.exec(fullText)) !== null) {
-                const title = match[1].trim()
-                const normalized = title.toLowerCase()
-                if (normalizedSteps.has(normalized) && !sentSections.has(normalized)) {
-                  sentSections.add(normalized)
-                  controller.enqueue(
-                    encoder.encode(JSON.stringify({ type: "section", title }) + "\n")
-                  )
+                const headerText = match[1].trim().toLowerCase()
+                for (const [normalized, original] of stepMap) {
+                  if (!sentSections.has(normalized) && headerText.includes(normalized)) {
+                    sentSections.add(normalized)
+                    controller.enqueue(
+                      encoder.encode(JSON.stringify({ type: "section", title: original }) + "\n")
+                    )
+                    break
+                  }
                 }
               }
             }
