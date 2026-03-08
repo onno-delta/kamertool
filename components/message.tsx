@@ -79,12 +79,12 @@ export function Message({ message, topic }: { message: UIMessage; topic?: string
   const isUser = role === "user"
   const [pdfBusy, setPdfBusy] = useState(false)
 
-  // Check if there's any visible content (text, reasoning, or currently running tools)
+  // Check if there's any visible content (text, reasoning, or tools)
   const hasVisibleContent = parts.some((p) => {
     if (p.type === "text" && p.text) return true
     if (p.type === "reasoning" && p.text) return true
     const tp = p as unknown as ToolPart
-    if (isToolPart(tp) && (tp.state === "input-streaming" || tp.state === "input-available")) return true
+    if (isToolPart(tp) && isVisibleToolState(tp.state)) return true
     return false
   })
 
@@ -159,21 +159,33 @@ export function Message({ message, topic }: { message: UIMessage; topic?: string
               </div>
             )
           }
-          // Only render currently running tool parts inline (completed ones live in the sidebar)
+          // Render running tools inline, plus the last completed tool
+          // (so it shows a checkmark until the next tool starts or text appears)
           const tp = part as unknown as ToolPart
-          if (
-            isToolPart(tp) &&
-            (tp.state === "input-streaming" || tp.state === "input-available")
-          ) {
-            return (
-              <InlineToolStep
-                key={tp.toolCallId ?? i}
-                toolName={getToolName(tp)}
-                state={tp.state!}
-                input={tp.input ?? tp.args ?? {}}
-                output={tp.output}
-              />
-            )
+          if (isToolPart(tp) && isVisibleToolState(tp.state)) {
+            const isRunning = tp.state === "input-streaming" || tp.state === "input-available"
+            const isDone = tp.state === "output-available" || tp.state === "output-error"
+            // For completed tools, only show if no later running tool or text exists
+            if (isDone) {
+              const laterParts = parts.slice(i + 1)
+              const hasLaterActivity = laterParts.some((lp) => {
+                if (lp.type === "text" && (lp as { text?: string }).text) return true
+                const ltp = lp as unknown as ToolPart
+                return isToolPart(ltp) && (ltp.state === "input-streaming" || ltp.state === "input-available")
+              })
+              if (hasLaterActivity) return null
+            }
+            if (isRunning || isDone) {
+              return (
+                <InlineToolStep
+                  key={tp.toolCallId ?? i}
+                  toolName={getToolName(tp)}
+                  state={tp.state!}
+                  input={tp.input ?? tp.args ?? {}}
+                  output={tp.output}
+                />
+              )
+            }
           }
           return null
         })}
