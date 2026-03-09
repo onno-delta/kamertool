@@ -29,7 +29,8 @@ Een complete debatbriefing bevat:
 5. **Standpunten per fractie** — Op basis van stemmingen en uitspraken in Handelingen
 6. **Recent nieuws** — Actuele ontwikkelingen en mediacontext
 7. **Suggestievragen voor het debat** — Concrete vragen om te stellen, met verwijzing naar bronnen
-8. **Mogelijke speech** — Concept-speech (2-3 min) in de stijl van het geselecteerde Kamerlid
+
+Schrijf GEEN concept-speech tenzij de gebruiker hier expliciet om vraagt.
 
 Gebruik altijd je tools om actuele informatie op te zoeken. Geef bronnen aan bij je antwoorden (Kamerstuknummers, data, namen). Antwoord in het Nederlands. Gebruik NOOIT emoji's. Gebruik NOOIT em dashes (—). Gebruik in plaats daarvan een gewoon streepje (-) of herformuleer de zin.`
 

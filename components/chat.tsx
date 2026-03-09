@@ -33,7 +33,6 @@ const DEFAULT_BRIEFING_STEPS = [
   "Standpunten per fractie",
   "Recent nieuws",
   "Suggestievragen voor het debat",
-  "Mogelijke speech",
 ]
 
 const FREE_MODELS = [
