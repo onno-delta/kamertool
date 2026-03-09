@@ -1,196 +1,196 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Dit bestand geeft instructies aan Claude Code (claude.ai/code) voor het werken aan deze codebase.
 
-## What This Is
+## Wat is Kamertool?
 
-Kamertool is an AI-powered debate preparation tool for Dutch parliament (Tweede Kamer) members. It provides a chat interface backed by LLMs with tool-calling access to parliamentary APIs, news search, party programs, and organisation documents. All UI text is in Dutch.
+Kamertool is een AI-gestuurde voorbereidingstool voor debatten in de Tweede Kamer. Het biedt een chatinterface met AI-modellen die toegang hebben tot parlementaire API's, nieuwsbronnen, partijprogramma's en organisatiedocumenten. Alle tekst in de interface is Nederlands.
 
-## Commands
+## Commando's
 
 ```bash
-npm run dev      # Start dev server (localhost:3000)
-npm run build    # Production build
-npm run lint     # ESLint
+npm run dev      # Start ontwikkelserver (localhost:3000)
+npm run build    # Productie-build
+npm run lint     # ESLint controle
 ```
 
-**Database migrations:** `drizzle-kit push` is broken with Supabase's transaction pooler (port 6543). Stable (v0.31.9) crashes on check constraint introspection ([#4496](https://github.com/drizzle-team/drizzle-orm/issues/4496)), beta (v1.0.0-beta) hangs because it uses prepared statements which PgBouncer doesn't support. Direct connection (port 5432) is unreachable.
+**Database-migraties:** `drizzle-kit push` werkt niet met Supabase's transaction pooler (poort 6543). De stabiele versie (v0.31.9) crasht op check constraints ([#4496](https://github.com/drizzle-team/drizzle-orm/issues/4496)), de bèta (v1.0.0-beta) hangt door prepared statements die PgBouncer niet ondersteunt. Directe verbinding (poort 5432) is onbereikbaar.
 
-**Workaround:** apply migrations via direct SQL instead:
+**Workaround:** voer migraties uit via directe SQL:
 ```bash
 set -a && source .env.local && set +a && node -e "
 const sql = require('postgres')(process.env.DATABASE_URL, { prepare: false });
 sql\`ALTER TABLE ... \`.then(() => { console.log('done'); return sql.end() });
 "
 ```
-Check if drizzle v1 stable is released: `npm view drizzle-kit dist-tags --json | grep latest` — when `latest` shows `1.x.x`, retry `drizzle-kit push`.
+Controleer of drizzle v1 stabiel is uitgebracht: `npm view drizzle-kit dist-tags --json | grep latest` — wanneer `latest` versie `1.x.x` toont, probeer `drizzle-kit push` opnieuw.
 
-**Scripts** (require `set -a && source .env.local && set +a` before running):
-- `npx tsx scripts/seed-parties.ts` — Insert base party rows
-- `npx tsx scripts/seed-party-programmes.ts` — Upsert party programme content from `data/partijstandpunten.md`
+**Scripts** (vereisen `set -a && source .env.local && set +a` vooraf):
+- `npx tsx scripts/seed-parties.ts` — Basispartijen invoegen
+- `npx tsx scripts/seed-party-programmes.ts` — Partijprogramma's bijwerken vanuit `data/partijstandpunten.md`
 
-**Deployment:** Auto-deploys from `main` via Vercel Git integration. Push to `main` triggers production deploy.
+**Deployment:** Automatische deploy vanaf `main` via Vercel Git-integratie. Push naar `main` activeert een productie-deploy.
 
-Live at https://kamer.deltainstituut.nl (also https://kamertool.vercel.app) — GitHub repo: `onno-delta/kamertool`
+Live op https://kamer.deltainstituut.nl (ook https://kamertool.vercel.app) — GitHub-repo: `onno-delta/kamertool`
 
-## Architecture
+## Architectuur
 
-**Stack:** Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS 4 · Drizzle ORM · PostgreSQL (Supabase) · NextAuth v5 (magic link via Resend) · Vercel AI SDK v6
+**Technologie:** Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS 4 · Drizzle ORM · PostgreSQL (Supabase) · NextAuth v5 (magic link via Resend) · Vercel AI SDK v6
 
-### AI Layer (`lib/ai.ts`)
+### AI-laag (`lib/ai.ts`)
 
-Multi-provider model factory supporting Anthropic, OpenAI, and Google. `getModel({ model?, apiKey? })` creates a `LanguageModel` — if `apiKey` is provided, creates a fresh provider instance (BYOK); otherwise falls back to env var keys. Default model is `claude-sonnet-4-5`. Free-tier users can switch models via the chat toolbar; the selected model key is sent in the request body.
+Multi-provider modelfabriek die Anthropic, OpenAI en Google ondersteunt. `getModel({ model?, apiKey? })` maakt een `LanguageModel` aan — als er een `apiKey` wordt meegegeven, wordt een nieuwe provider-instantie aangemaakt (BYOK/eigen sleutel); anders wordt teruggevallen op omgevingsvariabelen. Het standaardmodel is `claude-sonnet-4-5`. Gratis gebruikers kunnen van model wisselen via de chat-werkbalk; de geselecteerde modelsleutel wordt meegestuurd in de request body.
 
-**AI SDK v6 specifics:** Use `maxOutputTokens` (not `maxTokens`), import `LanguageModel` (not `LanguageModelV1`).
+**AI SDK v6 specifiek:** Gebruik `maxOutputTokens` (niet `maxTokens`), importeer `LanguageModel` (niet `LanguageModelV1`).
 
-### BYOK System (Bring Your Own Key)
+### BYOK-systeem (Breng je eigen sleutel)
 
-Users store their own API keys encrypted with AES-256-GCM (`lib/crypto.ts`). Only one key active per user at a time. Free tier: 10 messages/day tracked in `usage_log` table (`lib/rate-limit.ts`). BYOK users get unlimited usage. Whitelisted domains (`tweedekamer.nl`, `deltainstituut.nl`, `herprogrammeerdeoverheid.nl`) get unlimited free-tier access.
+Gebruikers slaan hun eigen API-sleutels versleuteld op met AES-256-GCM (`lib/crypto.ts`). Slechts één sleutel tegelijk actief per gebruiker. Gratis: 10 berichten per dag, bijgehouden in de `usage_log`-tabel (`lib/rate-limit.ts`). BYOK-gebruikers hebben onbeperkt gebruik. Whitelisted domeinen (`tweedekamer.nl`, `deltainstituut.nl`, `herprogrammeerdeoverheid.nl`) krijgen onbeperkt gratis toegang.
 
-Flow: `lib/user-keys.ts` → `lib/crypto.ts` → `user_api_key` table (encrypted) → `lib/ai.ts` (decrypted at request time)
+Stroom: `lib/user-keys.ts` → `lib/crypto.ts` → `user_api_key`-tabel (versleuteld) → `lib/ai.ts` (ontsleuteld bij verzoek)
 
-### AI Tools (`lib/tools/`)
+### AI-tools (`lib/tools/`)
 
-Eleven tools the LLM can call during chat/briefing generation:
-- `search-overheid.ts` — **Primary search**: full-text search over all parliamentary documents via Overheid.nl SRU API (`zoek.officielebekendmakingen.nl`). Exports `searchParlement` (search), `getDocumentText` (fetch full document text by nummer) and `getRecenteKamervragen` (recent written questions). Backed by `lib/sru-api.ts` for SRU protocol handling.
-- `search-kamerstukken.ts` — Parliamentary documents via TK OData API
-- `search-documenten.ts` — Letters, notes, reports via TK OData API
-- `search-handelingen.ts` — Debate transcripts via TK OData API
-- `search-toezeggingen.ts` — Minister promises via TK OData API
-- `search-stemmingen.ts` — Voting results via TK OData API
-- `search-agenda.ts` — Upcoming debates and committee meetings via TK OData API
-- `search-news.ts` — News via Serper API
-- `search-party-docs.ts` — Party programmes + organisation documents from DB (ILIKE search)
-- `fetch-webpage.ts` — Fetch and extract text from any URL
+Elf tools die het AI-model kan aanroepen tijdens chat- of briefing-generatie:
+- `search-overheid.ts` — **Primaire zoektool**: volledige tekstzoekopdracht over alle parlementaire documenten via Overheid.nl SRU API (`zoek.officielebekendmakingen.nl`). Exporteert `searchParlement` (zoeken), `getDocumentText` (volledige documenttekst ophalen op nummer) en `getRecenteKamervragen` (recente schriftelijke vragen). Gebruikt `lib/sru-api.ts` voor SRU-protocolafhandeling.
+- `search-kamerstukken.ts` — Kamerstukken via TK OData API
+- `search-documenten.ts` — Brieven, nota's, rapporten via TK OData API
+- `search-handelingen.ts` — Debatverslagen via TK OData API
+- `search-toezeggingen.ts` — Toezeggingen van ministers via TK OData API
+- `search-stemmingen.ts` — Stemmingsuitslagen via TK OData API
+- `search-agenda.ts` — Aankomende debatten en commissievergaderingen via TK OData API
+- `search-news.ts` — Nieuws via Serper API
+- `search-party-docs.ts` — Partijprogramma's + organisatiedocumenten uit de database (ILIKE-zoekopdracht)
+- `fetch-webpage.ts` — Tekst ophalen en extraheren van een willekeurige URL
 
-The TK OData API base: `https://gegevensmagazijn.tweedekamer.nl/OData/v4/2.0` (wrapper in `lib/tk-api.ts`, 5-minute revalidation cache).
+De TK OData API-basis: `https://gegevensmagazijn.tweedekamer.nl/OData/v4/2.0` (wrapper in `lib/tk-api.ts`, 5 minuten cache).
 
-For a complete inventory of all data sources, APIs, and what is/isn't integrated, see `docs/bronnen.md`.
+Voor een compleet overzicht van alle databronnen, API's en wat wel/niet geïntegreerd is, zie `docs/bronnen.md`.
 
-### Two AI Endpoints with Different Protocols
+### Twee AI-eindpunten met verschillende protocollen
 
-**`/api/chat`** — Uses AI SDK's `streamText` → `toUIMessageStreamResponse()`. Consumed by `useChat()` hook in `components/chat.tsx`. Max 10 tool-calling steps.
+**`/api/chat`** — Gebruikt AI SDK's `streamText` → `toUIMessageStreamResponse()`. Verwerkt door `useChat()` hook in `components/chat.tsx`. Maximaal 10 tool-aanroepstappen.
 
-**`/api/briefing`** — Uses AI SDK's `streamText` but with a **custom NDJSON streaming protocol**: iterates `result.fullStream`, emits `{type:"tool-start"}`, `{type:"tool-done"}`, and `{type:"done", content}` as newline-delimited JSON. Saves final content to `briefings` table. Max 25 tool-calling steps. Has its own system prompt (different from chat). Consumed by `components/briefing-context.tsx`.
+**`/api/briefing`** — Gebruikt AI SDK's `streamText` maar met een **eigen NDJSON-streamingprotocol**: itereert over `result.fullStream`, stuurt `{type:"tool-start"}`, `{type:"tool-done"}` en `{type:"done", content}` als newline-gescheiden JSON. Slaat het eindresultaat op in de `briefings`-tabel. Maximaal 25 tool-aanroepstappen. Heeft een eigen systeemprompt (anders dan chat). Verwerkt door `components/briefing-context.tsx`.
 
-### Meeting Skills (`lib/meeting-skills.ts`)
+### Vergadervaardigheden (`lib/meeting-skills.ts`)
 
-Per-meeting-type prompt templates (13 types: Plenair debat, Commissiedebat, Wetgevingsoverleg, etc.) that get injected into the briefing system prompt. Users can customize these per meeting type via `/instructies` (stored in `user_meeting_skill` table). The briefing route resolves: user override > default skill > empty.
+Prompttemplates per vergadertype (13 typen: Plenair debat, Commissiedebat, Wetgevingsoverleg, enz.) die in de briefing-systeemprompt worden ingevoegd. Gebruikers kunnen deze per vergadertype aanpassen via `/instructies` (opgeslagen in `user_meeting_skill`-tabel). De briefing-route lost op: gebruikersaanpassing > standaardvaardigheid > leeg.
 
-### Party Data
+### Partijgegevens
 
-- `lib/parties.ts` — Static list of 13 parties (used for UI dropdowns, validation)
-- `lib/dossiers.ts` — 19 policy dossier definitions
-- `data/partijstandpunten.md` — Structured party profiles with ideological profiles and positions per dossier. Seeded into `party.programme` field via `scripts/seed-party-programmes.ts`.
-- `lib/system-prompt.ts` — Builds the chat system prompt; adds party-specific instructions when a party is selected
+- `lib/parties.ts` — Vaste lijst van 13 partijen (voor UI-dropdowns, validatie)
+- `lib/dossiers.ts` — 19 beleidsdossier-definities + `COMMISSIE_DOSSIER_MAP` (commissie → dossier-mapping)
+- `data/partijstandpunten.md` — Gestructureerde partijprofielen met ideologische profielen en standpunten per dossier. Ingevoerd in het `party.programme`-veld via `scripts/seed-party-programmes.ts`.
+- `lib/system-prompt.ts` — Bouwt de chat-systeemprompt; voegt partijspecifieke instructies toe als er een partij is geselecteerd
 
-### Auth (`auth.ts`, `middleware.ts`)
+### Authenticatie (`auth.ts`, `middleware.ts`)
 
-NextAuth v5 with Resend (magic link email). Database-backed sessions. Session callback extends with `user.id`, `user.role`, `user.organisationId`, `user.defaultPartyId`. Middleware protects `/dashboard`, `/settings`, `/instructies`, and their API routes.
+NextAuth v5 met Resend (magic link e-mail). Database-sessies. De sessie-callback voegt `user.id`, `user.role`, `user.organisationId` en `user.defaultPartyId` toe. Middleware beschermt `/dashboard`, `/settings`, `/instructies` en hun API-routes.
 
-### Database Schema (`lib/db/schema.ts`)
+### Databaseschema (`lib/db/schema.ts`)
 
-Key tables: `party`, `organisation`, `user`, `briefing`, `chat_session`, `user_api_key`, `usage_log`, `org_document`, `user_dossier`, `user_kamerlid`, `user_meeting_skill`, `smoelenboekProfiles`, `smoelenboekContacts`, `smoelenboekMedewerkers`, plus NextAuth tables (`account`, `session`, `verificationToken`). All IDs are UUIDs. Chat messages stored as JSON text in `chat_session.messages`.
+Belangrijkste tabellen: `party`, `organisation`, `user`, `briefing`, `chat_session`, `user_api_key`, `usage_log`, `org_document`, `user_dossier`, `user_kamerlid`, `user_meeting_skill`, `smoelenboekProfiles`, `smoelenboekContacts`, `smoelenboekMedewerkers`, plus NextAuth-tabellen (`account`, `session`, `verificationToken`). Alle ID's zijn UUID's. Chatberichten worden opgeslagen als JSON-tekst in `chat_session.messages`.
 
-**Database connection (`lib/db/index.ts`):** Uses `postgres.js` with `prepare: false` — required because Supabase's transaction pooler (port 6543) runs PgBouncer which doesn't support prepared statements.
+**Databaseverbinding (`lib/db/index.ts`):** Gebruikt `postgres.js` met `prepare: false` — vereist omdat Supabase's transaction pooler (poort 6543) PgBouncer draait, dat geen prepared statements ondersteunt.
 
 ### Smoelenboek (`app/smoelenboek/`, `lib/tk-*.ts`)
 
-Member directory showing all current Kamerleden + cabinet members. Detail page (`/smoelenboek/[id]`) shows photo, bio, commissions, contact info, staff, and activity feeds (documents, votes, promises, debate contributions, agenda). Cabinet members use `kabinet-` prefixed IDs from `data/kabinet.ts`.
+Ledenlijst met alle huidige Kamerleden + kabinetsleden. De detailpagina (`/smoelenboek/[id]`) toont foto, biografie, commissies, contactgegevens, medewerkers en activiteitenfeeds (documenten, stemmingen, toezeggingen, debatbijdragen, agenda). Kabinetsleden gebruiken `kabinet-`-voorvoegsel-ID's uit `data/kabinet.ts`.
 
 Backend:
-- `lib/tk-members.ts` — `getCurrentMembers()`: cached list of active Kamerleden from TK OData (1h TTL)
-- `lib/tk-commissions.ts` — `getCommissionMap()`: maps personId → commission abbreviations (1h TTL)
-- `lib/tk-person.ts` — `getPersonDocuments()`, `getFractieStemmingen()`, `getPersonToezeggingen()`, `getPersonHandelingen()`, `getPersonAgenda()`: activity queries per person
-- `lib/tk-scraper.ts` — Scrapes `tweedekamer.nl` for email/bio (cached in `smoelenboekProfiles` table, 30-day TTL)
-- `lib/match-kamerlid.ts` — Auto-matches `@tweedekamer.nl` email to member on first login
+- `lib/tk-members.ts` — `getCurrentMembers()`: gecachte lijst van actieve Kamerleden via TK OData (1 uur TTL)
+- `lib/tk-commissions.ts` — `getCommissionMap()`: mapt personId → commissie-afkortingen (1 uur TTL)
+- `lib/tk-person.ts` — `getPersonDocuments()`, `getFractieStemmingen()`, `getPersonToezeggingen()`, `getPersonHandelingen()`, `getPersonAgenda()`: activiteitenqueries per persoon
+- `lib/tk-scraper.ts` — Scrapt `tweedekamer.nl` voor e-mail/biografie (gecacht in `smoelenboekProfiles`-tabel, 30 dagen TTL)
+- `lib/match-kamerlid.ts` — Koppelt automatisch `@tweedekamer.nl` e-mailadres aan Kamerlid bij eerste login
 
-DB tables: `smoelenboekProfiles` (cached scrape data), `smoelenboekContacts` (user-submitted contact details), `smoelenboekMedewerkers` (staff records).
+DB-tabellen: `smoelenboekProfiles` (gecachte scrape-data), `smoelenboekContacts` (door gebruiker ingevoerde contactgegevens), `smoelenboekMedewerkers` (medewerkerrecords).
 
-### Data Context (`components/data-context.tsx`)
+### Gedeelde data-context (`components/data-context.tsx`)
 
-Shared state provider (`DataProvider` / `useDataContext()`) for parties, user preferences, and session-scoped Kamerleden selection. Loaded once in `providers.tsx`, consumed by chat, agenda, voorbereiden, and settings pages. Avoids waterfall fetches.
+Gedeelde state-provider (`DataProvider` / `useDataContext()`) voor partijen, gebruikersvoorkeuren en sessie-Kamerleden-selectie. Eenmalig geladen in `providers.tsx`, gebruikt door chat-, agenda-, voorbereiden- en instellingenpagina's. Voorkomt waterval-fetches.
 
-### Inline Tool Progress (`components/inline-tool-step.tsx`, `components/progress-sidebar.tsx`)
+### Inline tool-voortgang (`components/inline-tool-step.tsx`, `components/progress-sidebar.tsx`)
 
-Chat messages now show inline tool steps (Cowork-style) with icons, duration timers, and expandable result counts. Briefing progress sidebar groups tools into higher-order phases from meeting skills. `ChatProgress` component shows search/fetch/summarize phases.
+Chatberichten tonen inline tool-stappen (Cowork-stijl) met iconen, duurtimers en uitklapbare resultaattellers. De briefing-voortgangszijbalk groepeert tools in hogere-orde fasen vanuit vergadervaardigheden. `ChatProgress`-component toont zoek-/ophaal-/samenvattingsfasen.
 
-### Pages
+### Pagina's
 
-- `/` — Main chat interface (`components/chat.tsx` with `useChat()`, `KamerlidSelector`, `AgendaSidebar`)
-- `/agenda` — Kameragenda browser with commission filtering, Kamerlid selector, 14-day default range
-- `/voorbereiden` — Briefing generation page (receives `?topic=`, `?soort=`, `?nummer=` from agenda)
-- `/briefings` — Saved briefing history with search
-- `/settings` — Kamerlid-first flow: select Kamerleden → auto-select party + dossiers. Source management (60+ built-in + custom). "Zoek ook buiten deze bronnen" toggle
-- `/instructies` — Meeting skill customization (per meeting type prompt editing)
-- `/smoelenboek` — Member directory with party/role filter and search
-- `/smoelenboek/[id]` — Person detail page with activity feeds, contact, staff management
-- `/dashboard` — Organisation management
-- `/login` — Magic link auth flow
+- `/` — Hoofdchat-interface (`components/chat.tsx` met `useChat()`, `KamerlidSelector`, `AgendaSidebar`)
+- `/agenda` — Kameragenda-overzicht met commissiefilter, Kamerlid-selector, standaard 14 dagen bereik
+- `/voorbereiden` — Briefing-generatiepagina (ontvangt `?topic=`, `?soort=`, `?nummer=` van agenda)
+- `/briefings` — Opgeslagen briefinggeschiedenis met zoekfunctie
+- `/settings` — Kamerlid-eerst-flow: selecteer Kamerleden → automatische partij + dossiers. Bronnenbeheer (60+ ingebouwd + aangepast). "Zoek ook buiten deze bronnen"-schakelaar
+- `/instructies` — Vergadervaardigheden aanpassen (per vergadertype prompts bewerken)
+- `/smoelenboek` — Ledenlijst met partij-/rolfilter en zoekfunctie
+- `/smoelenboek/[id]` — Persoondetailpagina met activiteitenfeeds, contact, medewerkersbeheer
+- `/dashboard` — Organisatiebeheer
+- `/login` — Magic link inlogscherm
 
-All pages have `loading.tsx` skeleton loaders for instant navigation.
+Alle pagina's hebben `loading.tsx` skeleton-loaders voor directe navigatie.
 
-### API Routes
+### API-routes
 
-- `/api/chat` — POST, streaming, BYOK + rate limit, allows unauthenticated access
-- `/api/briefing` — POST, NDJSON streaming, BYOK + rate limit, saves to DB
-- `/api/briefings` — GET, list user's saved briefings with optional `?q=` search
-- `/api/briefings/pdf` — POST, generate PDF from briefing content
-- `/api/agenda` — GET, proxies TK OData agenda with date range params
-- `/api/parties` — GET, list all parties from DB
-- `/api/kamerleden` — GET, search Kamerleden via TK OData API
-- `/api/kamerleden/commissies` — GET, commission memberships for given person IDs (`?ids=&vast=true`)
-- `/api/smoelenboek` — GET, directory listing (Kamerleden + cabinet)
-- `/api/smoelenboek/[id]` — GET, person detail with commissions, profile scrape
-- `/api/smoelenboek/[id]/activiteiten` — GET, activity feed (`?type=documenten|stemmingen|toezeggingen|agenda|handelingen`)
-- `/api/smoelenboek/[id]/contact` — GET/POST/DELETE, user-submitted contact details
-- `/api/smoelenboek/[id]/medewerker` — GET/POST/DELETE, staff member records
-- `/api/settings/keys` — GET/POST for encrypted API keys
-- `/api/settings/keys/[id]` — DELETE specific key
-- `/api/settings/keys/test` — POST, validates a key by making a minimal LLM call
-- `/api/settings/usage` — GET, current rate limit usage
-- `/api/settings/preferences` — GET/PUT, user preferences (kamerleden, dossiers, sources, meetingSkills, searchBeyondSources)
-- `/api/organisations` — POST, create organisation
-- `/api/organisations/[id]/members` + `/documents` — Organisation management
+- `/api/chat` — POST, streaming, BYOK + snelheidsbeperking, staat ongeauthenticeerde toegang toe
+- `/api/briefing` — POST, NDJSON-streaming, BYOK + snelheidsbeperking, slaat op in database
+- `/api/briefings` — GET, lijst van opgeslagen briefings met optionele `?q=` zoekopdracht
+- `/api/briefings/pdf` — POST, genereer PDF vanuit briefing-inhoud
+- `/api/agenda` — GET, proxy naar TK OData agenda met datumbereikparameters
+- `/api/parties` — GET, lijst van alle partijen uit database
+- `/api/kamerleden` — GET, zoek Kamerleden via TK OData API
+- `/api/kamerleden/commissies` — GET, commissielidmaatschappen voor opgegeven persoon-ID's (`?ids=&vast=true`)
+- `/api/smoelenboek` — GET, ledenlijst (Kamerleden + kabinet)
+- `/api/smoelenboek/[id]` — GET, persoondetail met commissies, profiel-scrape
+- `/api/smoelenboek/[id]/activiteiten` — GET, activiteitenfeed (`?type=documenten|stemmingen|toezeggingen|agenda|handelingen`)
+- `/api/smoelenboek/[id]/contact` — GET/POST/DELETE, door gebruiker ingevoerde contactgegevens
+- `/api/smoelenboek/[id]/medewerker` — GET/POST/DELETE, medewerkerrecords
+- `/api/settings/keys` — GET/POST voor versleutelde API-sleutels
+- `/api/settings/keys/[id]` — DELETE specifieke sleutel
+- `/api/settings/keys/test` — POST, valideert een sleutel door een minimale LLM-aanroep
+- `/api/settings/usage` — GET, huidig gebruik van snelheidsbeperking
+- `/api/settings/preferences` — GET/PUT, gebruikersvoorkeuren (Kamerleden, dossiers, bronnen, vergadervaardigheden, zoekBuitenBronnen)
+- `/api/organisations` — POST, organisatie aanmaken
+- `/api/organisations/[id]/members` + `/documents` — Organisatiebeheer
 
-### Key Components
+### Belangrijkste componenten
 
-- `components/chat.tsx` — Main chat UI with `useChat()`, model selector, Kamerlid selector, suggestion carousel
-- `components/briefing-context.tsx` — React context for briefing state, manages NDJSON stream consumption
-- `components/progress-sidebar.tsx` — Tool-calling progress (briefing phases + chat phases)
-- `components/inline-tool-step.tsx` — Inline tool step display in chat messages (icon, timer, expandable results)
-- `components/agenda-sidebar.tsx` — Paginated agenda sidebar with Kamerlid picker and commission filtering
-- `components/kamerlid-selector.tsx` — Dropdown with debounced search, shows name + party abbreviation
-- `components/data-context.tsx` — Shared state provider for parties, preferences, session Kamerleden
+- `components/chat.tsx` — Hoofd-chat-UI met `useChat()`, modelselector, Kamerlid-selector, suggestiecarrousel
+- `components/briefing-context.tsx` — React-context voor briefingstatus, verwerkt NDJSON-stream
+- `components/progress-sidebar.tsx` — Tool-voortgang (briefingfasen + chatfasen)
+- `components/inline-tool-step.tsx` — Inline tool-stapweergave in chatberichten (icoon, timer, uitklapbare resultaten)
+- `components/agenda-sidebar.tsx` — Gepagineerde agenda-zijbalk met Kamerlid-kiezer en commissiefilter
+- `components/kamerlid-selector.tsx` — Dropdown met debounced zoekfunctie, toont naam + partijafkorting
+- `components/data-context.tsx` — Gedeelde state-provider voor partijen, voorkeuren, sessie-Kamerleden
 - `components/providers.tsx` — SessionProvider + DataProvider + BriefingProvider wrapper
-- `components/party-selector.tsx` — Party dropdown with party colors
+- `components/party-selector.tsx` — Partij-dropdown met partijkleuren
 
-### Additional Lib Files
+### Overige lib-bestanden
 
-- `lib/dossiers.ts` — 19 policy dossier definitions + `COMMISSIE_DOSSIER_MAP` (committee → dossier mapping)
-- `lib/validation.ts` — Zod schemas for chat, briefing, smoelenboek contact/medewerker, organisation
-- `data/kabinet.ts` — Static list of 28 cabinet members (ministers + staatssecretarissen) with photos
+- `lib/dossiers.ts` — 19 beleidsdossier-definities + `COMMISSIE_DOSSIER_MAP` (commissie → dossier-mapping)
+- `lib/validation.ts` — Zod-schema's voor chat, briefing, smoelenboek contact/medewerker, organisatie
+- `data/kabinet.ts` — Vaste lijst van 28 kabinetsleden (ministers + staatssecretarissen) met foto's
 
-## Environment Variables
+## Omgevingsvariabelen
 
 ```
-DATABASE_URL          # Supabase PostgreSQL connection string (port 6543 for pooler)
-AUTH_SECRET           # NextAuth secret (openssl rand -base64 32)
+DATABASE_URL          # Supabase PostgreSQL-verbindingsstring (poort 6543 voor pooler)
+AUTH_SECRET           # NextAuth-geheim (openssl rand -base64 32)
 AUTH_TRUST_HOST=true
-AUTH_RESEND_KEY       # Resend API key for magic link emails
-EMAIL_FROM            # Sender email address
-ANTHROPIC_API_KEY     # Default Anthropic key (free tier fallback)
-OPENAI_API_KEY        # Optional: OpenAI fallback
-GOOGLE_GENERATIVE_AI_API_KEY  # Optional: Google fallback
-SERPER_API_KEY        # Google Serper for news search
-ENCRYPTION_KEY        # 64-char hex for AES-256-GCM (node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")
+AUTH_RESEND_KEY       # Resend API-sleutel voor magic link e-mails
+EMAIL_FROM            # Afzender-e-mailadres
+ANTHROPIC_API_KEY     # Standaard Anthropic-sleutel (gratis tier terugval)
+OPENAI_API_KEY        # Optioneel: OpenAI-terugval
+GOOGLE_GENERATIVE_AI_API_KEY  # Optioneel: Google-terugval
+SERPER_API_KEY        # Google Serper voor nieuwszoeken
+ENCRYPTION_KEY        # 64-teken hex voor AES-256-GCM (node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")
 ```
 
-## Patterns to Follow
+## Patronen om te volgen
 
-- API route auth pattern: `const session = await auth(); if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })`
-- When filtering by userId AND another condition in Drizzle, always use `and()` — never chain `.where()` calls on `.$dynamic()` queries (second `.where()` replaces the first)
-- Rate limit check in chat/briefing routes: check `getActiveKey()` first; if BYOK skip rate limit, then check `isUnlimitedEmail()`, otherwise call `checkAndIncrementUsage()`
-- All user-facing text in Dutch
-- Tool descriptions in Dutch (they're shown to the LLM in the system prompt context)
-- `searchParlement` is the primary search tool — the system prompt and briefing prompt both instruct the LLM to use it first, then fall back to TK OData tools for structured queries
+- Authenticatiepatroon in API-routes: `const session = await auth(); if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })`
+- Bij filteren op userId EN een andere voorwaarde in Drizzle: gebruik altijd `and()` — ketting nooit `.where()`-aanroepen op `.$dynamic()` queries (de tweede `.where()` overschrijft de eerste)
+- Snelheidsbeperkingscontrole in chat-/briefing-routes: controleer eerst `getActiveKey()`; bij BYOK sla snelheidsbeperking over, controleer daarna `isUnlimitedEmail()`, anders roep `checkAndIncrementUsage()` aan
+- Alle gebruikersgerichte tekst in het Nederlands
+- Toolbeschrijvingen in het Nederlands (ze worden getoond aan het AI-model in de systeemprompt)
+- `searchParlement` is de primaire zoektool — de systeemprompt en briefing-prompt instrueren het AI-model om deze eerst te gebruiken, daarna terugvallen op TK OData tools voor gestructureerde zoekopdrachten

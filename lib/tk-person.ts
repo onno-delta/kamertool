@@ -66,7 +66,7 @@ export async function getFractieStemmingen(fractie: string, top = 10) {
         besluit: (zaak?.Onderwerp || zaak?.Titel || b.BesluitTekst) as string,
         besluitSoort: b.BesluitSoort,
         url: docNummer
-          ? `https://www.tweedekamer.nl/kamerstukken/detail?id=${docNummer}&did=${docNummer}`
+          ? `https://www.tweedekamer.nl/kamerstukken/stemmingsuitslagen/detail?id=${docNummer}&did=${docNummer}`
           : undefined,
       }
     })
