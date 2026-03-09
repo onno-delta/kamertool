@@ -264,18 +264,25 @@ export function Chat() {
 
   const [pdfUrl, setPdfUrl] = useState<string | null>(null)
   const [pdfLoading, setPdfLoading] = useState(false)
+  const pdfTextRef = useRef("")
+
+  // Reset PDF when a new message starts streaming
+  useEffect(() => {
+    if (isLoading) {
+      setPdfUrl(null)
+      setPdfLoading(false)
+      pdfTextRef.current = ""
+    }
+  }, [isLoading])
 
   // Auto-generate PDF when a substantive response completes
   useEffect(() => {
-    if (isLoading || lastAssistantText.length <= 300 || messages.length === 0) {
-      setPdfUrl(null)
-      setPdfLoading(false)
-      return
-    }
+    if (status !== "ready" || lastAssistantText.length <= 300 || messages.length === 0) return
+    if (pdfTextRef.current === lastAssistantText) return
+    pdfTextRef.current = lastAssistantText
 
     let cancelled = false
     setPdfLoading(true)
-    setPdfUrl(null)
 
     fetch("/api/briefings/pdf", {
       method: "POST",
@@ -301,7 +308,7 @@ export function Chat() {
       })
 
     return () => { cancelled = true }
-  }, [isLoading, lastAssistantText, messages.length, briefingTopic, party?.shortName])
+  }, [status, lastAssistantText, messages.length, briefingTopic, party?.shortName])
 
   const [pdfBusy, setPdfBusy] = useState(false)
   async function handleSidebarPDF() {
@@ -414,7 +421,7 @@ export function Chat() {
               {messages.map((m) => (
                 <Message key={m.id} message={m} />
               ))}
-              {!isLoading && messages.length > 0 && lastAssistantText.length > 300 && (
+              {(pdfLoading || pdfUrl) && (
                 <div className="mt-2 mb-4 space-y-3">
                   <div className="rounded-lg border border-border-light bg-white p-4">
                     <div className="flex items-center justify-between gap-3">
