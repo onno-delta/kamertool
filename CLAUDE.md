@@ -90,45 +90,86 @@ NextAuth v5 with Resend (magic link email). Database-backed sessions. Session ca
 
 ### Database Schema (`lib/db/schema.ts`)
 
-Key tables: `party`, `organisation`, `user`, `briefing`, `chat_session`, `user_api_key`, `usage_log`, `org_document`, `user_dossier`, `user_kamerlid`, `user_meeting_skill`, plus NextAuth tables (`account`, `session`, `verificationToken`). All IDs are UUIDs. Chat messages stored as JSON text in `chat_session.messages`.
+Key tables: `party`, `organisation`, `user`, `briefing`, `chat_session`, `user_api_key`, `usage_log`, `org_document`, `user_dossier`, `user_kamerlid`, `user_meeting_skill`, `smoelenboekProfiles`, `smoelenboekContacts`, `smoelenboekMedewerkers`, plus NextAuth tables (`account`, `session`, `verificationToken`). All IDs are UUIDs. Chat messages stored as JSON text in `chat_session.messages`.
 
 **Database connection (`lib/db/index.ts`):** Uses `postgres.js` with `prepare: false` — required because Supabase's transaction pooler (port 6543) runs PgBouncer which doesn't support prepared statements.
 
+### Smoelenboek (`app/smoelenboek/`, `lib/tk-*.ts`)
+
+Member directory showing all current Kamerleden + cabinet members. Detail page (`/smoelenboek/[id]`) shows photo, bio, commissions, contact info, staff, and activity feeds (documents, votes, promises, debate contributions, agenda). Cabinet members use `kabinet-` prefixed IDs from `data/kabinet.ts`.
+
+Backend:
+- `lib/tk-members.ts` — `getCurrentMembers()`: cached list of active Kamerleden from TK OData (1h TTL)
+- `lib/tk-commissions.ts` — `getCommissionMap()`: maps personId → commission abbreviations (1h TTL)
+- `lib/tk-person.ts` — `getPersonDocuments()`, `getFractieStemmingen()`, `getPersonToezeggingen()`, `getPersonHandelingen()`, `getPersonAgenda()`: activity queries per person
+- `lib/tk-scraper.ts` — Scrapes `tweedekamer.nl` for email/bio (cached in `smoelenboekProfiles` table, 30-day TTL)
+- `lib/match-kamerlid.ts` — Auto-matches `@tweedekamer.nl` email to member on first login
+
+DB tables: `smoelenboekProfiles` (cached scrape data), `smoelenboekContacts` (user-submitted contact details), `smoelenboekMedewerkers` (staff records).
+
+### Data Context (`components/data-context.tsx`)
+
+Shared state provider (`DataProvider` / `useDataContext()`) for parties, user preferences, and session-scoped Kamerleden selection. Loaded once in `providers.tsx`, consumed by chat, agenda, voorbereiden, and settings pages. Avoids waterfall fetches.
+
+### Inline Tool Progress (`components/inline-tool-step.tsx`, `components/progress-sidebar.tsx`)
+
+Chat messages now show inline tool steps (Cowork-style) with icons, duration timers, and expandable result counts. Briefing progress sidebar groups tools into higher-order phases from meeting skills. `ChatProgress` component shows search/fetch/summarize phases.
+
 ### Pages
 
-- `/` — Main chat interface (`components/chat.tsx` with `useChat()`)
-- `/agenda` — Kameragenda browser (fetches from `/api/agenda`, links to `/voorbereiden`)
-- `/voorbereiden` — Briefing generation page (receives `?topic=` and `?soort=` from agenda)
+- `/` — Main chat interface (`components/chat.tsx` with `useChat()`, `KamerlidSelector`, `AgendaSidebar`)
+- `/agenda` — Kameragenda browser with commission filtering, Kamerlid selector, 14-day default range
+- `/voorbereiden` — Briefing generation page (receives `?topic=`, `?soort=`, `?nummer=` from agenda)
 - `/briefings` — Saved briefing history with search
-- `/settings` — API key management, usage stats
+- `/settings` — Kamerlid-first flow: select Kamerleden → auto-select party + dossiers. Source management (60+ built-in + custom). "Zoek ook buiten deze bronnen" toggle
 - `/instructies` — Meeting skill customization (per meeting type prompt editing)
+- `/smoelenboek` — Member directory with party/role filter and search
+- `/smoelenboek/[id]` — Person detail page with activity feeds, contact, staff management
 - `/dashboard` — Organisation management
 - `/login` — Magic link auth flow
+
+All pages have `loading.tsx` skeleton loaders for instant navigation.
 
 ### API Routes
 
 - `/api/chat` — POST, streaming, BYOK + rate limit, allows unauthenticated access
 - `/api/briefing` — POST, NDJSON streaming, BYOK + rate limit, saves to DB
 - `/api/briefings` — GET, list user's saved briefings with optional `?q=` search
+- `/api/briefings/pdf` — POST, generate PDF from briefing content
 - `/api/agenda` — GET, proxies TK OData agenda with date range params
 - `/api/parties` — GET, list all parties from DB
 - `/api/kamerleden` — GET, search Kamerleden via TK OData API
+- `/api/kamerleden/commissies` — GET, commission memberships for given person IDs (`?ids=&vast=true`)
+- `/api/smoelenboek` — GET, directory listing (Kamerleden + cabinet)
+- `/api/smoelenboek/[id]` — GET, person detail with commissions, profile scrape
+- `/api/smoelenboek/[id]/activiteiten` — GET, activity feed (`?type=documenten|stemmingen|toezeggingen|agenda|handelingen`)
+- `/api/smoelenboek/[id]/contact` — GET/POST/DELETE, user-submitted contact details
+- `/api/smoelenboek/[id]/medewerker` — GET/POST/DELETE, staff member records
 - `/api/settings/keys` — GET/POST for encrypted API keys
 - `/api/settings/keys/[id]` — DELETE specific key
 - `/api/settings/keys/test` — POST, validates a key by making a minimal LLM call
 - `/api/settings/usage` — GET, current rate limit usage
-- `/api/settings/preferences` — GET/POST, user preferences (meeting skills, selected kamerleden, dossiers)
+- `/api/settings/preferences` — GET/PUT, user preferences (kamerleden, dossiers, sources, meetingSkills, searchBeyondSources)
 - `/api/organisations` — POST, create organisation
 - `/api/organisations/[id]/members` + `/documents` — Organisation management
 
 ### Key Components
 
-- `components/chat.tsx` — Main chat UI using `useChat()` from `@ai-sdk/react`
-- `components/briefing-dialog.tsx` — Briefing generation modal + PDF export (`@react-pdf/renderer`)
+- `components/chat.tsx` — Main chat UI with `useChat()`, model selector, Kamerlid selector, suggestion carousel
 - `components/briefing-context.tsx` — React context for briefing state, manages NDJSON stream consumption
-- `components/progress-sidebar.tsx` — Shows tool-calling progress during briefing generation
-- `components/providers.tsx` — SessionProvider wrapper (required for `useSession()` in client components)
-- `components/party-selector.tsx` — Party/kamerlid/dossier selection UI
+- `components/progress-sidebar.tsx` — Tool-calling progress (briefing phases + chat phases)
+- `components/inline-tool-step.tsx` — Inline tool step display in chat messages (icon, timer, expandable results)
+- `components/agenda-sidebar.tsx` — Paginated agenda sidebar with Kamerlid picker and commission filtering
+- `components/kamerlid-selector.tsx` — Dropdown with debounced search, shows name + party abbreviation
+- `components/data-context.tsx` — Shared state provider for parties, preferences, session Kamerleden
+- `components/providers.tsx` — SessionProvider + DataProvider + BriefingProvider wrapper
+- `components/party-selector.tsx` — Party dropdown with party colors
+
+### Additional Lib Files
+
+- `lib/dossiers.ts` — 19 policy dossier definitions + `COMMISSIE_DOSSIER_MAP` (committee → dossier mapping)
+- `lib/validation.ts` — Zod schemas for chat, briefing, smoelenboek contact/medewerker, organisation
+- `data/kabinet.ts` — Static list of 28 cabinet members (ministers + staatssecretarissen) with photos
 
 ## Environment Variables
 

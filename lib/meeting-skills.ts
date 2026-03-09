@@ -22,14 +22,14 @@ export const MEETING_SKILLS: MeetingSkill[] = [
 
 ## Onderzoek
 Voer ALLE zoekacties tegelijk uit in een enkele ronde:
-- searchParlement: zoek de Kamerbrief/nota die tot dit debat heeft geleid
+- searchParlement + searchOpenTK: zoek de Kamerbrief/nota die tot dit debat heeft geleid (gebruik beide voor bredere dekking)
 - searchNews: zoek actueel nieuws voor de media-invalshoek
 - searchStemmingen: zoek stemgedrag van fracties op dit dossier
 - searchHandelingen: zoek eerdere debatten over dit onderwerp
 - searchToezeggingen: zoek openstaande toezeggingen van de minister
 - searchPartyDocs: zoek het partijstandpunt
 
-Haal daarna de volledige tekst op van de belangrijkste documenten met getDocumentText.
+Haal daarna de volledige tekst op van de belangrijkste documenten met getDocumentText of getOpenTKDocument.
 
 ## Briefing
 Schrijf de briefing met deze secties:
@@ -57,14 +57,14 @@ Formuleer 2-3 moties die aansluiten bij het partijstandpunt en kansrijk zijn voo
 
 ## Onderzoek
 Voer ALLE zoekacties tegelijk uit in een enkele ronde:
-- searchParlement: zoek alle Kamerbrieven en beleidsdocumenten die op de agenda staan
+- searchParlement + searchOpenTK: zoek alle Kamerbrieven en beleidsdocumenten die op de agenda staan (gebruik beide voor bredere dekking)
 - searchDocumenten: zoek aanvullende brieven en nota's
 - searchToezeggingen: zoek openstaande toezeggingen van de minister
 - searchStemmingen: zoek stemgedrag van fracties
 - getRecenteKamervragen: zoek recente schriftelijke vragen over dit onderwerp
 - searchPartyDocs: zoek het partijstandpunt
 
-Haal daarna de volledige tekst op van de belangrijkste documenten met getDocumentText.
+Haal daarna de volledige tekst op van de belangrijkste documenten met getDocumentText of getOpenTKDocument.
 
 ## Briefing
 Schrijf de briefing met deze secties:
@@ -89,12 +89,12 @@ Beschrijf per relevante fractie hun positie en stemgedrag.`,
 
 ## Onderzoek
 Voer ALLE zoekacties tegelijk uit in een enkele ronde:
-- searchParlement: zoek het wetsvoorstel, de Memorie van Toelichting en het advies van de Raad van State
+- searchParlement + searchOpenTK: zoek het wetsvoorstel, de Memorie van Toelichting en het advies van de Raad van State (gebruik beide voor bredere dekking)
 - searchKamerstukken: zoek gerelateerde Kamerstukken en amendementen
 - searchDocumenten: zoek uitvoeringstoetsen en adviezen van betrokken instanties
 - searchPartyDocs: zoek het partijstandpunt
 
-Haal daarna de volledige tekst op van de belangrijkste documenten met getDocumentText.
+Haal daarna de volledige tekst op van de belangrijkste documenten met getDocumentText of getOpenTKDocument.
 
 ## Briefing
 Schrijf de briefing met deze secties:
@@ -124,7 +124,7 @@ Voer ALLE zoekacties tegelijk uit in een enkele ronde:
 - searchStemmingen: zoek steunpatronen bij vergelijkbare moties
 - searchPartyDocs: zoek het partijstandpunt
 
-Haal daarna de volledige tekst op van de belangrijkste documenten met getDocumentText.
+Haal daarna de volledige tekst op van de belangrijkste documenten met getDocumentText of getOpenTKDocument.
 
 ## Briefing
 Schrijf de briefing met deze secties:
@@ -149,12 +149,12 @@ Formuleer maximaal 2 moties:
 
 ## Onderzoek
 Voer ALLE zoekacties tegelijk uit in een enkele ronde:
-- searchParlement: zoek de nota of beleidsbrief die centraal staat
+- searchParlement + searchOpenTK: zoek de nota of beleidsbrief die centraal staat (gebruik beide voor bredere dekking)
 - searchDocumenten: zoek reacties van belangenorganisaties en uitvoerbaarheidsanalyses
 - searchNews: zoek actueel nieuws over het onderwerp
 - searchPartyDocs: zoek het partijstandpunt
 
-Haal daarna de volledige tekst op van de belangrijkste documenten met getDocumentText.
+Haal daarna de volledige tekst op van de belangrijkste documenten met getDocumentText of getOpenTKDocument.
 
 ## Briefing
 Schrijf de briefing met deze secties:
@@ -176,12 +176,12 @@ Beschrijf alternatieve maatregelen die beter passen bij de partijvisie - per alt
 
 ## Onderzoek
 Voer ALLE zoekacties tegelijk uit in een enkele ronde:
-- searchParlement: zoek de begrotingsstukken en Rekenkamer/CPB-rapporten
+- searchParlement + searchOpenTK: zoek de begrotingsstukken en Rekenkamer/CPB-rapporten (gebruik beide voor bredere dekking)
 - searchDocumenten: zoek aanvullende begrotingsdocumenten en doorrekeningen
 - searchKamerstukken: zoek ingediende amendementen van andere fracties
 - searchPartyDocs: zoek de financiele prioriteiten van de partij
 
-Haal daarna de volledige tekst op van de belangrijkste documenten met getDocumentText.
+Haal daarna de volledige tekst op van de belangrijkste documenten met getDocumentText of getOpenTKDocument.
 
 ## Briefing
 Schrijf de briefing met deze secties:
@@ -203,12 +203,12 @@ Geef een overzicht van ingediende amendementen. Formuleer daarnaast 1-2 eigen be
 
 ## Onderzoek
 Voer ALLE zoekacties tegelijk uit in een enkele ronde:
-- searchParlement: zoek parlementaire documenten over het onderwerp en de aanleiding
+- searchParlement + searchOpenTK: zoek parlementaire documenten over het onderwerp en de aanleiding (gebruik beide voor bredere dekking)
 - searchNews: zoek actueel nieuws en publicaties van genodigden
 - fetchWebPage: bekijk websites van genodigde organisaties/experts
 - searchPartyDocs: zoek het partijstandpunt
 
-Haal daarna de volledige tekst op van de belangrijkste documenten met getDocumentText.
+Haal daarna de volledige tekst op van de belangrijkste documenten met getDocumentText of getOpenTKDocument.
 
 ## Briefing
 Schrijf de briefing met deze secties:
@@ -231,7 +231,7 @@ Beschrijf welke informatie uit dit gesprek moet komen voor toekomstige debatten 
 ## Onderzoek
 Voer ALLE zoekacties tegelijk uit in een enkele ronde:
 - searchAgenda: zoek de conceptagenda of besluitenlijst van deze procedurevergadering
-- searchParlement: zoek achtergrond bij de voorgestelde agendapunten
+- searchParlement + searchOpenTK: zoek achtergrond bij de voorgestelde agendapunten (gebruik beide voor bredere dekking)
 - searchNews: zoek actuele ontwikkelingen voor eigen agenderingssuggesties
 - searchPartyDocs: zoek de prioriteiten van de fractie
 
@@ -255,12 +255,12 @@ Beschrijf per suggestie het onderwerp en waarom het nu relevant is om dit te age
 
 ## Onderzoek
 Voer ALLE zoekacties tegelijk uit in een enkele ronde:
-- searchParlement: zoek parlementaire documenten en rapporten over het onderwerp
+- searchParlement + searchOpenTK: zoek parlementaire documenten en rapporten over het onderwerp (gebruik beide voor bredere dekking)
 - searchNews: zoek actueel nieuws over het onderwerp
 - getRecenteKamervragen: zoek welke Kamervragen er eerder over dit onderwerp zijn gesteld
 - searchPartyDocs: zoek de relevante partijstandpunten
 
-Haal daarna de volledige tekst op van de belangrijkste documenten met getDocumentText.
+Haal daarna de volledige tekst op van de belangrijkste documenten met getDocumentText of getOpenTKDocument.
 
 ## Briefing
 Schrijf de briefing met deze secties:
@@ -282,12 +282,12 @@ Beschrijf welke aspecten raken aan de partijpositie of lopende debatten en waar 
 
 ## Onderzoek
 Voer ALLE zoekacties tegelijk uit in een enkele ronde:
-- searchParlement: zoek parlementaire documenten over het gespreksonderwerp
+- searchParlement + searchOpenTK: zoek parlementaire documenten over het gespreksonderwerp (gebruik beide voor bredere dekking)
 - searchNews: zoek actueel nieuws en recente publicaties van gesprekspartners
 - fetchWebPage: bekijk websites van gesprekspartners
 - searchPartyDocs: zoek het partijstandpunt
 
-Haal daarna de volledige tekst op van de belangrijkste documenten met getDocumentText.
+Haal daarna de volledige tekst op van de belangrijkste documenten met getDocumentText of getOpenTKDocument.
 
 ## Briefing
 Schrijf de briefing met deze secties:
@@ -309,12 +309,12 @@ Formuleer 5-10 vragen geordend op prioriteit, gericht op het verkrijgen van info
 
 ## Onderzoek
 Voer ALLE zoekacties tegelijk uit in een enkele ronde:
-- searchParlement: zoek de moties, amendementen en wetsvoorstellen die in stemming komen
+- searchParlement + searchOpenTK: zoek de moties, amendementen en wetsvoorstellen die in stemming komen (gebruik beide voor bredere dekking)
 - searchStemmingen: zoek eerdere stempatronen op gerelateerde onderwerpen
 - searchPartyDocs: zoek het partijstandpunt
 - searchNews: zoek mediaberichten over gevoelige stemmingen
 
-Haal daarna de volledige tekst op van de belangrijkste documenten met getDocumentText.
+Haal daarna de volledige tekst op van de belangrijkste documenten met getDocumentText of getOpenTKDocument.
 
 ## Briefing
 Schrijf de briefing met deze secties:
@@ -337,7 +337,7 @@ Beschrijf stemmingen die politiek risico dragen, mediagevoelig zijn of onverwach
 ## Onderzoek
 Voer ALLE zoekacties tegelijk uit in een enkele ronde:
 - searchAgenda: zoek de huidige plenaire planning en recente debataanvragen
-- searchParlement: zoek recente Kamerbrieven die als aanleiding kunnen dienen
+- searchParlement + searchOpenTK: zoek recente Kamerbrieven die als aanleiding kunnen dienen (gebruik beide voor bredere dekking)
 - searchNews: zoek actueel nieuws voor urgente onderwerpen
 - searchPartyDocs: zoek de thema's en prioriteiten van de fractie
 
@@ -362,11 +362,11 @@ Beschrijf per suggestie: het onderwerp, de aanleiding, waarom dit nu een debat v
 ## Onderzoek
 Voer ALLE zoekacties tegelijk uit in een enkele ronde:
 - fetchWebPage: bekijk de website van de organisatie
-- searchParlement: zoek gerelateerde Kamervragen en debatten
+- searchParlement + searchOpenTK: zoek gerelateerde Kamervragen en debatten (gebruik beide voor bredere dekking)
 - searchNews: zoek recent nieuws over deze organisatie of sector
 - searchPartyDocs: zoek het partijstandpunt op dit beleidsterrein
 
-Haal daarna de volledige tekst op van de belangrijkste documenten met getDocumentText.
+Haal daarna de volledige tekst op van de belangrijkste documenten met getDocumentText of getOpenTKDocument.
 
 ## Briefing
 Schrijf de briefing met deze secties:
@@ -391,12 +391,12 @@ Beschrijf mogelijke fotomomenten, quotes of bevindingen die de fractie kan inzet
 
 ## Onderzoek
 Voer ALLE zoekacties tegelijk uit in een enkele ronde:
-- searchParlement: zoek relevante Kamerbrieven, wetsvoorstellen en eerdere debatten over het onderwerp
+- searchParlement + searchOpenTK: zoek relevante Kamerbrieven, wetsvoorstellen en eerdere debatten over het onderwerp (gebruik beide voor bredere dekking)
 - searchNews: zoek nieuws over de petitie en de indiener
 - fetchWebPage: bekijk de website van de organisatie of het initiatief
 - searchPartyDocs: zoek het partijstandpunt
 
-Haal daarna de volledige tekst op van de belangrijkste documenten met getDocumentText.
+Haal daarna de volledige tekst op van de belangrijkste documenten met getDocumentText of getOpenTKDocument.
 
 ## Briefing
 Schrijf de briefing met deze secties:

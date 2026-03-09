@@ -29,6 +29,8 @@ const TOOL_LABELS: Record<string, string> = {
   searchParlement: "Parlementaire documenten",
   getDocumentText: "Document ophalen",
   getRecenteKamervragen: "Recente Kamervragen",
+  searchOpenTK: "OpenTK zoeken",
+  getOpenTKDocument: "OpenTK document",
 }
 
 export function getStepLabel(tool: string, args: Record<string, unknown>): string {
@@ -73,7 +75,9 @@ const TOOL_PHASE: Record<string, PhaseKey> = {
   searchPartyDocs: "search",
   searchNews: "search",
   getRecenteKamervragen: "search",
+  searchOpenTK: "search",
   getDocumentText: "fetch",
+  getOpenTKDocument: "fetch",
   fetchWebPage: "fetch",
 }
 

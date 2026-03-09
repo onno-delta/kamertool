@@ -20,6 +20,8 @@ import {
   searchParlement,
   getDocumentText,
   getRecenteKamervragen,
+  searchOpenTK,
+  getOpenTKDocument,
 } from "@/lib/tools"
 import { NextResponse } from "next/server"
 import { chatBodySchema } from "@/lib/validation"
@@ -77,6 +79,8 @@ export async function POST(req: Request) {
       searchParlement,
       getDocumentText,
       getRecenteKamervragen,
+      searchOpenTK,
+      getOpenTKDocument,
       searchPartyDocs: createSearchPartyDocs(
         partyId ?? null,
         organisationId ?? null

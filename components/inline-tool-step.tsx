@@ -20,6 +20,8 @@ const TOOL_ICONS: Record<string, typeof Globe> = {
   searchAgenda: Globe,
   searchDocumenten: Globe,
   getRecenteKamervragen: Globe,
+  searchOpenTK: Globe,
+  getOpenTKDocument: FileText,
   searchNews: Newspaper,
   searchPartyDocs: BookOpen,
   fetchWebPage: FileText,

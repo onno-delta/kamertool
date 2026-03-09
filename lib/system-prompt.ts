@@ -3,7 +3,8 @@ export function buildSystemPrompt(partyName?: string | null, userSources?: { url
 
 Je hebt toegang tot:
 - Overheid.nl full-text zoekmachine over alle parlementaire documenten (via searchParlement) — gebruik dit als primaire zoekmachine
-- Volledige documentteksten ophalen via Overheid.nl (via getDocumentText) — gebruik het documentnummer uit searchParlement
+- OpenTK full-text zoekmachine (via searchOpenTK) — alternatieve zoekmachine, gebruik naast searchParlement voor bredere dekking
+- Volledige documentteksten ophalen via Overheid.nl (via getDocumentText) of via OpenTK (via getOpenTKDocument) — gebruik het documentnummer
 - Recente schriftelijke Kamervragen (via getRecenteKamervragen)
 - Kamerstukken, moties, amendementen en wetsvoorstellen (via searchKamerstukken)
 - Parlementaire documenten: Kamerbrieven, nota's, verslagen (via searchDocumenten)

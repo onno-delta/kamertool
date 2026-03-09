@@ -19,6 +19,8 @@ import {
   searchParlement,
   getDocumentText,
   getRecenteKamervragen,
+  searchOpenTK,
+  getOpenTKDocument,
 } from "@/lib/tools"
 import { NextResponse } from "next/server"
 import { getDefaultSkill, getDefaultSteps } from "@/lib/meeting-skills"
@@ -90,6 +92,7 @@ ${skillPrompt ? `\n${skillPrompt}` : `
 ## Onderzoek
 Voer ALLE zoekacties tegelijk uit in een enkele ronde:
 - searchParlement: zoek relevante parlementaire documenten
+- searchOpenTK: zoek ook via OpenTK voor bredere dekking
 - searchKamerstukken: zoek Kamerstukken
 - searchDocumenten: zoek brieven en nota's
 - searchToezeggingen: zoek openstaande toezeggingen
@@ -98,7 +101,7 @@ Voer ALLE zoekacties tegelijk uit in een enkele ronde:
 - searchNews: zoek actueel nieuws
 - searchPartyDocs: zoek het partijstandpunt
 
-Haal daarna de volledige tekst op van de belangrijkste documenten met getDocumentText.
+Haal daarna de volledige tekst op van de belangrijkste documenten met getDocumentText of getOpenTKDocument.
 
 ## Briefing
 Schrijf de briefing met deze secties:
@@ -125,11 +128,11 @@ BELANGRIJK - voer ALTIJD meerdere zoekacties tegelijk uit in een enkele ronde. R
 
 Werkwijze in twee fasen:
 
-Fase 1 - Onderzoek: Roep ALLE relevante zoektools tegelijk aan in een enkele ronde. Haal daarna met getDocumentText de volledige tekst op van de belangrijkste gevonden documenten (ook parallel).
+Fase 1 - Onderzoek: Roep ALLE relevante zoektools tegelijk aan in een enkele ronde (gebruik zowel searchParlement als searchOpenTK voor bredere dekking). Haal daarna met getDocumentText of getOpenTKDocument de volledige tekst op van de belangrijkste gevonden documenten (ook parallel).
 
 Fase 2 - Schrijven: Schrijf direct de volledige briefing. Vraag niet om bevestiging tussendoor - ga altijd automatisch door van onderzoek naar het schrijven van het eindproduct.
 
-Beschikbare zoektools: searchParlement (primair - doorzoekt alle parlementaire documenten via Overheid.nl), searchDocumenten, searchKamerstukken, searchToezeggingen, searchStemmingen, searchHandelingen, searchNews, getRecenteKamervragen, searchPartyDocs, searchAgenda, fetchWebPage.
+Beschikbare zoektools: searchParlement (primair - doorzoekt alle parlementaire documenten via Overheid.nl), searchOpenTK (alternatieve full-text zoekmachine via OpenTK), searchDocumenten, searchKamerstukken, searchToezeggingen, searchStemmingen, searchHandelingen, searchNews, getRecenteKamervragen, searchPartyDocs, searchAgenda, fetchWebPage. Documentteksten ophalen: getDocumentText (Overheid.nl) of getOpenTKDocument (OpenTK).
 
 De instructies bevatten secties. Gebruik de sectienamen als kopjes (##) in de briefing. Begin NIET met een # titel of een inleidende zin zoals "Op basis van mijn onderzoek..." - start direct met het eerste ## kopje.
 
@@ -151,6 +154,8 @@ Bronvermelding: gebruik doorlopend genummerde voetnoten [1], [2], [3] etc. in de
         searchParlement,
         getDocumentText,
         getRecenteKamervragen,
+        searchOpenTK,
+        getOpenTKDocument,
         searchPartyDocs: createSearchPartyDocs(
           partyId ?? null,
           organisationId ?? null
