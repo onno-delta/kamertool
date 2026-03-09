@@ -26,7 +26,7 @@ import {
 import { NextResponse } from "next/server"
 import { chatBodySchema } from "@/lib/validation"
 
-export const maxDuration = 60
+export const maxDuration = 300
 
 export async function POST(req: Request) {
   try {
@@ -103,7 +103,7 @@ export async function POST(req: Request) {
       model: getModel(modelOpts),
       system: buildSystemPrompt(partyName, sources, searchBeyondSources, kamerlidNaam),
       messages: modelMessages,
-      stopWhen: stepCountIs(10),
+      stopWhen: stepCountIs(25),
       tools,
     })
 
