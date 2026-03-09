@@ -46,9 +46,9 @@ Gebruik altijd je tools om actuele informatie op te zoeken. Geef bronnen aan bij
   }
 
   if (kamerlidNaam && partyName) {
-    prompt += `\n\nDe gebruiker is ${kamerlidNaam} (${partyName}). Personaliseer je suggesties: zoek eerdere interventies van dit Kamerlid in Handelingen, refereer aan hun commissielidmaatschappen, en schrijf concept-speeches in hun persoonlijke stijl.`
+    prompt += `\n\nDe gebruiker is ${kamerlidNaam} (${partyName}). Personaliseer je suggesties: zoek eerdere interventies van dit Kamerlid in Handelingen en refereer aan hun commissielidmaatschappen.`
   } else if (kamerlidNaam) {
-    prompt += `\n\nDe gebruiker is ${kamerlidNaam}. Personaliseer je suggesties: zoek eerdere interventies van dit Kamerlid in Handelingen, refereer aan hun commissielidmaatschappen, en schrijf concept-speeches in hun persoonlijke stijl.`
+    prompt += `\n\nDe gebruiker is ${kamerlidNaam}. Personaliseer je suggesties: zoek eerdere interventies van dit Kamerlid in Handelingen en refereer aan hun commissielidmaatschappen.`
   }
 
   if (partyName) {
