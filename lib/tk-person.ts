@@ -42,7 +42,7 @@ export async function getFractieStemmingen(fractie: string, top = 10) {
   const besluiten = await queryTK("Besluit", {
     $filter: `StemmingsSoort ne null and Verwijderd eq false`,
     $select: "Id,BesluitSoort,BesluitTekst,StemmingsSoort",
-    $expand: `Stemming($filter=ActorFractie eq '${escapedFractie}';$select=Soort,ActorFractie,FractieGrootte),Zaak($select=Onderwerp,Titel,Nummer;$expand=Document($select=DocumentNummer;$top=1))`,
+    $expand: `Stemming($filter=ActorFractie eq '${escapedFractie}';$select=Soort,ActorFractie,FractieGrootte),Zaak($select=Onderwerp,Titel,Nummer)`,
     $orderby: "GewijzigdOp desc",
     $top: String(top),
   })
@@ -57,16 +57,15 @@ export async function getFractieStemmingen(fractie: string, top = 10) {
       const zaken = b.Zaak as Array<Record<string, unknown>> | undefined
       const zaak = zaken?.[0]
       const stemming = stemmingen[0]
-      const docs = zaak?.Document as Array<Record<string, unknown>> | undefined
-      const docNummer = docs?.[0]?.DocumentNummer as string | undefined
+      const zaakNummer = zaak?.Nummer as string | undefined
       return {
         fractie: stemming.ActorFractie,
         stem: stemming.Soort,
         zetels: stemming.FractieGrootte,
         besluit: (zaak?.Onderwerp || zaak?.Titel || b.BesluitTekst) as string,
         besluitSoort: b.BesluitSoort,
-        url: docNummer
-          ? `https://www.tweedekamer.nl/kamerstukken/stemmingsuitslagen/detail?id=${docNummer}&did=${docNummer}`
+        url: zaakNummer
+          ? `https://www.tweedekamer.nl/kamerstukken/stemmingsuitslagen/detail?id=${zaakNummer}&did=${zaakNummer}`
           : undefined,
       }
     })
