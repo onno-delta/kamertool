@@ -1,9 +1,8 @@
 "use client"
 
-import { useState } from "react"
 import type { UIMessage } from "ai"
 import ReactMarkdown from "react-markdown"
-import { Layers, Download } from "lucide-react"
+import { Layers } from "lucide-react"
 import type { ToolStep } from "./progress-sidebar"
 import { getStepLabel, getStepDetail } from "./progress-sidebar"
 import { InlineToolStep } from "./inline-tool-step"
@@ -74,10 +73,9 @@ export function extractToolSteps(messages: UIMessage[]): ToolStep[] {
   return steps
 }
 
-export function Message({ message, topic }: { message: UIMessage; topic?: string }) {
+export function Message({ message }: { message: UIMessage }) {
   const { role, parts } = message
   const isUser = role === "user"
-  const [pdfBusy, setPdfBusy] = useState(false)
 
   // Check if there's any visible content (text, reasoning, or tools)
   const hasVisibleContent = parts.some((p) => {
@@ -91,28 +89,6 @@ export function Message({ message, topic }: { message: UIMessage; topic?: string
   // Don't render empty assistant messages
   if (!isUser && !hasVisibleContent) {
     return null
-  }
-
-  const textParts = parts.filter(
-    (p) => p.type === "text" || p.type === "reasoning"
-  )
-
-  const fullText = !isUser
-    ? textParts
-        .filter((p): p is { type: "text"; text: string } => p.type === "text" && !!p.text)
-        .map((p) => p.text)
-        .join("\n\n")
-    : ""
-  const isBriefing = fullText.length > 500 && fullText.includes("##")
-
-  async function handleDownloadPDF() {
-    setPdfBusy(true)
-    try {
-      const { downloadBriefingPDF } = await import("@/lib/pdf-template")
-      await downloadBriefingPDF(fullText, topic || "Debatbriefing")
-    } finally {
-      setPdfBusy(false)
-    }
   }
 
   if (isUser) {
@@ -189,27 +165,6 @@ export function Message({ message, topic }: { message: UIMessage; topic?: string
           }
           return null
         })}
-        {isBriefing && (
-          <div className="mt-3 flex items-center gap-3 rounded-lg border border-border-light bg-surface-muted px-4 py-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary-15">
-              <svg className="h-[18px] w-[18px] text-primary" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-[0.8125rem] font-medium text-primary">Debatbriefing</p>
-              <p className="truncate text-xs text-text-muted">Download als PDF</p>
-            </div>
-            <button
-              onClick={handleDownloadPDF}
-              disabled={pdfBusy}
-              className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-border bg-white px-3 py-1.5 text-xs font-medium text-primary hover:bg-surface-muted disabled:opacity-50"
-            >
-              <Download className="h-3.5 w-3.5" />
-              {pdfBusy ? "Bezig..." : "PDF"}
-            </button>
-          </div>
-        )}
       </div>
     </div>
   )

@@ -14,6 +14,7 @@ import {
   PenLine,
   Cpu,
   Trash2,
+  Download,
 } from "lucide-react"
 import { KamerlidSelector } from "./kamerlid-selector"
 import { Message, extractToolSteps } from "./message"
@@ -262,8 +263,56 @@ export function Chat() {
 
   const chatBriefingDone = briefingPhases !== null && !isLoading && lastAssistantText.length > 500
 
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null)
+  const [pdfLoading, setPdfLoading] = useState(false)
+
+  // Auto-generate PDF when a substantive response completes
+  useEffect(() => {
+    if (isLoading || lastAssistantText.length <= 300 || messages.length === 0) {
+      setPdfUrl(null)
+      setPdfLoading(false)
+      return
+    }
+
+    let cancelled = false
+    setPdfLoading(true)
+    setPdfUrl(null)
+
+    fetch("/api/briefings/pdf", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        content: lastAssistantText,
+        topic: briefingTopic || "Debatbriefing",
+        partyName: party?.shortName ?? null,
+      }),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("PDF failed")
+        return res.blob()
+      })
+      .then((blob) => {
+        if (cancelled) return
+        setPdfUrl(URL.createObjectURL(blob))
+        setPdfLoading(false)
+      })
+      .catch(() => {
+        if (cancelled) return
+        setPdfLoading(false)
+      })
+
+    return () => { cancelled = true }
+  }, [isLoading, lastAssistantText, messages.length, briefingTopic, party?.shortName])
+
   const [pdfBusy, setPdfBusy] = useState(false)
   async function handleSidebarPDF() {
+    if (pdfUrl) {
+      const a = document.createElement("a")
+      a.href = pdfUrl
+      a.download = `briefing-${(briefingTopic || "debatbriefing").slice(0, 30).replace(/\s+/g, "-")}.pdf`
+      a.click()
+      return
+    }
     setPdfBusy(true)
     try {
       const { downloadBriefingPDF } = await import("@/lib/pdf-template")
@@ -364,8 +413,51 @@ export function Chat() {
                 </div>
               )}
               {messages.map((m) => (
-                <Message key={m.id} message={m} topic={briefingTopic} />
+                <Message key={m.id} message={m} />
               ))}
+              {!isLoading && messages.length > 0 && lastAssistantText.length > 300 && (
+                <div className="mt-2 mb-4 space-y-3">
+                  <div className="rounded-lg border border-border-light bg-white p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary-15">
+                          <svg className="h-[18px] w-[18px] text-primary" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-[0.8125rem] font-medium text-primary truncate">
+                            briefing-{(briefingTopic || "debatbriefing").slice(0, 30).replace(/\s+/g, "-")}.pdf
+                          </p>
+                          <p className="text-xs text-text-muted">
+                            Gegenereerd op {new Date().toLocaleDateString("nl-NL")}
+                            {party?.shortName && <> &middot; {party.shortName}</>}
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={handleSidebarPDF}
+                        disabled={pdfBusy}
+                        className="inline-flex shrink-0 items-center gap-1.5 rounded-md bg-primary px-3.5 py-1.5 text-xs font-medium text-white hover:bg-primary-dark active:translate-y-px disabled:opacity-50"
+                      >
+                        <Download className="h-3.5 w-3.5" />
+                        {pdfBusy ? "Bezig..." : "Download PDF"}
+                      </button>
+                    </div>
+                  </div>
+                  {pdfLoading && (
+                    <div className="flex items-center justify-center rounded-lg border border-border-light bg-white py-16">
+                      <span className="h-6 w-6 animate-spin rounded-full border-2 border-border-light border-t-primary" />
+                      <span className="ml-3 text-sm text-text-secondary">PDF wordt gegenereerd...</span>
+                    </div>
+                  )}
+                  {pdfUrl && (
+                    <div className="overflow-hidden rounded-lg border border-border-light bg-white">
+                      <iframe src={pdfUrl} className="h-[70vh] w-full" title="Briefing PDF preview" />
+                    </div>
+                  )}
+                </div>
+              )}
               {showThinking && (
                 <div className="mb-4 flex items-center gap-2.5">
                   <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary-15">
