@@ -15,7 +15,7 @@ export async function GET(
     if (!session || session.user.organisationId !== id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
-    console.log("[org/documents] GET", { orgId: id })
+
 
     const docs = await db
       .select({ id: orgDocuments.id, title: orgDocuments.title, createdAt: orgDocuments.createdAt })
@@ -45,7 +45,7 @@ export async function POST(
     }
 
     const { title, content } = await req.json()
-    console.log("[org/documents] POST", { orgId: id, title })
+
 
     const doc = await db.insert(orgDocuments).values({
       organisationId: id,

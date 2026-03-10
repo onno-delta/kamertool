@@ -101,13 +101,14 @@ export async function POST(req: Request) {
 
     const result = streamText({
       model: getModel(modelOpts),
+      maxOutputTokens: 8192,
       system: buildSystemPrompt(partyName, sources, searchBeyondSources, kamerlidNaam),
       messages: modelMessages,
-      stopWhen: stepCountIs(25),
+      stopWhen: stepCountIs(10),
       tools,
     })
 
-    const response = result.toUIMessageStreamResponse()
+    const response = result.toUIMessageStreamResponse({ sendReasoning: false })
     if (setSessionCookie) {
       const cookie = `session-id=${setSessionCookie}; Path=/; Max-Age=31536000; HttpOnly; SameSite=Lax`
       const headers = new Headers(response.headers)

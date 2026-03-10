@@ -10,7 +10,7 @@ export async function GET() {
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
-    console.log("[settings/preferences] GET", { userId: session.user.id })
+
 
     const [user] = await db
       .select({ defaultPartyId: users.defaultPartyId, searchBeyondSources: users.searchBeyondSources })
@@ -69,7 +69,7 @@ export async function PUT(req: Request) {
     }
 
     const { defaultPartyId, dossiers, kamerleden, meetingSkills, sources, searchBeyondSources, hiddenSources } = await req.json()
-    console.log("[settings/preferences] PUT", { userId: session.user.id, defaultPartyId, dossiers, kamerleden: kamerleden?.length, meetingSkills: meetingSkills ? Object.keys(meetingSkills).length : 0, sources: sources?.length, searchBeyondSources, hiddenSources: hiddenSources?.length })
+
 
     // Update default party + search beyond sources
     await db

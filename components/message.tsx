@@ -77,10 +77,9 @@ export function Message({ message }: { message: UIMessage }) {
   const { role, parts } = message
   const isUser = role === "user"
 
-  // Check if there's any visible content (text, reasoning, or tools)
+  // Check if there's any visible content (text or tools — reasoning is hidden)
   const hasVisibleContent = parts.some((p) => {
     if (p.type === "text" && p.text) return true
-    if (p.type === "reasoning" && p.text) return true
     const tp = p as unknown as ToolPart
     if (isToolPart(tp) && isVisibleToolState(tp.state)) return true
     return false
@@ -114,16 +113,9 @@ export function Message({ message }: { message: UIMessage }) {
       </div>
       <div className="min-w-0 max-w-[85%] space-y-2">
         {parts.map((part, i) => {
+          // Skip reasoning/thinking tokens — never show internal model reasoning
           if (part.type === "reasoning") {
-            if (!part.text) return null
-            return (
-              <div
-                key={i}
-                className="rounded-lg bg-surface-muted px-4 py-2 text-xs italic text-text-muted"
-              >
-                {part.text}
-              </div>
-            )
+            return null
           }
           if (part.type === "text" && part.text) {
             return (

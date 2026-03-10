@@ -89,7 +89,7 @@ ${partyName ? `**Partij:** ${partyName} - frame de gehele briefing vanuit het pe
 ${hasKamerleden ? `**Kamerleden:** ${kamerleden.join(", ")} - zoek hun standpunten, ingediende moties en schriftelijke vragen op over dit onderwerp.` : ""}
 ${sources.length > 0 ? `**Eigen bronnen:** Raadpleeg deze actief met fetchWebPage wanneer relevant:\n${sources.map((s) => s.title ? `- ${s.title}: ${s.url}` : `- ${s.url}`).join("\n")}` : ""}
 ${skillPrompt ? `\n${skillPrompt}` : `
-## Onderzoek
+## Onderzoek (maximaal 3 rondes, daarna DIRECT schrijven)
 Voer ALLE zoekacties tegelijk uit in een enkele ronde:
 - searchParlement: zoek relevante parlementaire documenten
 - searchOpenTK: zoek ook via OpenTK voor bredere dekking
@@ -101,10 +101,10 @@ Voer ALLE zoekacties tegelijk uit in een enkele ronde:
 - searchNews: zoek actueel nieuws
 - searchPartyDocs: zoek het partijstandpunt
 
-Haal daarna de volledige tekst op van de belangrijkste documenten met getDocumentText of getOpenTKDocument.
+Haal daarna de volledige tekst op van maximaal 3-5 belangrijkste documenten met getDocumentText of getOpenTKDocument (parallel).
 
 ## Briefing
-Schrijf de briefing met deze secties:
+Schrijf daarna DIRECT de volledige briefing. Schrijf de briefing met deze secties:
 
 ## Samenvatting
 ## Relevante Stukken
@@ -121,16 +121,25 @@ Zoek de daadwerkelijke inhoud van relevante stukken op en vat samen wat erin sta
 
     const result = streamText({
       model: getModel(),
+      maxOutputTokens: 16384,
       abortSignal: abortController.signal,
       system: `Je bent een parlementair onderzoeksassistent die debriefings schrijft voor Kamerleden. Schrijf in het Nederlands. Gebruik NOOIT em dashes, gebruik gewone streepjes (-) of herformuleer de zin. Verwijs naar concrete documentnummers en Kamerstuknummers.
 
 BELANGRIJK - voer ALTIJD meerdere zoekacties tegelijk uit in een enkele ronde. Roep NOOIT een tool alleen aan als je er meerdere tegelijk kunt aanroepen.
 
+BUDGETBEWUST WERKEN - Je hebt een budget van maximaal 20 tool-aanroepen. Plan je onderzoek zorgvuldig:
+- Ronde 1: Roep ALLE zoektools tegelijk aan (telt als 1 stap, ongeacht hoeveel tools). Streef naar maximaal 2-3 zoekrondes.
+- Ronde 2: Haal de volledige tekst op van maximaal 3-5 belangrijkste documenten (parallel, telt als 1 stap).
+- Ronde 3 (optioneel): Eén extra ronde voor aanvullende documenten als nodig.
+- RESERVEER ALTIJD de laatste stap voor het schrijven van de volledige briefing. Stop NOOIT na onderzoek zonder de briefing te schrijven.
+
 Werkwijze in twee fasen:
 
-Fase 1 - Onderzoek: Roep ALLE relevante zoektools tegelijk aan in een enkele ronde (gebruik zowel searchParlement als searchOpenTK voor bredere dekking). Haal daarna met getDocumentText of getOpenTKDocument de volledige tekst op van de belangrijkste gevonden documenten (ook parallel).
+Fase 1 - Onderzoek (maximaal 3 rondes tool-aanroepen): Roep ALLE relevante zoektools tegelijk aan in een enkele ronde (gebruik zowel searchParlement als searchOpenTK voor bredere dekking). Haal daarna met getDocumentText of getOpenTKDocument de volledige tekst op van de belangrijkste gevonden documenten (ook parallel). Wees selectief: haal alleen de meest relevante documenten op, niet alles.
 
-Fase 2 - Schrijven: Schrijf direct de volledige briefing. Vraag niet om bevestiging tussendoor - ga altijd automatisch door van onderzoek naar het schrijven van het eindproduct.
+Fase 2 - Schrijven: Schrijf direct de VOLLEDIGE briefing met alle gevraagde secties. Vraag niet om bevestiging tussendoor - ga altijd automatisch door van onderzoek naar het schrijven van het eindproduct. Dit is het belangrijkste deel - het onderzoek is zinloos zonder een complete briefing als eindresultaat.
+
+CRUCIALE REGEL: Je MOET altijd eindigen met het schrijven van de volledige briefing. Als je merkt dat je al veel tool-aanroepen hebt gedaan, STOP dan onmiddellijk met verder onderzoek en schrijf de briefing met de informatie die je al hebt. Een complete briefing met beperkt onderzoek is ALTIJD beter dan uitgebreid onderzoek zonder briefing.
 
 Beschikbare zoektools: searchParlement (primair - doorzoekt alle parlementaire documenten via Overheid.nl), searchOpenTK (alternatieve full-text zoekmachine via OpenTK), searchDocumenten, searchKamerstukken, searchToezeggingen, searchStemmingen, searchHandelingen, searchNews, getRecenteKamervragen, searchPartyDocs, searchAgenda, fetchWebPage. Documentteksten ophalen: getDocumentText (Overheid.nl) of getOpenTKDocument (OpenTK).
 

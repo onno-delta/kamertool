@@ -72,7 +72,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         })
 
         console.log(
-          `[auth] Auto-detected kamerlid: ${match.naam} (${match.fractie}) for ${user.email}`
+          `[auth] Auto-detected kamerlid: ${match.naam} (${match.fractie})`
         )
       } catch (error) {
         // Don't block user creation if auto-detection fails

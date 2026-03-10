@@ -10,8 +10,6 @@ export async function GET(req: Request) {
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
-    console.log("[briefings] GET", { userId: session.user.id })
-
     const url = new URL(req.url)
     const search = url.searchParams.get("q")
 
@@ -36,7 +34,6 @@ export async function GET(req: Request) {
     }
 
     const results = await query.limit(50)
-    console.log("[briefings] returning", results.length, "results")
     return NextResponse.json(results)
   } catch (error) {
     console.error("[briefings] ERROR:", error)

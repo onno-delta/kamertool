@@ -16,7 +16,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid request", details: parsed.error.issues }, { status: 400 })
     }
     const { name, slug } = parsed.data
-    console.log("[organisations] POST", { userId: session.user.id, name, slug })
+
 
     const org = await db.insert(organisations).values({
       name,
@@ -29,7 +29,6 @@ export async function POST(req: Request) {
       role: "admin",
     }).where(eq(users.id, session.user.id))
 
-    console.log("[organisations] created", org[0].id)
     return NextResponse.json(org[0])
   } catch (error) {
     console.error("[organisations] ERROR:", error)

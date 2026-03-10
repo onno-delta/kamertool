@@ -15,7 +15,7 @@ export async function GET(
     if (!session || session.user.organisationId !== id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
-    console.log("[org/members] GET", { orgId: id, userId: session.user.id })
+
 
     const members = await db
       .select({ id: users.id, name: users.name, email: users.email, role: users.role })
@@ -45,7 +45,7 @@ export async function POST(
     }
 
     const { email } = await req.json()
-    console.log("[org/members] POST", { orgId: id, email })
+    console.log("[org/members] POST", { orgId: id })
     const user = await db.query.users.findFirst({ where: eq(users.email, email) })
 
     if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 })
