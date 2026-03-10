@@ -1,170 +1,112 @@
+---
+date: 2026-03-10
+tags:
+  - kamertool
+  - handleiding
+---
+
 # Handleiding Kamertool
 
-Kamertool helpt je bij de voorbereiding van debatten in de Tweede Kamer. Met de chat kun je vragen stellen over Kamerstukken, debatten en stemmingen; met de briefinggeneratie maak je in één keer een voorbereidingsdocument voor een specifiek debat. Deze handleiding legt uit hoe je de app gebruikt.
+**AI-debatvoorbereiding voor de Tweede Kamer**
+kamer.deltainstituut.nl · Versie maart 2026
+
+---
+
+## Wat is Kamertool?
+
+Kamertool is een AI-assistent die Kamerleden helpt bij debatvoorbereiding. Je stelt een vraag of kiest een agendapunt, en de AI doorzoekt automatisch parlementaire databases, nieuwsbronnen en partijprogramma's. Het resultaat: een complete briefing op maat van jouw partij en portefeuille.
+
+**Bronnen die Kamertool doorzoekt:**
+
+| Categorie | Voorbeelden |
+|-----------|-------------|
+| Parlementaire documenten | Kamerstukken, moties, amendementen, Kamerbrieven, nota's |
+| Debatverslagen | Handelingen, plenaire en commissiedebatten |
+| Stemmingen | Uitslagen per fractie |
+| Toezeggingen | Openstaande toezeggingen van ministers |
+| Kamervragen | Recente schriftelijke vragen |
+| Agenda | Komende debatten en commissievergaderingen |
+| Nieuws | Actuele berichtgeving via Google |
+| Partijprogramma's | Standpunten per dossier, ideologische profielen |
+| Eigen documenten | Geüploade PDF, DOCX, XLSX of TXT via Dashboard |
 
 ---
 
 ## Inloggen
 
-1. Ga naar **Login** en vul je e-mailadres in.
-2. Je ontvangt een magic link per e-mail. Klik op de link om in te loggen.
-3. Na het inloggen kun je de chat direct gebruiken. Voor **Instellingen**, **Briefings**, **Instructies** en **Dashboard** moet je ingelogd zijn.
+1. Ga naar **kamer.deltainstituut.nl** en klik op **Login**
+2. Vul je e-mailadres in - je ontvangt een magic link per e-mail
+3. Klik op de link om in te loggen (geen wachtwoord nodig)
+
+**Toegang:** Gebruikers met een `@tweedekamer.nl`-adres worden automatisch gekoppeld aan hun Kamerlidprofiel en hebben onbeperkte toegang. Overige gebruikers: 10 berichten per dag gratis, of onbeperkt met een eigen API-sleutel (zie Instellingen). De chat is ook zonder account te gebruiken.
 
 ---
 
-## Chat (hoofdpagina)
+## De pagina's
 
-De chat is het hart van Kamertool. Je stelt een vraag in gewone taal en de AI zoekt in parlementaire bronnen (Kamerstukken, handelingen, stemmingen, toezeggingen, agenda) en nieuws, en geeft een antwoord met bronverwijzingen.
+### Chat (startpagina `/`)
 
-### Wat je kunt vragen
+De hoofdinterface. Stel een vraag over een debat of onderwerp en de AI zoekt direct relevante bronnen op. Een volledig antwoord bevat: samenvatting, relevante Kamerstukken, moties, openstaande toezeggingen, fractiestandpunten, recent nieuws en suggestievragen voor het debat.
 
-- *"Wat zijn de standpunten van de fracties over [onderwerp]?"*
-- *"Welke toezeggingen zijn er nog open over [beleidsterrein]?"*
-- *"Geef een overzicht van recente Kamervragen over [onderwerp]."*
-- *"Wat staat er op de agenda voor komende week?"*
-- *"Zoek Kamerstukken over [onderwerp]."*
+- **Partij selecteren** (linksboven) - de AI formuleert vanuit jouw partijperspectief en raadpleegt het verkiezingsprogramma
+- **Kamerlid selecteren** - de AI zoekt eerdere interventies van dat Kamerlid en personaliseert suggesties
+- **Model wisselen** - kies tussen verschillende AI-modellen (Anthropic, OpenAI, Google)
+- **URL delen** - plak een link in de chat en de AI haalt de inhoud op als startpunt
+- **Suggestiecarrousel** - snelstartvragen onder het invoerveld
 
-### Partij en model
+### Agenda (`/agenda`)
 
-- **Partij** — Kies eventueel een fractie. De AI houdt dan rekening met het partijstandpunt en kan antwoorden meer in lijn met die fractie formuleren.
-- **Model** — Zonder eigen API-key kun je het standaardmodel wisselen (bijv. Haiku, Sonnet, Opus). Met een eigen key (zie Instellingen) wordt je opgeslagen model gebruikt.
+Kameragenda voor de komende 14 dagen. Filter op commissie of selecteer een Kamerlid om alleen relevante vergaderingen te zien. Klik op **Voorbereiden** bij een agendapunt om direct een briefing te starten.
 
-### Daglimiet (gratis gebruik)
+### Voorbereiden (`/voorbereiden`)
 
-- Zonder eigen API-key: **10 berichten per dag**.
-- Bij een e-mailadres van o.a. `@tweedekamer.nl` of `@deltainstituut.nl` geldt een hogere/onbeperkte limiet (afhankelijk van configuratie).
-- Met een **eigen API-key** (Instellingen) is het gebruik onbeperkt.
+Genereer een uitgebreide debatbriefing. De generator werkt in drie fasen:
 
----
+1. **Bronnen zoeken** - doorzoekt alle beschikbare databases
+2. **Documenten lezen** - haalt volledige teksten op van relevante documenten
+3. **Briefing schrijven** - stelt het document samen met bronverwijzingen
 
-## Agenda
+Selecteer het vergadertype (plenair debat, commissiedebat, wetgevingsoverleg, etc.) voor een briefing op maat. De inhoud past zich aan: bij een plenair debat krijg je interruptiestrategieen, bij een wetgevingsoverleg meer technische analyse.
 
-Via **Agenda** zie je de geplande activiteiten van de Kamer (debatten, commissievergaderingen, stemmingen, etc.) voor een gekozen periode.
+### Briefings (`/briefings`)
 
-- Stel **Van** en **Tot** in om de datumbereik te bepalen.
-- Per activiteit zie je onder meer: soort (plenair debat, commissiedebat, wetgevingsoverleg, etc.), onderwerp, datum en tijd.
-- Klik op **Voorbereiden** bij een activiteit om naar de briefingpagina te gaan met dat onderwerp (en vergadertype) al ingevuld.
+Overzicht van al je opgeslagen briefings. Zoek op onderwerp. Open een briefing om de inhoud te bekijken, als PDF te downloaden of als Markdown te kopieren.
 
----
+### Smoelenboek (`/smoelenboek`)
 
-## Voorbereiden / Briefing genereren
+Ledenlijst van alle Kamerleden en kabinetsleden. Zoek op naam, filter op partij of rol. De detailpagina per persoon toont: foto, biografie, commissielidmaatschappen, contactgegevens, medewerkers en activiteitenfeeds (documenten, stemmingen, toezeggingen, debatbijdragen, agenda).
 
-Op de pagina **Voorbereiden** wordt automatisch een debatbriefing gegenereerd voor het gekozen onderwerp. Je komt hier vaak via de Agenda (knop "Voorbereiden"), maar je kunt ook direct naar `/voorbereiden` gaan met parameters `?topic=...` en eventueel `?soort=...`.
+Je kunt zelf contactgegevens en medewerkers toevoegen per Kamerlid.
 
-### Verloop
+### Instellingen (`/settings`)
 
-1. Je ziet het onderwerp bovenaan.
-2. De AI zoekt in parlementaire bronnen en bouwt de briefing op. Tijdens het genereren zie je een voortgangsindicator; op desktop ook een zijbalk met de uitgevoerde stappen (tools).
-3. Na afloop:
-   - De briefing wordt opgeslagen in **Briefings**.
-   - Je kunt **Download PDF** gebruiken om de briefing als PDF te downloaden.
-   - **Kopieer tekst** plakt de volledige tekst in je klembord.
-   - **Briefing bekijken** klapt de inhoud in de pagina uit of in.
+- **Kamerleden** - selecteer welke Kamerleden je volgt (bepaalt automatisch je partij en relevante dossiers)
+- **Bronnen** - beheer 60+ ingebouwde bronnen en voeg eigen bronnen toe. Schakel "Zoek ook buiten deze bronnen" aan of uit
+- **API-sleutel** - voeg je eigen sleutel toe (Anthropic, OpenAI of Google) voor onbeperkt gebruik. Je sleutel wordt versleuteld opgeslagen
+- **Gebruik** - bekijk hoeveel van je daglimiet je hebt verbruikt
 
-### Inhoud van de briefing
+### Instructies (`/instructies`)
 
-De inhoud hangt af van het **vergadertype** (bijv. plenair debat, commissiedebat, wetgevingsoverleg). Standaard bevat een briefing o.a.:
+Pas de briefing-instructies aan per vergadertype. Elk van de 13 vergadertypen heeft een standaard prompttemplate. Overschrijf dit met eigen instructies om altijd bepaalde secties te krijgen, een vaste speechlengte af te dwingen, of een specifieke toon te kiezen.
 
-- Aanleiding en politieke context
-- Analyse van standpunten en documenten
-- Eventueel interruptiestrategie, conceptmoties of technische analyse (afhankelijk van het type)
-- Een concept-speech op maat van het gekozen vergadertype
+### Dashboard (`/dashboard`)
 
-Je kunt de instructies per vergadertype aanpassen via **Instructies** (zie hieronder).
-
----
-
-## Briefings (opgeslagen briefings)
-
-Onder **Briefings** vind je al je eerder gegenereerde briefings.
-
-- Gebruik het **zoekveld** om op onderwerp of tekst te zoeken.
-- Klik op een briefing om de inhoud te bekijken.
-- Vanuit het detail kun je:
-  - **PDF downloaden** — briefing als PDF opslaan
-  - **PDF openen** — briefing in een nieuw tabblad als PDF bekijken
-
----
-
-## Instellingen
-
-In **Instellingen** regel je je API-key, gebruik en voorkeuren.
-
-### API-key (BYOK – Bring Your Own Key)
-
-- Zonder eigen key gebruik je de gratis tier (o.a. 10 berichten per dag).
-- Met een eigen key:
-  - Kies **Provider** (Anthropic, OpenAI of Google) en **Model**.
-  - Vul je API-key in en sla op. Er kan maar één actieve key per gebruiker zijn.
-  - Je key wordt versleuteld opgeslagen. Gebruik is daarna onbeperkt voor chat en briefings.
-- **Test key** controleert of de key geldig is met een korte proefaanroep.
-
-### Gebruik (gratis tier)
-
-- Hier zie je hoeveel van de dagelijkse limiet je hebt verbruikt (bijv. 3/10 berichten). Met een actieve eigen key wordt de limiet niet toegepast.
-
-### Voorkeuren
-
-- **Standaardpartij** — Partij die in de chat als standaard wordt geselecteerd.
-- **Dossiers** — Beleidsdossiers waarop je je wilt richten (o.a. voor briefings).
-- **Kamerleden** — Specifieke Kamerleden; de AI kan hun standpunten en bijdragen meenemen in antwoorden en briefings.
-
-Deze voorkeuren worden in de chat en bij het genereren van briefings gebruikt.
-
----
-
-## Instructies (per vergadertype)
-
-Op de pagina **Instructies** kun je per **vergadertype** bepalen hoe de AI briefings opstelt. Elk type (plenair debat, commissiedebat, wetgevingsoverleg, notaoverleg, etc.) heeft standaardtekst; die kun je overschrijven met je eigen instructies.
-
-- **Standaard** — De ingebouwde instructie voor dat type.
-- **Aangepast** — Je eigen tekst. Alleen aangepaste velden worden opgeslagen.
-- **Opslaan** — Sla je wijzigingen op. Bij het genereren van een briefing geldt: jouw instructie voor dat vergadertype > standaard > geen extra instructie.
-
-Handig als je bijvoorbeeld altijd bepaalde secties wilt (of juist niet), of een vaste speechlengte of toon wilt afdwingen.
-
----
-
-## Dashboard (organisaties)
-
-Als je bij een **organisatie** hoort, kun je onder **Dashboard**:
-
-- Leden van de organisatie beheren
-- Organisatiedocumenten toevoegen
-
-Deze documenten kunnen door de AI worden doorzocht (o.a. bij chat en briefing) als je bij die organisatie bent ingelogd.
-
----
-
-## Overzicht pagina’s
-
-| Pagina        | Pad           | Toelichting                                      |
-|---------------|---------------|--------------------------------------------------|
-| Chat          | `/`           | Hoofdchat voor vragen over Kamer en beleid       |
-| Agenda        | `/agenda`     | Kameragenda; link naar voorbereiden              |
-| Voorbereiden  | `/voorbereiden?topic=...&soort=...` | Briefing genereren voor één onderwerp |
-| Briefings     | `/briefings`  | Lijst en zoeken in opgeslagen briefings          |
-| Instellingen  | `/settings`  | API-key, gebruik, partij/dossiers/Kamerleden     |
-| Instructies   | `/instructies` | Instructies per vergadertype aanpassen          |
-| Dashboard     | `/dashboard`  | Organisatie: leden en documenten                 |
-| Login         | `/login`      | Inloggen via magic link                          |
+Organisatiebeheer: voeg collega's toe en upload gedeelde documenten (PDF, DOCX, XLSX, TXT). Geüploade documenten worden doorzoekbaar voor alle teamleden in chat en briefings.
 
 ---
 
 ## Veelgestelde vragen
 
-**Ik zie "Dagelijkse limiet bereikt".**  
-Voeg in Instellingen een eigen API-key toe (BYOK) voor onbeperkt gebruik, of wacht tot de volgende dag (limiet wordt per dag gereset).
+**"Dagelijkse limiet bereikt"** - Voeg in Instellingen een eigen API-sleutel toe voor onbeperkt gebruik, of wacht tot de volgende dag.
 
-**De briefing is te lang / te kort.**  
-Pas in **Instructies** de instructie voor het betreffende vergadertype aan (bijv. "Concept-speech maximaal 4 minuten" of "Uitgebreide technische analyse").
+**De briefing is te lang of te kort** - Pas in Instructies de instructie voor het vergadertype aan (bijv. "Concept-speech maximaal 4 minuten").
 
-**Hoe komt de AI aan Kamerinformatie?**
-Kamertool gebruikt o.a. de Overheid.nl SRU API (volledige-tekstzoeken in parlementaire documenten) en de officiele TK OData-API (Kamerstukken, handelingen, stemmingen, toezeggingen, agenda). Nieuws komt via een zoek-API; partijstandpunten uit de in de app gevoede partijprogramma’s. Zie [docs/bronnen.md](bronnen.md) voor een volledig overzicht van alle databronnen en integraties.
+**Hoe actueel is de informatie?** - Kamertool zoekt live in parlementaire databases en nieuwsbronnen. De informatie is zo actueel als de bronnen zelf.
 
-**Kan ik de chat zonder account gebruiken?**  
-Ja, de chat is ook zonder inloggen te gebruiken, binnen de daglimiet. Voor opgeslagen briefings, instellingen, instructies en dashboard is inloggen nodig.
+**Kan ik de AI vertrouwen?** - De AI geeft altijd bronverwijzingen (Kamerstuknummers, data, namen). Controleer belangrijke claims. De tool is een startpunt voor voorbereiding, geen vervanging van eigen onderzoek.
+
+**Welk AI-model wordt gebruikt?** - Standaard Claude Sonnet 4.5 (Anthropic). Wissel via de modelkiezer in de chat naar andere modellen.
 
 ---
 
-*Laatste aanpassing: maart 2025. Vragen of fouten? Neem contact op met de beheerder of open een issue in de repository.*
+*Kamertool is een product van Delta Instituut voor Staatscapaciteit. Vragen of feedback? Neem contact op via het Delta-team.*

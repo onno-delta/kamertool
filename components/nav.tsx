@@ -15,6 +15,7 @@ import {
   Menu,
   X,
   Users,
+  BookOpen,
 } from "lucide-react"
 import { useDataContext } from "./data-context"
 import { PARTY_COLORS } from "@/lib/parties"
@@ -26,6 +27,7 @@ const NAV_ICONS: Record<string, React.ReactNode> = {
   "/instructies": <PenLine className="h-[15px] w-[15px] opacity-80" />,
   "/dashboard": <Building2 className="h-[15px] w-[15px] opacity-80" />,
   "/smoelenboek": <Users className="h-[15px] w-[15px] opacity-80" />,
+  "/handleiding": <BookOpen className="h-[15px] w-[15px] opacity-80" />,
   "/settings": <Settings className="h-[15px] w-[15px] opacity-80" />,
 }
 
@@ -90,12 +92,14 @@ export function Nav() {
           ? [{ href: "/dashboard", label: "Organisatie" }]
           : []),
         { href: "/smoelenboek", label: "Smoelenboek" },
+        { href: "/handleiding", label: "Handleiding" },
         { href: "/settings", label: "Instellingen" },
       ]
     : [
         { href: "/", label: "Chat" },
         { href: "/agenda", label: "Agenda" },
         { href: "/smoelenboek", label: "Smoelenboek" },
+        { href: "/handleiding", label: "Handleiding" },
       ]
 
   function isActive(href: string) {
