@@ -3,6 +3,7 @@ import { db } from "@/lib/db"
 import { orgDocuments } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 import { NextResponse } from "next/server"
+import { parseDocument, isSupportedType, getSupportedExtensions } from "@/lib/parse-document"
 
 export async function GET(
   req: Request,
@@ -44,8 +45,51 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { title, content } = await req.json()
+    const contentType = req.headers.get("content-type") ?? ""
 
+    let title: string
+    let content: string
+
+    if (contentType.includes("multipart/form-data")) {
+      // File upload
+      const formData = await req.formData()
+      const file = formData.get("file") as File | null
+      title = (formData.get("title") as string) ?? ""
+
+      if (!file) {
+        return NextResponse.json({ error: "Geen bestand ontvangen" }, { status: 400 })
+      }
+
+      if (!isSupportedType(file.type)) {
+        return NextResponse.json(
+          { error: `Bestandstype niet ondersteund. Ondersteund: ${getSupportedExtensions()}` },
+          { status: 400 }
+        )
+      }
+
+      // Use filename as title if none provided
+      if (!title) {
+        title = file.name.replace(/\.[^.]+$/, "")
+      }
+
+      const buffer = Buffer.from(await file.arrayBuffer())
+      const result = await parseDocument(buffer, file.type, file.name)
+
+      if (result.error) {
+        return NextResponse.json({ error: result.error }, { status: 400 })
+      }
+
+      content = result.text
+    } else {
+      // JSON body (existing flow)
+      const body = await req.json()
+      title = body.title
+      content = body.content
+    }
+
+    if (!title || !content) {
+      return NextResponse.json({ error: "Titel en inhoud zijn verplicht" }, { status: 400 })
+    }
 
     const doc = await db.insert(orgDocuments).values({
       organisationId: id,

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
-import { MEETING_SKILLS, getDefaultSkill } from "@/lib/meeting-skills"
+import { MEETING_SKILLS, getDefaultUserPrompt } from "@/lib/meeting-skills"
 import { useDataContext } from "@/components/data-context"
 import {
   ChevronDown,
@@ -62,10 +62,10 @@ export default function InstructiesPage() {
 
   async function handleSave() {
     setSaving(true)
-    // Only save skills that differ from the default
+    // Only save skills that differ from the default user prompt
     const customOnly: Record<string, string> = {}
     for (const [soort, prompt] of Object.entries(meetingSkills)) {
-      if (prompt.trim() && prompt.trim() !== getDefaultSkill(soort).trim()) {
+      if (prompt.trim() && prompt.trim() !== getDefaultUserPrompt(soort).trim()) {
         customOnly[soort] = prompt
       }
     }
@@ -92,15 +92,18 @@ export default function InstructiesPage() {
       <section className="mb-8">
         <h1 className="text-4xl font-bold tracking-tight text-primary">Instructies</h1>
         <p className="mt-2 text-sm text-text-secondary">
-          Pas aan hoe de AI briefings genereert per type vergadering. Elk vergadertype heeft
-          standaardinstructies die je hier kunt overschrijven met eigen tekst.
+          Pas aan hoe de AI briefings schrijft per type vergadering. Beschrijf in eigen woorden
+          waar de briefing op moet focussen - de technische zoekinstructies worden automatisch
+          toegevoegd.
         </p>
       </section>
 
       <div className="space-y-3">
         {MEETING_SKILLS.map((skill) => {
           const isExpanded = expandedSkill === skill.soort
-          const hasCustom = skill.soort in meetingSkills && meetingSkills[skill.soort].trim() !== skill.prompt.trim()
+          const defaultUserPrompt = skill.userPrompt
+          const currentValue = meetingSkills[skill.soort] ?? defaultUserPrompt
+          const hasCustom = skill.soort in meetingSkills && meetingSkills[skill.soort].trim() !== defaultUserPrompt.trim()
           const Icon = SKILL_ICONS[skill.soort]
           return (
             <div
@@ -148,10 +151,13 @@ export default function InstructiesPage() {
               {isExpanded && (
                 <div className="border-t border-border-light px-5 pb-5 pt-4">
                   <label className="mb-1.5 block text-xs font-medium text-text-muted">
-                    Prompt template
+                    Briefing-instructies
                   </label>
+                  <p className="mb-3 text-xs text-text-muted">
+                    Beschrijf wat elke sectie moet bevatten. Het onderzoek (welke bronnen worden doorzocht) wordt automatisch afgehandeld.
+                  </p>
                   <textarea
-                    value={meetingSkills[skill.soort] ?? skill.prompt}
+                    value={currentValue}
                     onChange={(e) => {
                       setMeetingSkills((prev) => ({
                         ...prev,

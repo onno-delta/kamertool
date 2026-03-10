@@ -1,15 +1,18 @@
 /**
  * Default "skills" (prompt instructions) per vergadertype.
- * Users can override these in Settings.
  *
- * Each skill has a `steps` array — these are the deliverable section names
- * that appear as ## headers in the output AND as progress steps in the sidebar.
+ * Each skill has two prompt layers:
+ * - basePrompt: hidden technical instructions (tool calls, research strategy)
+ * - userPrompt: natural language guidance users can override in /instructies
+ *
+ * The steps array defines the deliverable section names for progress tracking.
  */
 
 export type MeetingSkill = {
   soort: string
   label: string
-  prompt: string
+  basePrompt: string
+  userPrompt: string
   steps: string[]
 }
 
@@ -18,9 +21,7 @@ export const MEETING_SKILLS: MeetingSkill[] = [
     soort: "Plenair debat",
     label: "Plenair debat",
     steps: ["Aanleiding & context", "Politieke verhoudingen", "Interruptiestrategie", "Conceptmoties"],
-    prompt: `Plenair debat - het meest zichtbare format in de Kamer. Media kijken mee, interrupties zijn scherp, moties worden ingediend.
-
-## Onderzoek
+    basePrompt: `## Onderzoek
 Voer ALLE zoekacties tegelijk uit in een enkele ronde:
 - searchParlement + searchOpenTK: zoek de Kamerbrief/nota die tot dit debat heeft geleid (gebruik beide voor bredere dekking)
 - searchNews: zoek actueel nieuws voor de media-invalshoek
@@ -29,7 +30,8 @@ Voer ALLE zoekacties tegelijk uit in een enkele ronde:
 - searchToezeggingen: zoek openstaande toezeggingen van de minister
 - searchPartyDocs: zoek het partijstandpunt
 
-Haal daarna de volledige tekst op van de belangrijkste documenten met getDocumentText of getOpenTKDocument.
+Haal daarna de volledige tekst op van de belangrijkste documenten met getDocumentText of getOpenTKDocument.`,
+    userPrompt: `Plenair debat - het meest zichtbare format in de Kamer. Media kijken mee, interrupties zijn scherp, moties worden ingediend.
 
 ## Briefing
 Schrijf de briefing met deze secties:
@@ -53,9 +55,7 @@ Formuleer 2-3 moties die aansluiten bij het partijstandpunt en kansrijk zijn voo
     soort: "Commissiedebat",
     label: "Commissiedebat",
     steps: ["Overzicht agendapunten", "Analyse per agendapunt", "Openstaande toezeggingen", "Standpunten fracties"],
-    prompt: `Commissiedebat - hier gebeurt het echte beleidswerk, meer ruimte voor inhoud dan plenair.
-
-## Onderzoek
+    basePrompt: `## Onderzoek
 Voer ALLE zoekacties tegelijk uit in een enkele ronde:
 - searchParlement + searchOpenTK: zoek alle Kamerbrieven en beleidsdocumenten die op de agenda staan (gebruik beide voor bredere dekking)
 - searchDocumenten: zoek aanvullende brieven en nota's
@@ -64,7 +64,8 @@ Voer ALLE zoekacties tegelijk uit in een enkele ronde:
 - getRecenteKamervragen: zoek recente schriftelijke vragen over dit onderwerp
 - searchPartyDocs: zoek het partijstandpunt
 
-Haal daarna de volledige tekst op van de belangrijkste documenten met getDocumentText of getOpenTKDocument.
+Haal daarna de volledige tekst op van de belangrijkste documenten met getDocumentText of getOpenTKDocument.`,
+    userPrompt: `Commissiedebat - hier gebeurt het echte beleidswerk, meer ruimte voor inhoud dan plenair.
 
 ## Briefing
 Schrijf de briefing met deze secties:
@@ -85,16 +86,15 @@ Beschrijf per relevante fractie hun positie en stemgedrag.`,
     soort: "Wetgevingsoverleg",
     label: "Wetgevingsoverleg",
     steps: ["Wetsvoorstel & advies RvS", "Artikelanalyse", "Amendementen", "Juridische kanttekeningen"],
-    prompt: `Wetgevingsoverleg - artikel-voor-artikel bespreking van een wetsvoorstel, juridische precisie is essentieel.
-
-## Onderzoek
+    basePrompt: `## Onderzoek
 Voer ALLE zoekacties tegelijk uit in een enkele ronde:
 - searchParlement + searchOpenTK: zoek het wetsvoorstel, de Memorie van Toelichting en het advies van de Raad van State (gebruik beide voor bredere dekking)
 - searchKamerstukken: zoek gerelateerde Kamerstukken en amendementen
 - searchDocumenten: zoek uitvoeringstoetsen en adviezen van betrokken instanties
 - searchPartyDocs: zoek het partijstandpunt
 
-Haal daarna de volledige tekst op van de belangrijkste documenten met getDocumentText of getOpenTKDocument.
+Haal daarna de volledige tekst op van de belangrijkste documenten met getDocumentText of getOpenTKDocument.`,
+    userPrompt: `Wetgevingsoverleg - artikel-voor-artikel bespreking van een wetsvoorstel, juridische precisie is essentieel.
 
 ## Briefing
 Schrijf de briefing met deze secties:
@@ -115,16 +115,15 @@ Beschrijf mogelijke conflicten met de Grondwet, EU-recht, het EVRM of bestaande 
     soort: "Tweeminutendebat",
     label: "Tweeminutendebat",
     steps: ["Terugblik commissiedebat", "Onopgeloste punten", "Conceptmoties"],
-    prompt: `Tweeminutendebat - maximaal 2 minuten spreektijd, volgt op een eerder commissiedebat, alleen ruimte voor een motie.
-
-## Onderzoek
+    basePrompt: `## Onderzoek
 Voer ALLE zoekacties tegelijk uit in een enkele ronde:
 - searchHandelingen: zoek het voorafgaande commissiedebat
 - searchToezeggingen: zoek toezeggingen van de minister op dit dossier
 - searchStemmingen: zoek steunpatronen bij vergelijkbare moties
 - searchPartyDocs: zoek het partijstandpunt
 
-Haal daarna de volledige tekst op van de belangrijkste documenten met getDocumentText of getOpenTKDocument.
+Haal daarna de volledige tekst op van de belangrijkste documenten met getDocumentText of getOpenTKDocument.`,
+    userPrompt: `Tweeminutendebat - maximaal 2 minuten spreektijd, volgt op een eerder commissiedebat, alleen ruimte voor een motie.
 
 ## Briefing
 Schrijf de briefing met deze secties:
@@ -145,16 +144,15 @@ Formuleer maximaal 2 moties:
     soort: "Notaoverleg",
     label: "Notaoverleg",
     steps: ["Samenvatting nota", "Analyse per hoofdpunt", "Beleidsalternatieven"],
-    prompt: `Notaoverleg - debat over een specifieke beleidsnota of beleidsbrief van de minister.
-
-## Onderzoek
+    basePrompt: `## Onderzoek
 Voer ALLE zoekacties tegelijk uit in een enkele ronde:
 - searchParlement + searchOpenTK: zoek de nota of beleidsbrief die centraal staat (gebruik beide voor bredere dekking)
 - searchDocumenten: zoek reacties van belangenorganisaties en uitvoerbaarheidsanalyses
 - searchNews: zoek actueel nieuws over het onderwerp
 - searchPartyDocs: zoek het partijstandpunt
 
-Haal daarna de volledige tekst op van de belangrijkste documenten met getDocumentText of getOpenTKDocument.
+Haal daarna de volledige tekst op van de belangrijkste documenten met getDocumentText of getOpenTKDocument.`,
+    userPrompt: `Notaoverleg - debat over een specifieke beleidsnota of beleidsbrief van de minister.
 
 ## Briefing
 Schrijf de briefing met deze secties:
@@ -172,16 +170,15 @@ Beschrijf alternatieve maatregelen die beter passen bij de partijvisie - per alt
     soort: "Begrotingsoverleg",
     label: "Begrotingsoverleg",
     steps: ["Begrotingsanalyse", "Rekenkamer & CPB", "Begrotingsamendementen"],
-    prompt: `Begrotingsoverleg - debat over de begroting van een specifiek ministerie, het draait om euro's.
-
-## Onderzoek
+    basePrompt: `## Onderzoek
 Voer ALLE zoekacties tegelijk uit in een enkele ronde:
 - searchParlement + searchOpenTK: zoek de begrotingsstukken en Rekenkamer/CPB-rapporten (gebruik beide voor bredere dekking)
 - searchDocumenten: zoek aanvullende begrotingsdocumenten en doorrekeningen
 - searchKamerstukken: zoek ingediende amendementen van andere fracties
 - searchPartyDocs: zoek de financiele prioriteiten van de partij
 
-Haal daarna de volledige tekst op van de belangrijkste documenten met getDocumentText of getOpenTKDocument.
+Haal daarna de volledige tekst op van de belangrijkste documenten met getDocumentText of getOpenTKDocument.`,
+    userPrompt: `Begrotingsoverleg - debat over de begroting van een specifiek ministerie, het draait om euro's.
 
 ## Briefing
 Schrijf de briefing met deze secties:
@@ -199,16 +196,15 @@ Geef een overzicht van ingediende amendementen. Formuleer daarnaast 1-2 eigen be
     soort: "Rondetafelgesprek",
     label: "Rondetafelgesprek",
     steps: ["Achtergrond", "Profiel per genodigde", "Informatiebehoefte"],
-    prompt: `Rondetafelgesprek - de commissie spreekt met experts en belanghebbenden. Er is geen minister aanwezig; dit is intelligence-gathering.
-
-## Onderzoek
+    basePrompt: `## Onderzoek
 Voer ALLE zoekacties tegelijk uit in een enkele ronde:
 - searchParlement + searchOpenTK: zoek parlementaire documenten over het onderwerp en de aanleiding (gebruik beide voor bredere dekking)
 - searchNews: zoek actueel nieuws en publicaties van genodigden
 - fetchWebPage: bekijk websites van genodigde organisaties/experts
 - searchPartyDocs: zoek het partijstandpunt
 
-Haal daarna de volledige tekst op van de belangrijkste documenten met getDocumentText of getOpenTKDocument.
+Haal daarna de volledige tekst op van de belangrijkste documenten met getDocumentText of getOpenTKDocument.`,
+    userPrompt: `Rondetafelgesprek - de commissie spreekt met experts en belanghebbenden. Er is geen minister aanwezig; dit is intelligence-gathering.
 
 ## Briefing
 Schrijf de briefing met deze secties:
@@ -226,14 +222,13 @@ Beschrijf welke informatie uit dit gesprek moet komen voor toekomstige debatten 
     soort: "Procedurevergadering",
     label: "Procedurevergadering",
     steps: ["Agendaoverzicht", "Aanbevelingen per punt", "Suggesties eigen agendering"],
-    prompt: `Procedurevergadering - hier wordt de commissieagenda bepaald. Strategisch belangrijk: de fractie kan invloed uitoefenen op wat er wel en niet besproken wordt.
-
-## Onderzoek
+    basePrompt: `## Onderzoek
 Voer ALLE zoekacties tegelijk uit in een enkele ronde:
 - searchAgenda: zoek de conceptagenda of besluitenlijst van deze procedurevergadering
 - searchParlement + searchOpenTK: zoek achtergrond bij de voorgestelde agendapunten (gebruik beide voor bredere dekking)
 - searchNews: zoek actuele ontwikkelingen voor eigen agenderingssuggesties
-- searchPartyDocs: zoek de prioriteiten van de fractie
+- searchPartyDocs: zoek de prioriteiten van de fractie`,
+    userPrompt: `Procedurevergadering - hier wordt de commissieagenda bepaald. Strategisch belangrijk: de fractie kan invloed uitoefenen op wat er wel en niet besproken wordt.
 
 ## Briefing
 Schrijf de briefing met deze secties:
@@ -251,16 +246,15 @@ Beschrijf per suggestie het onderwerp en waarom het nu relevant is om dit te age
     soort: "Technische briefing",
     label: "Technische briefing",
     steps: ["Achtergrond", "Kernvragen", "Aandachtspunten fractie"],
-    prompt: `Technische briefing - experts of ambtenaren informeren de commissie over een technisch onderwerp. Geen politiek debat, maar een kans om de materie te doorgronden.
-
-## Onderzoek
+    basePrompt: `## Onderzoek
 Voer ALLE zoekacties tegelijk uit in een enkele ronde:
 - searchParlement + searchOpenTK: zoek parlementaire documenten en rapporten over het onderwerp (gebruik beide voor bredere dekking)
 - searchNews: zoek actueel nieuws over het onderwerp
 - getRecenteKamervragen: zoek welke Kamervragen er eerder over dit onderwerp zijn gesteld
 - searchPartyDocs: zoek de relevante partijstandpunten
 
-Haal daarna de volledige tekst op van de belangrijkste documenten met getDocumentText of getOpenTKDocument.
+Haal daarna de volledige tekst op van de belangrijkste documenten met getDocumentText of getOpenTKDocument.`,
+    userPrompt: `Technische briefing - experts of ambtenaren informeren de commissie over een technisch onderwerp. Geen politiek debat, maar een kans om de materie te doorgronden.
 
 ## Briefing
 Schrijf de briefing met deze secties:
@@ -278,16 +272,15 @@ Beschrijf welke aspecten raken aan de partijpositie of lopende debatten en waar 
     soort: "Gesprek",
     label: "Gesprek",
     steps: ["Gesprekspartners", "Gespreksagenda", "Strategische vragen"],
-    prompt: `Gesprek - informeel overleg met externe partijen of belanghebbenden. Goede voorbereiding is essentieel: weet met wie je praat, wat zij willen, en wat jij van hen nodig hebt.
-
-## Onderzoek
+    basePrompt: `## Onderzoek
 Voer ALLE zoekacties tegelijk uit in een enkele ronde:
 - searchParlement + searchOpenTK: zoek parlementaire documenten over het gespreksonderwerp (gebruik beide voor bredere dekking)
 - searchNews: zoek actueel nieuws en recente publicaties van gesprekspartners
 - fetchWebPage: bekijk websites van gesprekspartners
 - searchPartyDocs: zoek het partijstandpunt
 
-Haal daarna de volledige tekst op van de belangrijkste documenten met getDocumentText of getOpenTKDocument.
+Haal daarna de volledige tekst op van de belangrijkste documenten met getDocumentText of getOpenTKDocument.`,
+    userPrompt: `Gesprek - informeel overleg met externe partijen of belanghebbenden. Goede voorbereiding is essentieel: weet met wie je praat, wat zij willen, en wat jij van hen nodig hebt.
 
 ## Briefing
 Schrijf de briefing met deze secties:
@@ -305,16 +298,15 @@ Formuleer 5-10 vragen geordend op prioriteit, gericht op het verkrijgen van info
     soort: "Stemmingen",
     label: "Stemmingen",
     steps: ["Overzicht", "Stemadvies per item", "Gevoelige stemmingen"],
-    prompt: `Stemmingen - de Kamer stemt over moties, amendementen en wetsvoorstellen.
-
-## Onderzoek
+    basePrompt: `## Onderzoek
 Voer ALLE zoekacties tegelijk uit in een enkele ronde:
 - searchParlement + searchOpenTK: zoek de moties, amendementen en wetsvoorstellen die in stemming komen (gebruik beide voor bredere dekking)
 - searchStemmingen: zoek eerdere stempatronen op gerelateerde onderwerpen
 - searchPartyDocs: zoek het partijstandpunt
 - searchNews: zoek mediaberichten over gevoelige stemmingen
 
-Haal daarna de volledige tekst op van de belangrijkste documenten met getDocumentText of getOpenTKDocument.
+Haal daarna de volledige tekst op van de belangrijkste documenten met getDocumentText of getOpenTKDocument.`,
+    userPrompt: `Stemmingen - de Kamer stemt over moties, amendementen en wetsvoorstellen.
 
 ## Briefing
 Schrijf de briefing met deze secties:
@@ -332,14 +324,13 @@ Beschrijf stemmingen die politiek risico dragen, mediagevoelig zijn of onverwach
     soort: "Regeling van werkzaamheden",
     label: "Regeling van werkzaamheden",
     steps: ["Overzicht", "Lopende debataanvragen", "Mogelijke eigen aanvragen"],
-    prompt: `Regeling van werkzaamheden - kort plenair overleg voor debataanvragen en procedurele verzoeken.
-
-## Onderzoek
+    basePrompt: `## Onderzoek
 Voer ALLE zoekacties tegelijk uit in een enkele ronde:
 - searchAgenda: zoek de huidige plenaire planning en recente debataanvragen
 - searchParlement + searchOpenTK: zoek recente Kamerbrieven die als aanleiding kunnen dienen (gebruik beide voor bredere dekking)
 - searchNews: zoek actueel nieuws voor urgente onderwerpen
-- searchPartyDocs: zoek de thema's en prioriteiten van de fractie
+- searchPartyDocs: zoek de thema's en prioriteiten van de fractie`,
+    userPrompt: `Regeling van werkzaamheden - kort plenair overleg voor debataanvragen en procedurele verzoeken.
 
 ## Briefing
 Schrijf de briefing met deze secties:
@@ -357,16 +348,15 @@ Beschrijf per suggestie: het onderwerp, de aanleiding, waarom dit nu een debat v
     soort: "Werkbezoek",
     label: "Werkbezoek",
     steps: ["Organisatie-achtergrond", "Beleidsontwikkelingen", "Vragenlijst", "Mediakansen"],
-    prompt: `Werkbezoek - Kamerleden bezoeken een organisatie of instelling om ervaringen uit de praktijk op te halen.
-
-## Onderzoek
+    basePrompt: `## Onderzoek
 Voer ALLE zoekacties tegelijk uit in een enkele ronde:
 - fetchWebPage: bekijk de website van de organisatie
 - searchParlement + searchOpenTK: zoek gerelateerde Kamervragen en debatten (gebruik beide voor bredere dekking)
 - searchNews: zoek recent nieuws over deze organisatie of sector
 - searchPartyDocs: zoek het partijstandpunt op dit beleidsterrein
 
-Haal daarna de volledige tekst op van de belangrijkste documenten met getDocumentText of getOpenTKDocument.
+Haal daarna de volledige tekst op van de belangrijkste documenten met getDocumentText of getOpenTKDocument.`,
+    userPrompt: `Werkbezoek - Kamerleden bezoeken een organisatie of instelling om ervaringen uit de praktijk op te halen.
 
 ## Briefing
 Schrijf de briefing met deze secties:
@@ -387,16 +377,15 @@ Beschrijf mogelijke fotomomenten, quotes of bevindingen die de fractie kan inzet
     soort: "Petitieaanbieding",
     label: "Petitieaanbieding",
     steps: ["Achtergrond petitie", "Profiel indiener", "Beleidscontext", "Vragen & aandachtspunten"],
-    prompt: `Petitieaanbieding - burgers of organisaties bieden een petitie aan bij de Kamer. Het Kamerlid ontvangt de petitie namens de commissie en moet weten wie er voor hem staat en wat ze willen.
-
-## Onderzoek
+    basePrompt: `## Onderzoek
 Voer ALLE zoekacties tegelijk uit in een enkele ronde:
 - searchParlement + searchOpenTK: zoek relevante Kamerbrieven, wetsvoorstellen en eerdere debatten over het onderwerp (gebruik beide voor bredere dekking)
 - searchNews: zoek nieuws over de petitie en de indiener
 - fetchWebPage: bekijk de website van de organisatie of het initiatief
 - searchPartyDocs: zoek het partijstandpunt
 
-Haal daarna de volledige tekst op van de belangrijkste documenten met getDocumentText of getOpenTKDocument.
+Haal daarna de volledige tekst op van de belangrijkste documenten met getDocumentText of getOpenTKDocument.`,
+    userPrompt: `Petitieaanbieding - burgers of organisaties bieden een petitie aan bij de Kamer. Het Kamerlid ontvangt de petitie namens de commissie en moet weten wie er voor hem staat en wat ze willen.
 
 ## Briefing
 Schrijf de briefing met deze secties:
@@ -415,10 +404,31 @@ Formuleer 5-10 vragen die het Kamerlid kan stellen bij de ontvangst of kan meene
   },
 ]
 
-/** Get the default skill prompt for a given meeting type */
+/** Get the combined skill prompt (base + user) for a given meeting type */
 export function getDefaultSkill(soort: string): string {
   const skill = MEETING_SKILLS.find((s) => s.soort === soort)
-  return skill?.prompt ?? ""
+  if (!skill) return ""
+  return `${skill.userPrompt}\n\n${skill.basePrompt}`
+}
+
+/** Get only the base (technical) prompt for a given meeting type */
+export function getBasePrompt(soort: string): string {
+  const skill = MEETING_SKILLS.find((s) => s.soort === soort)
+  return skill?.basePrompt ?? ""
+}
+
+/** Get only the user-editable prompt for a given meeting type */
+export function getDefaultUserPrompt(soort: string): string {
+  const skill = MEETING_SKILLS.find((s) => s.soort === soort)
+  return skill?.userPrompt ?? ""
+}
+
+/** Combine a user prompt override with the base prompt */
+export function assembleSkillPrompt(soort: string, userPromptOverride?: string): string {
+  const base = getBasePrompt(soort)
+  const user = userPromptOverride || getDefaultUserPrompt(soort)
+  if (!base && !user) return ""
+  return `${user}\n\n${base}`
 }
 
 /** Get the default progress steps for a given meeting type */

@@ -23,7 +23,7 @@ import {
   getOpenTKDocument,
 } from "@/lib/tools"
 import { NextResponse } from "next/server"
-import { getDefaultSkill } from "@/lib/meeting-skills"
+import { assembleSkillPrompt } from "@/lib/meeting-skills"
 import { briefingBodySchema } from "@/lib/validation"
 
 export const maxDuration = 300
@@ -63,8 +63,9 @@ export async function POST(req: Request) {
       }
     }
 
-    // Resolve the meeting skill: user override > default for this soort > empty
-    const skillPrompt = meetingSkill || (soort ? getDefaultSkill(soort) : "")
+    // Resolve the meeting skill: base layer (always default) + user layer (override or default)
+    // meetingSkill from the client is the user's custom text (user layer only)
+    const skillPrompt = soort ? assembleSkillPrompt(soort, meetingSkill || undefined) : ""
 
     const hasKamerleden = Array.isArray(kamerleden) && kamerleden.length > 0
 

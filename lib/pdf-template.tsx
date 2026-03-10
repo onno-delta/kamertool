@@ -251,11 +251,25 @@ export function BriefingPDF({ topic, content, date, partyName }: BriefingPDFProp
       continue
     }
 
+    // Footnote references [1], [2], etc. — APA 7 hanging indent
+    const refMatch = trimmed.match(/^\[(\d+)\]\s+(.*)/)
+    if (refMatch) {
+      elements.push(
+        <View key={i++} style={{ flexDirection: "row", marginBottom: 4, paddingLeft: 24 }}>
+          <Text style={{ width: 28, fontSize: 9.5, marginLeft: -24, color: C.primary }}>[{refMatch[1]}]</Text>
+          <View style={{ flex: 1 }}>
+            {renderInline(refMatch[2], { fontSize: 9.5, lineHeight: 1.45, marginBottom: 0 })}
+          </View>
+        </View>
+      )
+      continue
+    }
+
     // Regular paragraph — collect continuation lines
     let para = trimmed
     while (li + 1 < lines.length) {
       const next = lines[li + 1].trim()
-      if (!next || next.startsWith("#") || next.startsWith("- ") || next === "---" || next === "***" || /^\d+\.\s+/.test(next)) break
+      if (!next || next.startsWith("#") || next.startsWith("- ") || next === "---" || next === "***" || /^\d+\.\s+/.test(next) || /^\[\d+\]/.test(next)) break
       para += " " + next
       li++
     }
