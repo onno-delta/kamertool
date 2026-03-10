@@ -70,13 +70,12 @@ function formatResults(results: ExaResult[]) {
 
 export const searchExa = tool({
   description:
-    "Doorzoek het web, X/Twitter en LinkedIn via Exa. Gebruik 'scope' om te kiezen: 'web' voor algemeen zoeken, 'twitter' voor tweets/posts op X, 'linkedin' voor LinkedIn-profielen en posts. Goed voor actuele discussies, meningen en social media context.",
+    "Doorzoek X/Twitter en LinkedIn via Exa. Gebruik 'scope' om te kiezen: 'twitter' voor tweets/posts op X, 'linkedin' voor LinkedIn-profielen en posts. Gebruik deze tool specifiek voor social media context, meningen en discussies. Voor algemeen webzoeken: gebruik andere tools.",
   inputSchema: z.object({
     query: z.string().describe("Zoekterm, bijv. 'stikstofbeleid debat' of 'minister AI beleid'"),
     scope: z
-      .enum(["web", "twitter", "linkedin"])
-      .default("web")
-      .describe("Zoekbereik: 'web' (algemeen), 'twitter' (X/tweets), 'linkedin' (profielen/posts)"),
+      .enum(["twitter", "linkedin"])
+      .describe("Zoekbereik: 'twitter' (X/tweets), 'linkedin' (profielen/posts)"),
     maxResults: z.number().int().min(1).max(20).optional().default(10),
     recentDays: z
       .number()
@@ -103,29 +102,11 @@ export const searchExa = tool({
     }
 
     try {
-      let results: ExaResult[]
-
-      switch (scope) {
-        case "twitter":
-          results = await exaSearch(query, {
-            category: "tweet",
-            numResults: maxResults,
-            startPublishedDate,
-          })
-          break
-        case "linkedin":
-          results = await exaSearch(query, {
-            includeDomains: ["linkedin.com"],
-            numResults: maxResults,
-            startPublishedDate,
-          })
-          break
-        default:
-          results = await exaSearch(query, {
-            numResults: maxResults,
-            startPublishedDate,
-          })
-      }
+      const results = await exaSearch(query,
+        scope === "twitter"
+          ? { category: "tweet", numResults: maxResults, startPublishedDate }
+          : { includeDomains: ["linkedin.com"], numResults: maxResults, startPublishedDate },
+      )
 
       return {
         count: results.length,

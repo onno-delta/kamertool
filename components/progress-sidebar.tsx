@@ -31,7 +31,7 @@ const TOOL_LABELS: Record<string, string> = {
   getRecenteKamervragen: "Recente Kamervragen",
   searchOpenTK: "OpenTK zoeken",
   getOpenTKDocument: "OpenTK document",
-  searchExa: "Web/social zoeken",
+  searchExa: "Social zoeken",
 }
 
 export function getStepLabel(tool: string, args: Record<string, unknown>): string {
@@ -43,8 +43,8 @@ export function getStepLabel(tool: string, args: Record<string, unknown>): strin
     }
   }
   if (tool === "searchExa") {
-    const scopeLabels: Record<string, string> = { twitter: "X/Twitter", linkedin: "LinkedIn", web: "Web" }
-    const base = scopeLabels[(args?.scope as string) ?? "web"] ?? "Web/social"
+    const scopeLabels: Record<string, string> = { twitter: "X/Twitter", linkedin: "LinkedIn" }
+    const base = scopeLabels[(args?.scope as string)] ?? "Social"
     const query = args?.query as string | undefined
     return query ? `${base}: "${query}"` : base
   }
