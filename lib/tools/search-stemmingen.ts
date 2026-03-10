@@ -1,6 +1,30 @@
 import { tool } from "ai"
 import { z } from "zod"
-import { queryTK, buildContainsFilter } from "@/lib/tk-api"
+import { queryTK } from "@/lib/tk-api"
+
+/**
+ * Build a Zaak/any() lambda filter for searching within the Besluit→Zaak
+ * many-to-many navigation property.  Each word must match at least one of
+ * Onderwerp or Titel inside the related Zaak collection.
+ */
+function buildZaakTextFilter(query: string): string {
+  const words = query
+    .replace(/["']/g, "")
+    .split(/\s+/)
+    .filter(Boolean)
+    .filter((w) => w.length >= 2)
+    .map((w) => w.replace(/'/g, "''"))
+
+  if (words.length === 0) return ""
+
+  // Each word: Zaak/any(z: contains(z/Onderwerp,'word') or contains(z/Titel,'word'))
+  return words
+    .map(
+      (w) =>
+        `Zaak/any(z:contains(z/Onderwerp,'${w}') or contains(z/Titel,'${w}'))`,
+    )
+    .join(" and ")
+}
 
 export const searchStemmingen = tool({
   description:
@@ -21,83 +45,63 @@ export const searchStemmingen = tool({
     maxResults: z.number().int().min(1).max(20).optional().default(10),
   }),
   execute: async ({ query, zaakId, maxResults }) => {
-    // Direct lookup by zaakId
+    // Direct lookup by zaakId — use Zaak/any() lambda since Besluit↔Zaak is many-to-many
     if (zaakId) {
       const besluiten = await queryTK("Besluit", {
-        $filter: `Zaak_Id eq ${zaakId} and StemmingsSoort ne null and Verwijderd eq false`,
+        $filter: `Zaak/any(z:z/Id eq ${zaakId}) and StemmingsSoort ne null and Verwijderd eq false`,
         $select: "Id,BesluitSoort,BesluitTekst,StemmingsSoort",
         $expand:
-          "Stemming($select=Soort,ActorNaam,ActorFractie,FractieGrootte)",
+          "Stemming($select=Soort,ActorNaam,ActorFractie,FractieGrootte),Zaak($select=Id,Onderwerp,Titel,Nummer,Soort,GestartOp)",
+        $orderby: "GewijzigdOp desc",
       })
 
       return {
         count: besluiten.length,
-        results: besluiten.map(formatBesluit),
+        results: besluiten.map(formatBesluitWithZaak),
       }
     }
 
-    // Search by query: first find relevant Zaken, then get their stemmingen
+    // Search by query — single query using Zaak/any() lambda filter on Besluit
     if (!query) {
       return { count: 0, results: [], error: "Geef een 'query' of 'zaakId' op." }
     }
 
-    const textFilter = buildContainsFilter(query, ["Onderwerp", "Titel"])
-    if (!textFilter) {
+    const zaakFilter = buildZaakTextFilter(query)
+    if (!zaakFilter) {
       return { count: 0, results: [] }
     }
 
-    // Find Zaken that have stemmingen (BesluitSoort contains stemming info)
-    const zaken = await queryTK("Zaak", {
-      $filter: `${textFilter} and Verwijderd eq false`,
-      $select: "Id,Nummer,Soort,Onderwerp,Titel,GestartOp",
-      $orderby: "GestartOp desc",
+    const besluiten = await queryTK("Besluit", {
+      $filter: `${zaakFilter} and StemmingsSoort ne null and Verwijderd eq false`,
+      $select: "Id,BesluitSoort,BesluitTekst,StemmingsSoort",
+      $expand:
+        "Stemming($select=Soort,ActorNaam,ActorFractie,FractieGrootte),Zaak($select=Id,Onderwerp,Titel,Nummer,Soort,GestartOp)",
+      $orderby: "GewijzigdOp desc",
       $top: String(maxResults),
     })
 
-    if (zaken.length === 0) {
-      return { count: 0, results: [] }
-    }
-
-    // For each zaak, fetch besluiten with stemmingen
-    const zaakIds = zaken.map((z: Record<string, unknown>) => z.Id as string)
-    const filterParts = zaakIds.map((id: string) => `Zaak_Id eq ${id}`)
-    const besluiten = await queryTK("Besluit", {
-      $filter: `(${filterParts.join(" or ")}) and StemmingsSoort ne null and Verwijderd eq false`,
-      $select: "Id,BesluitSoort,BesluitTekst,StemmingsSoort,Zaak_Id",
-      $expand:
-        "Stemming($select=Soort,ActorNaam,ActorFractie,FractieGrootte)",
-      $top: "50",
-    })
-
-    // Enrich besluiten with zaak metadata
-    const zaakMap = new Map(
-      zaken.map((z: Record<string, unknown>) => [z.Id, z]),
-    )
-
     return {
       count: besluiten.length,
-      results: besluiten.map((b: Record<string, unknown>) => {
-        const zaak = zaakMap.get(b.Zaak_Id) as Record<string, unknown> | undefined
-        return {
-          ...formatBesluit(b),
-          zaak: zaak
-            ? {
-                nummer: zaak.Nummer,
-                type: zaak.Soort,
-                onderwerp: zaak.Onderwerp || zaak.Titel,
-                datum: zaak.GestartOp,
-              }
-            : undefined,
-        }
-      }),
+      results: besluiten.map(formatBesluitWithZaak),
     }
   },
 })
 
-function formatBesluit(b: Record<string, unknown>) {
+function formatBesluitWithZaak(b: Record<string, unknown>) {
+  const zaken = b.Zaak as Array<Record<string, unknown>> | undefined
+  const zaak = zaken?.[0]
   return {
     besluit: b.BesluitTekst,
+    besluitSoort: b.BesluitSoort,
     soort: b.StemmingsSoort,
+    zaak: zaak
+      ? {
+          nummer: zaak.Nummer,
+          type: zaak.Soort,
+          onderwerp: zaak.Onderwerp || zaak.Titel,
+          datum: zaak.GestartOp,
+        }
+      : undefined,
     stemmingen: (
       (b.Stemming as Array<Record<string, unknown>>) ?? []
     ).map((s) => ({
