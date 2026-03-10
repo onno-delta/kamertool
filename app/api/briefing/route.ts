@@ -23,7 +23,7 @@ import {
   getOpenTKDocument,
 } from "@/lib/tools"
 import { NextResponse } from "next/server"
-import { getDefaultSkill, getDefaultSteps } from "@/lib/meeting-skills"
+import { getDefaultSkill } from "@/lib/meeting-skills"
 import { briefingBodySchema } from "@/lib/validation"
 
 export const maxDuration = 300
@@ -173,24 +173,33 @@ Bronvermelding: gebruik doorlopend genummerde voetnoten [1], [2], [3] etc. in de
           // that have NO tool calls (= the actual briefing writing step).
           const stepTexts: { text: string; hasTools: boolean }[] = [{ text: "", hasTools: false }]
 
-          // Send deliverable steps to client for progress sidebar
-          const skillSteps = soort ? getDefaultSteps(soort) : []
-          // Map normalized step name → original label for display
-          const stepMap = new Map(skillSteps.map((s) => [s.toLowerCase().trim(), s]))
-          const sentSections = new Set<string>()
+          // Process-oriented phases: always show 3 high-level steps
+          const FETCH_TOOLS = new Set(["getDocumentText", "getOpenTKDocument", "fetchWebPage"])
 
-          if (skillSteps.length > 0) {
-            controller.enqueue(
-              encoder.encode(JSON.stringify({ type: "steps", steps: skillSteps }) + "\n")
-            )
-          }
+          const processSteps = ["Bronnen zoeken", "Documenten lezen", "Briefing schrijven"]
+          controller.enqueue(
+            encoder.encode(JSON.stringify({ type: "steps", steps: processSteps }) + "\n")
+          )
+
+          // Track which process phases have been entered
+          let currentPhase: "search" | "fetch" | "write" = "search"
+          let hasSeenFetch = false
 
           for await (const part of result.fullStream) {
             if (part.type === "start-step") {
               stepTexts.push({ text: "", hasTools: false })
-              sentSections.clear()
             } else if (part.type === "tool-call") {
               stepTexts[stepTexts.length - 1].hasTools = true
+
+              // Advance phase based on tool type
+              if (FETCH_TOOLS.has(part.toolName) && !hasSeenFetch) {
+                hasSeenFetch = true
+                currentPhase = "fetch"
+                controller.enqueue(
+                  encoder.encode(JSON.stringify({ type: "section", title: "Documenten lezen" }) + "\n")
+                )
+              }
+
               controller.enqueue(
                 encoder.encode(
                   JSON.stringify({
@@ -214,22 +223,12 @@ Bronvermelding: gebruik doorlopend genummerde voetnoten [1], [2], [3] etc. in de
               const current = stepTexts[stepTexts.length - 1]
               current.text += part.text
 
-              // Detect section headers matching skill steps.
-              // The AI may write "## Stap 1 - Agendaoverzicht" or just "## Agendaoverzicht",
-              // so we check if the header *contains* any step name rather than exact match.
-              const headerRegex = /^## (.+)$/gm
-              let match
-              while ((match = headerRegex.exec(current.text)) !== null) {
-                const headerText = match[1].trim().toLowerCase()
-                for (const [normalized, original] of stepMap) {
-                  if (!sentSections.has(normalized) && headerText.includes(normalized)) {
-                    sentSections.add(normalized)
-                    controller.enqueue(
-                      encoder.encode(JSON.stringify({ type: "section", title: original }) + "\n")
-                    )
-                    break
-                  }
-                }
+              // When text flows in a step without tool calls, we're writing
+              if (!current.hasTools && currentPhase !== "write") {
+                currentPhase = "write"
+                controller.enqueue(
+                  encoder.encode(JSON.stringify({ type: "section", title: "Briefing schrijven" }) + "\n")
+                )
               }
             }
           }
