@@ -109,7 +109,7 @@ export const getOpenTKDocument = tool({
         .replace(/\n{3,}/g, "\n\n")
         .trim()
 
-      const maxLen = 12000
+      const maxLen = 8000
       const truncated = text.length > maxLen
       if (truncated) text = text.slice(0, maxLen) + "\n\n[... inhoud afgekapt]"
 

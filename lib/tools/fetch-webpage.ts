@@ -37,7 +37,7 @@ export const fetchWebPage = tool({
       const text = extractText(html)
 
       // Truncate to avoid blowing up context
-      const maxLen = 12000
+      const maxLen = 8000
       const truncated = text.length > maxLen
       const content = truncated ? text.slice(0, maxLen) + "\n\n[... inhoud afgekapt]" : text
 

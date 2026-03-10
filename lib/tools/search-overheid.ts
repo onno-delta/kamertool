@@ -66,7 +66,7 @@ export const getDocumentText = tool({
     try {
       let text = await fetchDocumentText(nummer)
 
-      const maxLen = 12000
+      const maxLen = 8000
       const truncated = text.length > maxLen
       if (truncated) text = text.slice(0, maxLen) + "\n\n[... inhoud afgekapt]"
 

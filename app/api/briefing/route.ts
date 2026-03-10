@@ -89,22 +89,18 @@ ${partyName ? `**Partij:** ${partyName} - frame de gehele briefing vanuit het pe
 ${hasKamerleden ? `**Kamerleden:** ${kamerleden.join(", ")} - zoek hun standpunten, ingediende moties en schriftelijke vragen op over dit onderwerp.` : ""}
 ${sources.length > 0 ? `**Eigen bronnen:** Raadpleeg deze actief met fetchWebPage wanneer relevant:\n${sources.map((s) => s.title ? `- ${s.title}: ${s.url}` : `- ${s.url}`).join("\n")}` : ""}
 ${skillPrompt ? `\n${skillPrompt}` : `
-## Onderzoek (maximaal 3 rondes, daarna DIRECT schrijven)
-Voer ALLE zoekacties tegelijk uit in een enkele ronde:
-- searchParlement: zoek relevante parlementaire documenten
-- searchOpenTK: zoek ook via OpenTK voor bredere dekking
-- searchKamerstukken: zoek Kamerstukken
-- searchDocumenten: zoek brieven en nota's
+## Onderzoek (maximaal 2 rondes, daarna DIRECT schrijven)
+Ronde 1 - Voer ALLE zoekacties tegelijk uit:
+- searchParlement: zoek relevante parlementaire documenten (primair)
 - searchToezeggingen: zoek openstaande toezeggingen
 - searchStemmingen: zoek stemgedrag
-- searchHandelingen: zoek eerdere debatten
 - searchNews: zoek actueel nieuws
 - searchPartyDocs: zoek het partijstandpunt
 
-Haal daarna de volledige tekst op van maximaal 3-5 belangrijkste documenten met getDocumentText of getOpenTKDocument (parallel).
+Ronde 2 - Haal de volledige tekst op van maximaal 3 belangrijkste documenten met getDocumentText of getOpenTKDocument (parallel).
 
 ## Briefing
-Schrijf daarna DIRECT de volledige briefing. Schrijf de briefing met deze secties:
+Schrijf daarna DIRECT de volledige briefing met deze secties:
 
 ## Samenvatting
 ## Relevante Stukken
@@ -127,21 +123,14 @@ Zoek de daadwerkelijke inhoud van relevante stukken op en vat samen wat erin sta
 
 BELANGRIJK - voer ALTIJD meerdere zoekacties tegelijk uit in een enkele ronde. Roep NOOIT een tool alleen aan als je er meerdere tegelijk kunt aanroepen.
 
-BUDGETBEWUST WERKEN - Je hebt een budget van maximaal 20 tool-aanroepen. Plan je onderzoek zorgvuldig:
-- Ronde 1: Roep ALLE zoektools tegelijk aan (telt als 1 stap, ongeacht hoeveel tools). Streef naar maximaal 2-3 zoekrondes.
-- Ronde 2: Haal de volledige tekst op van maximaal 3-5 belangrijkste documenten (parallel, telt als 1 stap).
-- Ronde 3 (optioneel): Eén extra ronde voor aanvullende documenten als nodig.
-- RESERVEER ALTIJD de laatste stap voor het schrijven van de volledige briefing. Stop NOOIT na onderzoek zonder de briefing te schrijven.
+BUDGETBEWUST WERKEN - Je hebt een STRIKT budget van maximaal 12 tool-aanroepen verdeeld over maximaal 3 rondes. Overschrijding betekent dat de briefing niet wordt afgemaakt.
+- Ronde 1 (VERPLICHT): Roep ALLE zoektools tegelijk aan. Gebruik searchParlement als primaire bron, aangevuld met searchToezeggingen, searchStemmingen, searchNews en searchPartyDocs. Gebruik searchOpenTK alleen als alternatief als searchParlement weinig resultaten geeft.
+- Ronde 2 (VERPLICHT): Haal de volledige tekst op van maximaal 3 belangrijkste documenten met getDocumentText of getOpenTKDocument (parallel).
+- Ronde 3: SCHRIJF de briefing. Doe GEEN extra onderzoek meer.
 
-Werkwijze in twee fasen:
+CRUCIALE REGEL: Na 2 rondes tool-aanroepen MOET je direct de briefing schrijven. Een complete briefing met beperkt onderzoek is ALTIJD beter dan uitgebreid onderzoek zonder briefing. Stop NOOIT na onderzoek zonder de briefing te schrijven.
 
-Fase 1 - Onderzoek (maximaal 3 rondes tool-aanroepen): Roep ALLE relevante zoektools tegelijk aan in een enkele ronde (gebruik zowel searchParlement als searchOpenTK voor bredere dekking). Haal daarna met getDocumentText of getOpenTKDocument de volledige tekst op van de belangrijkste gevonden documenten (ook parallel). Wees selectief: haal alleen de meest relevante documenten op, niet alles.
-
-Fase 2 - Schrijven: Schrijf direct de VOLLEDIGE briefing met alle gevraagde secties. Vraag niet om bevestiging tussendoor - ga altijd automatisch door van onderzoek naar het schrijven van het eindproduct. Dit is het belangrijkste deel - het onderzoek is zinloos zonder een complete briefing als eindresultaat.
-
-CRUCIALE REGEL: Je MOET altijd eindigen met het schrijven van de volledige briefing. Als je merkt dat je al veel tool-aanroepen hebt gedaan, STOP dan onmiddellijk met verder onderzoek en schrijf de briefing met de informatie die je al hebt. Een complete briefing met beperkt onderzoek is ALTIJD beter dan uitgebreid onderzoek zonder briefing.
-
-Beschikbare zoektools: searchParlement (primair - doorzoekt alle parlementaire documenten via Overheid.nl), searchOpenTK (alternatieve full-text zoekmachine via OpenTK), searchDocumenten, searchKamerstukken, searchToezeggingen, searchStemmingen, searchHandelingen, searchNews, getRecenteKamervragen, searchPartyDocs, searchAgenda, fetchWebPage. Documentteksten ophalen: getDocumentText (Overheid.nl) of getOpenTKDocument (OpenTK).
+Toolkeuze: searchParlement is de primaire zoektool (doorzoekt alle parlementaire documenten). Gebruik NIET zowel searchParlement als searchKamerstukken/searchDocumenten/searchHandelingen voor dezelfde query - deze overlappen. Gebruik de gespecialiseerde tools alleen als je specifiek toezeggingen, stemmingen, agenda of nieuws nodig hebt.
 
 De instructies bevatten secties. Gebruik de sectienamen als kopjes (##) in de briefing. Begin NIET met een # titel of een inleidende zin zoals "Op basis van mijn onderzoek..." - start direct met het eerste ## kopje.
 
@@ -150,7 +139,7 @@ Bronvermelding: gebruik doorlopend genummerde voetnoten [1], [2], [3] etc. in de
 [2] Handelingen 2024-2025 nr. 12, item 5 - Plenair debat over klimaatbeleid
 [3] NOS - "Kabinet trekt extra geld uit voor defensie", 3 maart 2025${beyondPrompt}`,
       prompt,
-      stopWhen: stepCountIs(25),
+      stopWhen: stepCountIs(15),
       tools: {
         searchKamerstukken,
         searchHandelingen,

@@ -25,6 +25,7 @@ export const searchNews = tool({
         hl: "nl",
         num: maxResults,
       }),
+      signal: AbortSignal.timeout(10000),
     })
 
     if (!res.ok)

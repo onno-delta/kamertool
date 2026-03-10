@@ -1,6 +1,6 @@
 import { tool } from "ai"
 import { z } from "zod"
-import { queryTK, queryTKSingle, buildContainsFilter } from "@/lib/tk-api"
+import { queryTK, buildContainsFilter } from "@/lib/tk-api"
 
 export const searchHandelingen = tool({
   description:
@@ -22,24 +22,37 @@ export const searchHandelingen = tool({
       $top: String(maxResults),
     })
 
-    const results = await Promise.all(
-      agendapunten.slice(0, maxResults)
-        .filter((ap: Record<string, unknown>) => ap.Activiteit_Id)
-        .map(async (ap: Record<string, unknown>) => {
-          const activiteit = await queryTKSingle(
-            `Activiteit(${ap.Activiteit_Id})`,
-            { $select: "Id,Soort,Datum,Onderwerp,Aanvang,Einde" },
-          ).catch(() => null)
-          return {
-            onderwerp: ap.Onderwerp,
-            activiteit: activiteit ? {
-              soort: activiteit.Soort,
-              datum: activiteit.Datum,
-              onderwerp: activiteit.Onderwerp,
-            } : null,
-          }
-        })
-    )
+    // Batch-fetch activiteiten in a single OData query instead of N+1 calls
+    const activiteitIds = agendapunten
+      .filter((ap: Record<string, unknown>) => ap.Activiteit_Id)
+      .map((ap: Record<string, unknown>) => ap.Activiteit_Id as string)
+
+    const activiteitMap = new Map<string, Record<string, unknown>>()
+    if (activiteitIds.length > 0) {
+      const idFilter = activiteitIds.map((id: string) => `Id eq ${id}`).join(" or ")
+      const activiteiten = await queryTK("Activiteit", {
+        $filter: `(${idFilter}) and Verwijderd eq false`,
+        $select: "Id,Soort,Datum,Onderwerp,Aanvang,Einde",
+        $top: String(activiteitIds.length),
+      }).catch(() => [])
+      for (const a of activiteiten) {
+        activiteitMap.set(a.Id as string, a)
+      }
+    }
+
+    const results = agendapunten
+      .filter((ap: Record<string, unknown>) => ap.Activiteit_Id)
+      .map((ap: Record<string, unknown>) => {
+        const activiteit = activiteitMap.get(ap.Activiteit_Id as string)
+        return {
+          onderwerp: ap.Onderwerp,
+          activiteit: activiteit ? {
+            soort: activiteit.Soort,
+            datum: activiteit.Datum,
+            onderwerp: activiteit.Onderwerp,
+          } : null,
+        }
+      })
 
     return { count: results.length, results }
   },

@@ -39,7 +39,10 @@ export async function queryTK(entity: string, params: Record<string, string>) {
     ...params,
   })
   const url = `${BASE_URL}/${entity}?${searchParams}`
-  const res = await fetch(url, { next: { revalidate: 300 } })
+  const res = await fetch(url, {
+    next: { revalidate: 300 },
+    signal: AbortSignal.timeout(15000),
+  })
   if (!res.ok) throw new Error(`TK API error: ${res.status} ${res.statusText}`)
   const data = await res.json()
   return data.value ?? []
@@ -58,7 +61,10 @@ export async function queryTKSingle(
     ...params,
   })
   const url = `${BASE_URL}/${entity}?${searchParams}`
-  const res = await fetch(url, { next: { revalidate: 300 } })
+  const res = await fetch(url, {
+    next: { revalidate: 300 },
+    signal: AbortSignal.timeout(15000),
+  })
   if (!res.ok) throw new Error(`TK API error: ${res.status} ${res.statusText}`)
   return await res.json()
 }
