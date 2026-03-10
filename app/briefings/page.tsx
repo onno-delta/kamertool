@@ -3,8 +3,9 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import Link from "next/link"
 import ReactMarkdown from "react-markdown"
-import { Search, FileText, Download, ExternalLink, ArrowLeft, Inbox } from "lucide-react"
+import { Search, FileText, Download, ArrowLeft, Inbox, Copy, FileType, Eye } from "lucide-react"
 import { downloadBriefingPDF } from "@/lib/download-pdf"
+import { copyAsRichText } from "@/lib/copy-rich-text"
 
 type Briefing = {
   id: string
@@ -45,21 +46,8 @@ export default function BriefingsPage() {
     downloadBriefingPDF(selected.content, selected.topic)
   }, [selected])
 
-  const handleOpenPdf = useCallback(async () => {
-    if (!selected) return
-    const res = await fetch("/api/briefings/pdf", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content: selected.content, topic: selected.topic }),
-    })
-    if (!res.ok) return
-    const blob = await res.blob()
-    const url = URL.createObjectURL(blob)
-    window.open(url, "_blank")
-  }, [selected])
-
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+    <div>
       <div className="mx-auto w-full max-w-4xl px-4 py-6 pb-10 sm:px-6 sm:py-8">
         <nav aria-label="Kruimelpad" className="mb-4 text-sm text-text-muted">
           <Link href="/" className="hover:text-primary hover:underline">Home</Link>
@@ -162,44 +150,176 @@ export default function BriefingsPage() {
 
         {/* Briefing detail */}
         {selected && (
-          <div>
-            <div className="mb-4 flex items-center justify-between">
-              <button
-                onClick={() => setSelected(null)}
-                className="flex items-center gap-1.5 rounded border border-border px-3 py-1.5 text-sm font-medium text-primary hover:bg-surface-muted"
-              >
-                <ArrowLeft className="h-3.5 w-3.5" />
-                Terug naar overzicht
-              </button>
-              <div className="flex gap-2">
-                <button
-                  onClick={handleDownload}
-                  className="flex items-center gap-1.5 rounded bg-primary px-3 py-1.5 text-sm text-white hover:bg-primary-dark active:translate-y-px"
-                >
-                  <Download className="h-3.5 w-3.5" />
-                  Download PDF
-                </button>
-                <button
-                  onClick={handleOpenPdf}
-                  className="flex items-center gap-1.5 rounded border border-border bg-white px-3 py-1.5 text-sm text-primary hover:bg-surface-muted"
-                >
-                  <ExternalLink className="h-3.5 w-3.5" />
-                  Open PDF
-                </button>
+          <BriefingDetail
+            briefing={selected}
+            onBack={() => setSelected(null)}
+            onDownload={handleDownload}
+          />
+        )}
+      </div>
+    </div>
+  )
+}
+
+type ViewMode = "pdf" | "markdown"
+
+function BriefingDetail({
+  briefing,
+  onBack,
+  onDownload,
+}: {
+  briefing: Briefing
+  onBack: () => void
+  onDownload: () => void
+}) {
+  const [view, setView] = useState<ViewMode>("pdf")
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null)
+  const [pdfLoading, setPdfLoading] = useState(true)
+  const [pdfError, setPdfError] = useState(false)
+  const [copied, setCopied] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    setPdfLoading(true) // eslint-disable-line react-hooks/set-state-in-effect -- initial fetch
+    setPdfError(false)
+
+    fetch("/api/briefings/pdf", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content: briefing.content, topic: briefing.topic, partyName: briefing.partyName }),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("PDF failed")
+        return res.blob()
+      })
+      .then((blob) => {
+        if (cancelled) return
+        setPdfUrl(URL.createObjectURL(blob))
+        setPdfLoading(false)
+      })
+      .catch(() => {
+        if (cancelled) return
+        setPdfError(true)
+        setPdfLoading(false)
+        setView("markdown")
+      })
+
+    return () => { cancelled = true }
+  }, [briefing.content, briefing.topic, briefing.partyName])
+
+  function handleCopy() {
+    copyAsRichText(briefing.content)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  return (
+    <div>
+      {/* Header with back button and title */}
+      <div className="mb-4">
+        <button
+          onClick={onBack}
+          className="mb-3 flex items-center gap-1.5 rounded border border-border px-3 py-1.5 text-sm font-medium text-primary hover:bg-surface-muted"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          Terug naar overzicht
+        </button>
+        <h2 className="text-xl font-semibold text-primary">{briefing.topic}</h2>
+        <p className="mt-0.5 text-sm text-text-muted">
+          {new Date(briefing.createdAt).toLocaleDateString("nl-NL", { day: "numeric", month: "long", year: "numeric" })}
+          {briefing.partyName && <> - {briefing.partyName}</>}
+        </p>
+      </div>
+
+      {/* Content area with sidebar */}
+      <div className="gap-4 lg:grid lg:grid-cols-[1fr_200px]">
+        {/* Main content */}
+        <div className="rounded-xl border border-border-light bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)] overflow-hidden">
+          {view === "pdf" && (
+            <>
+              {pdfLoading && (
+                <div className="flex items-center justify-center py-20">
+                  <span className="h-6 w-6 animate-spin rounded-full border-2 border-border-light border-t-primary" />
+                  <span className="ml-3 text-sm text-text-secondary">PDF wordt geladen...</span>
+                </div>
+              )}
+              {pdfError && (
+                <div className="px-6 py-10 text-center">
+                  <p className="text-sm text-text-secondary">PDF preview niet beschikbaar.</p>
+                </div>
+              )}
+              {pdfUrl && (
+                <iframe
+                  src={pdfUrl}
+                  className="h-[80vh] w-full"
+                  title="Briefing PDF preview"
+                />
+              )}
+            </>
+          )}
+          {view === "markdown" && (
+            <div className="p-6">
+              <div className="prose prose-sm max-w-none prose-headings:mt-4 prose-headings:mb-2 prose-p:my-1.5 prose-li:my-0.5 prose-ul:my-1.5 prose-ol:my-1.5 prose-a:text-primary prose-a:underline">
+                <ReactMarkdown>{briefing.content}</ReactMarkdown>
               </div>
             </div>
-            <div className="rounded-xl border border-border-light bg-white p-6 shadow-[0_1px_3px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.02)]">
-              <h2 className="mb-1 text-xl font-semibold text-primary">{selected.topic}</h2>
-              <p className="mb-4 text-sm text-text-muted">
-                {new Date(selected.createdAt).toLocaleDateString("nl-NL")}
-                {selected.partyName && <> - {selected.partyName}</>}
-              </p>
-              <div className="prose prose-sm max-w-none prose-headings:mt-4 prose-headings:mb-2 prose-p:my-1.5 prose-li:my-0.5 prose-ul:my-1.5 prose-ol:my-1.5 prose-a:text-primary prose-a:underline">
-                <ReactMarkdown>{selected.content}</ReactMarkdown>
-              </div>
+          )}
+        </div>
+
+        {/* Sidebar */}
+        <div className="mt-4 lg:mt-0">
+          <div className="sticky top-4 rounded-xl border border-border-light bg-white p-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+            <h3 className="mb-3 text-[0.6875rem] font-semibold uppercase tracking-[0.075em] text-text-muted">
+              Weergave
+            </h3>
+            <div className="space-y-1">
+              <button
+                onClick={() => setView("pdf")}
+                className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                  view === "pdf"
+                    ? "bg-primary/5 text-primary"
+                    : "text-text-secondary hover:bg-surface-muted hover:text-primary"
+                }`}
+              >
+                <Eye className="h-4 w-4" />
+                PDF preview
+              </button>
+              <button
+                onClick={() => setView("markdown")}
+                className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                  view === "markdown"
+                    ? "bg-primary/5 text-primary"
+                    : "text-text-secondary hover:bg-surface-muted hover:text-primary"
+                }`}
+              >
+                <FileType className="h-4 w-4" />
+                Markdown
+              </button>
+            </div>
+
+            <div className="my-3 border-t border-border-light" />
+
+            <h3 className="mb-3 text-[0.6875rem] font-semibold uppercase tracking-[0.075em] text-text-muted">
+              Acties
+            </h3>
+            <div className="space-y-1">
+              <button
+                onClick={onDownload}
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-text-secondary hover:bg-surface-muted hover:text-primary"
+              >
+                <Download className="h-4 w-4" />
+                Download PDF
+              </button>
+              <button
+                onClick={handleCopy}
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-text-secondary hover:bg-surface-muted hover:text-primary"
+              >
+                <Copy className="h-4 w-4" />
+                {copied ? "Gekopieerd!" : "Kopieer tekst"}
+              </button>
             </div>
           </div>
-        )}
+        </div>
       </div>
     </div>
   )
