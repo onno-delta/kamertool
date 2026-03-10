@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 /* Rijkshuisstijl: lintblauw #154273 + tinten; Rijksoverheid Sans als basisfont */
 @font-face {
