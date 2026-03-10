@@ -31,6 +31,7 @@ const TOOL_LABELS: Record<string, string> = {
   getRecenteKamervragen: "Recente Kamervragen",
   searchOpenTK: "OpenTK zoeken",
   getOpenTKDocument: "OpenTK document",
+  searchExa: "Web/social zoeken",
 }
 
 export function getStepLabel(tool: string, args: Record<string, unknown>): string {
@@ -40,6 +41,12 @@ export function getStepLabel(tool: string, args: Record<string, unknown>): strin
     } catch {
       return "Webpagina ophalen"
     }
+  }
+  if (tool === "searchExa") {
+    const scopeLabels: Record<string, string> = { twitter: "X/Twitter", linkedin: "LinkedIn", web: "Web" }
+    const base = scopeLabels[(args?.scope as string) ?? "web"] ?? "Web/social"
+    const query = args?.query as string | undefined
+    return query ? `${base}: "${query}"` : base
   }
   const base = TOOL_LABELS[tool] ?? tool
   const query = args?.query as string | undefined
@@ -76,6 +83,7 @@ const TOOL_PHASE: Record<string, PhaseKey> = {
   searchNews: "search",
   getRecenteKamervragen: "search",
   searchOpenTK: "search",
+  searchExa: "search",
   getDocumentText: "fetch",
   getOpenTKDocument: "fetch",
   fetchWebPage: "fetch",

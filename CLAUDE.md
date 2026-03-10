@@ -51,7 +51,7 @@ Stroom: `lib/user-keys.ts` → `lib/crypto.ts` → `user_api_key`-tabel (versleu
 
 ### AI-tools (`lib/tools/`)
 
-Elf tools die het AI-model kan aanroepen tijdens chat- of briefing-generatie:
+Twaalf tools die het AI-model kan aanroepen tijdens chat- of briefing-generatie:
 - `search-overheid.ts` — **Primaire zoektool**: volledige tekstzoekopdracht over alle parlementaire documenten via Overheid.nl SRU API (`zoek.officielebekendmakingen.nl`). Exporteert `searchParlement` (zoeken), `getDocumentText` (volledige documenttekst ophalen op nummer) en `getRecenteKamervragen` (recente schriftelijke vragen). Gebruikt `lib/sru-api.ts` voor SRU-protocolafhandeling.
 - `search-kamerstukken.ts` — Kamerstukken via TK OData API
 - `search-documenten.ts` — Brieven, nota's, rapporten via TK OData API
@@ -61,6 +61,7 @@ Elf tools die het AI-model kan aanroepen tijdens chat- of briefing-generatie:
 - `search-agenda.ts` — Aankomende debatten en commissievergaderingen via TK OData API
 - `search-news.ts` — Nieuws via Serper API
 - `search-party-docs.ts` — Partijprogramma's + organisatiedocumenten uit de database (ILIKE-zoekopdracht)
+- `search-exa.ts` — Web, X/Twitter en LinkedIn zoeken via Exa API (scope: web/twitter/linkedin)
 - `fetch-webpage.ts` — Tekst ophalen en extraheren van een willekeurige URL
 
 De TK OData API-basis: `https://gegevensmagazijn.tweedekamer.nl/OData/v4/2.0` (wrapper in `lib/tk-api.ts`, 5 minuten cache).
@@ -183,6 +184,7 @@ ANTHROPIC_API_KEY     # Standaard Anthropic-sleutel (gratis tier terugval)
 OPENAI_API_KEY        # Optioneel: OpenAI-terugval
 GOOGLE_GENERATIVE_AI_API_KEY  # Optioneel: Google-terugval
 SERPER_API_KEY        # Google Serper voor nieuwszoeken
+EXA_API_KEY           # Exa API voor web/X/LinkedIn zoeken
 ENCRYPTION_KEY        # 64-teken hex voor AES-256-GCM (node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")
 ```
 

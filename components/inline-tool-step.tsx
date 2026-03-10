@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { Globe, FileText, Newspaper, BookOpen, ChevronRight } from "lucide-react"
+import { Globe, FileText, Newspaper, BookOpen, ChevronRight, Search } from "lucide-react"
 import { getStepLabel, getStepDetail } from "./progress-sidebar"
 
 type InlineToolStepProps = {
@@ -26,6 +26,7 @@ const TOOL_ICONS: Record<string, typeof Globe> = {
   searchPartyDocs: BookOpen,
   fetchWebPage: FileText,
   getDocumentText: FileText,
+  searchExa: Search,
 }
 
 function formatElapsed(ms: number): string {

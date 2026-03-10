@@ -22,6 +22,7 @@ import {
   getRecenteKamervragen,
   searchOpenTK,
   getOpenTKDocument,
+  searchExa,
 } from "@/lib/tools"
 import { NextResponse } from "next/server"
 import { chatBodySchema } from "@/lib/validation"
@@ -81,6 +82,7 @@ export async function POST(req: Request) {
       getRecenteKamervragen,
       searchOpenTK,
       getOpenTKDocument,
+      searchExa,
       searchPartyDocs: createSearchPartyDocs(
         partyId ?? null,
         organisationId ?? null

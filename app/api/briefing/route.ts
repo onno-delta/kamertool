@@ -21,6 +21,7 @@ import {
   getRecenteKamervragen,
   searchOpenTK,
   getOpenTKDocument,
+  searchExa,
 } from "@/lib/tools"
 import { NextResponse } from "next/server"
 import { assembleSkillPrompt } from "@/lib/meeting-skills"
@@ -155,6 +156,7 @@ Bronvermelding: gebruik doorlopend genummerde voetnoten [1], [2], [3] etc. in de
         getRecenteKamervragen,
         searchOpenTK,
         getOpenTKDocument,
+        searchExa,
         searchPartyDocs: createSearchPartyDocs(
           partyId ?? null,
           organisationId ?? null
