@@ -51,7 +51,7 @@ export const searchStemmingen = tool({
         $filter: `Zaak/any(z:z/Id eq ${zaakId}) and StemmingsSoort ne null and Verwijderd eq false`,
         $select: "Id,BesluitSoort,BesluitTekst,StemmingsSoort",
         $expand:
-          "Stemming($select=Soort,ActorNaam,ActorFractie,FractieGrootte),Zaak($select=Id,Onderwerp,Titel,Nummer,Soort,GestartOp)",
+          "Stemming($select=Soort,ActorNaam,ActorFractie,FractieGrootte),Zaak($select=Id,Onderwerp,Titel,Nummer,Soort,GestartOp),Agendapunt($select=Nummer)",
         $orderby: "GewijzigdOp desc",
       })
 
@@ -75,7 +75,7 @@ export const searchStemmingen = tool({
       $filter: `${zaakFilter} and StemmingsSoort ne null and Verwijderd eq false`,
       $select: "Id,BesluitSoort,BesluitTekst,StemmingsSoort",
       $expand:
-        "Stemming($select=Soort,ActorNaam,ActorFractie,FractieGrootte),Zaak($select=Id,Onderwerp,Titel,Nummer,Soort,GestartOp)",
+        "Stemming($select=Soort,ActorNaam,ActorFractie,FractieGrootte),Zaak($select=Id,Onderwerp,Titel,Nummer,Soort,GestartOp),Agendapunt($select=Nummer)",
       $orderby: "GewijzigdOp desc",
       $top: String(maxResults),
     })
@@ -90,6 +90,8 @@ export const searchStemmingen = tool({
 function formatBesluitWithZaak(b: Record<string, unknown>) {
   const zaken = b.Zaak as Array<Record<string, unknown>> | undefined
   const zaak = zaken?.[0]
+  const agendapunt = b.Agendapunt as Record<string, unknown> | undefined
+  const pNummer = agendapunt?.Nummer as string | undefined
   return {
     besluit: b.BesluitTekst,
     besluitSoort: b.BesluitSoort,
@@ -101,6 +103,9 @@ function formatBesluitWithZaak(b: Record<string, unknown>) {
           onderwerp: zaak.Onderwerp || zaak.Titel,
           datum: zaak.GestartOp,
         }
+      : undefined,
+    url: pNummer
+      ? `https://www.tweedekamer.nl/kamerstukken/stemmingsuitslagen/detail?id=${pNummer}&did=${pNummer}`
       : undefined,
     stemmingen: (
       (b.Stemming as Array<Record<string, unknown>>) ?? []
