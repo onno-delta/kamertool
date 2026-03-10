@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
+import ReactMarkdown from "react-markdown"
 import { MEETING_SKILLS, getDefaultUserPrompt } from "@/lib/meeting-skills"
 import { useDataContext } from "@/components/data-context"
 import {
@@ -23,6 +24,8 @@ import {
   RotateCcw,
   Save,
   Check,
+  Pencil,
+  Eye,
 } from "lucide-react"
 
 /** Map each meeting type to a lucide icon */
@@ -47,6 +50,7 @@ export default function InstructiesPage() {
   const { preferences, refreshPreferences } = useDataContext()
   const [meetingSkills, setMeetingSkills] = useState<Record<string, string>>({})
   const [expandedSkill, setExpandedSkill] = useState<string | null>(null)
+  const [editingSkill, setEditingSkill] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const prefsApplied = useRef(false)
@@ -150,48 +154,69 @@ export default function InstructiesPage() {
               </button>
               {isExpanded && (
                 <div className="border-t border-border-light px-5 pb-5 pt-4">
-                  <label className="mb-1.5 block text-xs font-medium text-text-muted">
-                    Briefing-instructies
-                  </label>
-                  <p className="mb-3 text-xs text-text-muted">
-                    Beschrijf wat elke sectie moet bevatten. Het onderzoek (welke bronnen worden doorzocht) wordt automatisch afgehandeld.
-                  </p>
-                  <textarea
-                    value={currentValue}
-                    onChange={(e) => {
-                      setMeetingSkills((prev) => ({
-                        ...prev,
-                        [skill.soort]: e.target.value,
-                      }))
-                      setSaved(false)
-                    }}
-                    rows={14}
-                    className="w-full rounded-xl border border-border bg-white px-4 py-3 text-sm leading-relaxed text-text placeholder:text-text-muted focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/10"
-                  />
-                  <div className="mt-3 flex items-center justify-between">
+                  <div className="mb-3 flex items-center justify-between">
                     <p className="text-xs text-text-muted">
                       {hasCustom
                         ? "Je gebruikt een aangepaste versie van deze instructie."
-                        : "Dit is de standaardinstructie. Pas de tekst aan om je eigen versie op te slaan."}
+                        : "Het onderzoek (welke bronnen worden doorzocht) wordt automatisch afgehandeld."}
                     </p>
-                    {hasCustom && (
+                    <div className="flex items-center gap-2">
+                      {hasCustom && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setMeetingSkills((prev) => {
+                              const next = { ...prev }
+                              delete next[skill.soort]
+                              return next
+                            })
+                            setEditingSkill(null)
+                            setSaved(false)
+                          }}
+                          className="flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-red-500 transition-colors hover:bg-red-50 hover:text-red-700"
+                        >
+                          <RotateCcw className="h-3 w-3" />
+                          Standaard
+                        </button>
+                      )}
                       <button
                         type="button"
-                        onClick={() => {
-                          setMeetingSkills((prev) => {
-                            const next = { ...prev }
-                            delete next[skill.soort]
-                            return next
-                          })
-                          setSaved(false)
-                        }}
-                        className="flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-red-500 transition-colors hover:bg-red-50 hover:text-red-700"
+                        onClick={() => setEditingSkill(editingSkill === skill.soort ? null : skill.soort)}
+                        className={`flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                          editingSkill === skill.soort
+                            ? "bg-primary/10 text-primary"
+                            : "text-text-muted hover:bg-surface-muted hover:text-primary"
+                        }`}
                       >
-                        <RotateCcw className="h-3 w-3" />
-                        Terugzetten naar standaard
+                        {editingSkill === skill.soort ? (
+                          <><Eye className="h-3 w-3" />Preview</>
+                        ) : (
+                          <><Pencil className="h-3 w-3" />Bewerken</>
+                        )}
                       </button>
-                    )}
+                    </div>
                   </div>
+
+                  {editingSkill === skill.soort ? (
+                    <textarea
+                      value={currentValue}
+                      onChange={(e) => {
+                        setMeetingSkills((prev) => ({
+                          ...prev,
+                          [skill.soort]: e.target.value,
+                        }))
+                        setSaved(false)
+                      }}
+                      rows={14}
+                      className="w-full rounded-xl border border-border bg-white px-4 py-3 text-sm leading-relaxed text-text placeholder:text-text-muted focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/10"
+                    />
+                  ) : (
+                    <div className="rounded-xl border border-border-light bg-white px-5 py-4">
+                      <div className="prose prose-sm max-w-none prose-headings:mt-3 prose-headings:mb-1.5 prose-headings:text-primary prose-p:my-1 prose-li:my-0.5 prose-ul:my-1 prose-ol:my-1">
+                        <ReactMarkdown>{currentValue}</ReactMarkdown>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
