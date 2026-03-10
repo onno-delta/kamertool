@@ -168,7 +168,10 @@ Bronvermelding: gebruik doorlopend genummerde voetnoten [1], [2], [3] etc. in de
       },
       async start(controller) {
         try {
-          let fullText = ""
+          // Track text per step. Steps with tool calls contain "thinking out loud"
+          // text (e.g. "Ik ga zoeken naar...") — we only keep text from steps
+          // that have NO tool calls (= the actual briefing writing step).
+          const stepTexts: { text: string; hasTools: boolean }[] = [{ text: "", hasTools: false }]
 
           // Send deliverable steps to client for progress sidebar
           const skillSteps = soort ? getDefaultSteps(soort) : []
@@ -184,12 +187,10 @@ Bronvermelding: gebruik doorlopend genummerde voetnoten [1], [2], [3] etc. in de
 
           for await (const part of result.fullStream) {
             if (part.type === "start-step") {
-              // Reset text at each new step — only the final step's text
-              // is the actual briefing; intermediate steps contain
-              // "thinking-out-loud" text between tool calls (#21)
-              fullText = ""
+              stepTexts.push({ text: "", hasTools: false })
               sentSections.clear()
             } else if (part.type === "tool-call") {
+              stepTexts[stepTexts.length - 1].hasTools = true
               controller.enqueue(
                 encoder.encode(
                   JSON.stringify({
@@ -210,14 +211,15 @@ Bronvermelding: gebruik doorlopend genummerde voetnoten [1], [2], [3] etc. in de
                 )
               )
             } else if (part.type === "text-delta") {
-              fullText += part.text
+              const current = stepTexts[stepTexts.length - 1]
+              current.text += part.text
 
               // Detect section headers matching skill steps.
               // The AI may write "## Stap 1 - Agendaoverzicht" or just "## Agendaoverzicht",
               // so we check if the header *contains* any step name rather than exact match.
               const headerRegex = /^## (.+)$/gm
               let match
-              while ((match = headerRegex.exec(fullText)) !== null) {
+              while ((match = headerRegex.exec(current.text)) !== null) {
                 const headerText = match[1].trim().toLowerCase()
                 for (const [normalized, original] of stepMap) {
                   if (!sentSections.has(normalized) && headerText.includes(normalized)) {
@@ -231,6 +233,12 @@ Bronvermelding: gebruik doorlopend genummerde voetnoten [1], [2], [3] etc. in de
               }
             }
           }
+
+          // Only keep text from steps without tool calls (= actual briefing writing)
+          const fullText = stepTexts
+            .filter((s) => !s.hasTools && s.text.trim())
+            .map((s) => s.text)
+            .join("\n\n")
 
           // Save to DB
           if (userId && fullText) {
