@@ -10,6 +10,8 @@ const MODELS: Record<string, { provider: string; modelId: string }> = {
   "gemini-2.5-flash": { provider: "google", modelId: "gemini-2.5-flash-preview-04-17" },
 }
 
+export const ALLOWED_MODEL_KEYS = Object.keys(MODELS) as [string, ...string[]]
+
 export const MODEL_OPTIONS = Object.entries(MODELS).map(([key, val]) => ({
   key,
   provider: val.provider,

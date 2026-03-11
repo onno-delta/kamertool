@@ -3,6 +3,7 @@ import { db } from "@/lib/db"
 import { briefings, parties } from "@/lib/db/schema"
 import { eq, desc, like, and } from "drizzle-orm"
 import { NextResponse } from "next/server"
+import { safeErrorResponse } from "@/lib/errors"
 
 export async function GET(req: Request) {
   try {
@@ -37,9 +38,6 @@ export async function GET(req: Request) {
     return NextResponse.json(results)
   } catch (error) {
     console.error("[briefings] ERROR:", error)
-    return NextResponse.json(
-      { error: String(error instanceof Error ? error.message : error) },
-      { status: 500 }
-    )
+    return safeErrorResponse(error)
   }
 }

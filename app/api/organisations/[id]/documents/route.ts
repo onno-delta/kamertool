@@ -4,6 +4,7 @@ import { orgDocuments } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 import { NextResponse } from "next/server"
 import { parseDocument, isSupportedType, getSupportedExtensions } from "@/lib/parse-document"
+import { safeErrorResponse } from "@/lib/errors"
 
 export async function GET(
   req: Request,
@@ -26,10 +27,7 @@ export async function GET(
     return NextResponse.json(docs)
   } catch (error) {
     console.error("[org/documents] GET ERROR:", error)
-    return NextResponse.json(
-      { error: String(error instanceof Error ? error.message : error) },
-      { status: 500 }
-    )
+    return safeErrorResponse(error)
   }
 }
 
@@ -60,6 +58,13 @@ export async function POST(
         return NextResponse.json({ error: "Geen bestand ontvangen" }, { status: 400 })
       }
 
+      if (file.size > 10_000_000) {
+        return NextResponse.json(
+          { error: "Bestand is te groot (max 10MB)" },
+          { status: 413 }
+        )
+      }
+
       if (!isSupportedType(file.type)) {
         return NextResponse.json(
           { error: `Bestandstype niet ondersteund. Ondersteund: ${getSupportedExtensions()}` },
@@ -85,10 +90,21 @@ export async function POST(
       const body = await req.json()
       title = body.title
       content = body.content
+
+      if (typeof content === "string" && content.length > 5_000_000) {
+        return NextResponse.json(
+          { error: "Inhoud is te groot (max 5MB)" },
+          { status: 413 }
+        )
+      }
     }
 
     if (!title || !content) {
       return NextResponse.json({ error: "Titel en inhoud zijn verplicht" }, { status: 400 })
+    }
+
+    if (typeof title === "string" && title.length > 500) {
+      return NextResponse.json({ error: "Titel is te lang (max 500 tekens)" }, { status: 400 })
     }
 
     const doc = await db.insert(orgDocuments).values({
@@ -100,9 +116,6 @@ export async function POST(
     return NextResponse.json(doc[0])
   } catch (error) {
     console.error("[org/documents] POST ERROR:", error)
-    return NextResponse.json(
-      { error: String(error instanceof Error ? error.message : error) },
-      { status: 500 }
-    )
+    return safeErrorResponse(error)
   }
 }

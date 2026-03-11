@@ -4,6 +4,7 @@ import { organisations, users } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 import { NextResponse } from "next/server"
 import { organisationSchema } from "@/lib/validation"
+import { safeErrorResponse } from "@/lib/errors"
 
 export async function POST(req: Request) {
   try {
@@ -32,9 +33,6 @@ export async function POST(req: Request) {
     return NextResponse.json(org[0])
   } catch (error) {
     console.error("[organisations] ERROR:", error)
-    return NextResponse.json(
-      { error: String(error instanceof Error ? error.message : error) },
-      { status: 500 }
-    )
+    return safeErrorResponse(error)
   }
 }

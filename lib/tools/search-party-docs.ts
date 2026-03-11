@@ -3,6 +3,7 @@ import { z } from "zod"
 import { db } from "@/lib/db"
 import { parties, orgDocuments } from "@/lib/db/schema"
 import { eq, and, sql } from "drizzle-orm"
+import { escapeILIKE } from "@/lib/sanitize"
 
 export function createSearchPartyDocs(
   partyId: string | null,
@@ -23,6 +24,8 @@ export function createSearchPartyDocs(
         excerpt: string
       }> = []
 
+      const escaped = escapeILIKE(query)
+
       // Search party programme
       if (partyId) {
         const partyResults = await db
@@ -31,7 +34,7 @@ export function createSearchPartyDocs(
           .where(
             and(
               eq(parties.id, partyId),
-              sql`${parties.programme} ILIKE ${"%" + query + "%"}`
+              sql`${parties.programme} ILIKE ${"%" + escaped + "%"}`
             )
           )
           .limit(1)
@@ -59,7 +62,7 @@ export function createSearchPartyDocs(
           .where(
             and(
               eq(orgDocuments.organisationId, organisationId),
-              sql`${orgDocuments.content} ILIKE ${"%" + query + "%"}`
+              sql`${orgDocuments.content} ILIKE ${"%" + escaped + "%"}`
             )
           )
           .limit(5)

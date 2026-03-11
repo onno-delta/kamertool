@@ -2,6 +2,7 @@ import { db } from "@/lib/db"
 import { parties } from "@/lib/db/schema"
 import { PARTY_SORT_ORDER } from "@/lib/parties"
 import { NextResponse } from "next/server"
+import { safeErrorResponse } from "@/lib/errors"
 
 type CachedParty = { id: string; name: string; shortName: string }
 let cachedParties: CachedParty[] | null = null
@@ -37,9 +38,6 @@ export async function GET() {
     return NextResponse.json(allParties)
   } catch (error) {
     console.error("[parties] ERROR:", error)
-    return NextResponse.json(
-      { error: String(error instanceof Error ? error.message : error) },
-      { status: 500 }
-    )
+    return safeErrorResponse(error)
   }
 }

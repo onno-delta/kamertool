@@ -26,6 +26,7 @@ import {
 } from "@/lib/tools"
 import { NextResponse } from "next/server"
 import { chatBodySchema } from "@/lib/validation"
+import { safeErrorResponse } from "@/lib/errors"
 
 export const maxDuration = 300
 
@@ -99,7 +100,9 @@ export async function POST(req: Request) {
       if (user) searchBeyondSources = user.searchBeyondSources
     }
 
-    const modelMessages = await convertToModelMessages(messages, { tools })
+    // Zod .passthrough() preserves all fields but its output type doesn't exactly
+    // match UIMessage. The runtime data is correct, so we use a type assertion.
+    const modelMessages = await convertToModelMessages(messages as any, { tools })
 
     const result = streamText({
       model: getModel(modelOpts),
@@ -112,7 +115,7 @@ export async function POST(req: Request) {
 
     const response = result.toUIMessageStreamResponse({ sendReasoning: false })
     if (setSessionCookie) {
-      const cookie = `session-id=${setSessionCookie}; Path=/; Max-Age=31536000; HttpOnly; SameSite=Lax`
+      const cookie = `session-id=${setSessionCookie}; Path=/; Max-Age=31536000; HttpOnly; SameSite=Lax; Secure`
       const headers = new Headers(response.headers)
       headers.append("Set-Cookie", cookie)
       const cloned = response.clone()
@@ -121,9 +124,6 @@ export async function POST(req: Request) {
     return response
   } catch (error) {
     console.error("[chat] ERROR:", error)
-    return NextResponse.json(
-      { error: String(error instanceof Error ? error.message : error) },
-      { status: 500 }
-    )
+    return safeErrorResponse(error)
   }
 }

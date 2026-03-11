@@ -26,6 +26,7 @@ import {
 import { NextResponse } from "next/server"
 import { assembleSkillPrompt } from "@/lib/meeting-skills"
 import { briefingBodySchema } from "@/lib/validation"
+import { safeErrorResponse } from "@/lib/errors"
 
 export const maxDuration = 300
 
@@ -242,14 +243,15 @@ Bronvermelding: gebruik doorlopend genummerde voetnoten [1], [2], [3] etc. in de
             .map((s) => s.text)
             .join("\n\n")
 
-          // Save to DB
-          if (userId && fullText) {
+          // Save to DB (cap at 500K to prevent oversized rows)
+          const trimmedContent = fullText.slice(0, 500_000)
+          if (userId && trimmedContent) {
             await db.insert(briefings).values({
               userId,
               organisationId: organisationId ?? null,
               partyId: partyId ?? null,
               topic,
-              content: fullText,
+              content: trimmedContent,
             })
           }
 
@@ -265,9 +267,7 @@ Bronvermelding: gebruik doorlopend genummerde voetnoten [1], [2], [3] etc. in de
             encoder.encode(
               JSON.stringify({
                 type: "error",
-                message: String(
-                  err instanceof Error ? err.message : err
-                ),
+                message: "Er is een fout opgetreden bij het genereren van de briefing",
               }) + "\n"
             )
           )
@@ -281,14 +281,11 @@ Bronvermelding: gebruik doorlopend genummerde voetnoten [1], [2], [3] etc. in de
       "Cache-Control": "no-cache",
     }
     if (setSessionCookie) {
-      headers["Set-Cookie"] = `session-id=${setSessionCookie}; Path=/; Max-Age=31536000; HttpOnly; SameSite=Lax`
+      headers["Set-Cookie"] = `session-id=${setSessionCookie}; Path=/; Max-Age=31536000; HttpOnly; SameSite=Lax; Secure`
     }
     return new Response(stream, { headers })
   } catch (error) {
     console.error("[briefing] ERROR:", error)
-    return NextResponse.json(
-      { error: String(error instanceof Error ? error.message : error) },
-      { status: 500 }
-    )
+    return safeErrorResponse(error)
   }
 }

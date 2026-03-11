@@ -1,5 +1,6 @@
 import { queryTK } from "@/lib/tk-api"
 import { NextResponse } from "next/server"
+import { safeErrorResponse } from "@/lib/errors"
 
 export async function GET(req: Request) {
   try {
@@ -37,9 +38,6 @@ export async function GET(req: Request) {
     return NextResponse.json(results)
   } catch (error) {
     console.error("[agenda] ERROR:", error)
-    return NextResponse.json(
-      { error: String(error instanceof Error ? error.message : error) },
-      { status: 500 }
-    )
+    return safeErrorResponse(error)
   }
 }

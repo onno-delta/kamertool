@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { safeErrorResponse } from "@/lib/errors"
 import {
   getPersonDocuments,
   getFractieStemmingen,
@@ -58,9 +59,6 @@ export async function GET(
     }
   } catch (error) {
     console.error(`[smoelenboek/activiteiten] ERROR (${type}):`, error)
-    return NextResponse.json(
-      { error: String(error instanceof Error ? error.message : error) },
-      { status: 500 }
-    )
+    return safeErrorResponse(error)
   }
 }

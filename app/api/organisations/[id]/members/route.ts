@@ -3,6 +3,12 @@ import { db } from "@/lib/db"
 import { users } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 import { NextResponse } from "next/server"
+import { z } from "zod"
+import { safeErrorResponse } from "@/lib/errors"
+
+const inviteSchema = z.object({
+  email: z.string().email().max(200),
+})
 
 export async function GET(
   req: Request,
@@ -25,10 +31,7 @@ export async function GET(
     return NextResponse.json(members)
   } catch (error) {
     console.error("[org/members] GET ERROR:", error)
-    return NextResponse.json(
-      { error: String(error instanceof Error ? error.message : error) },
-      { status: 500 }
-    )
+    return safeErrorResponse(error)
   }
 }
 
@@ -44,20 +47,30 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { email } = await req.json()
+    const body = await req.json()
+    const parsed = inviteSchema.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Ongeldig e-mailadres" }, { status: 400 })
+    }
+
     console.log("[org/members] POST", { orgId: id })
-    const user = await db.query.users.findFirst({ where: eq(users.email, email) })
+    const user = await db.query.users.findFirst({ where: eq(users.email, parsed.data.email) })
 
     if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 })
+
+    // Check if user is already in another organisation
+    if (user.organisationId && user.organisationId !== id) {
+      return NextResponse.json(
+        { error: "Gebruiker is al lid van een andere organisatie" },
+        { status: 409 }
+      )
+    }
 
     await db.update(users).set({ organisationId: id }).where(eq(users.id, user.id))
 
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error("[org/members] POST ERROR:", error)
-    return NextResponse.json(
-      { error: String(error instanceof Error ? error.message : error) },
-      { status: 500 }
-    )
+    return safeErrorResponse(error)
   }
 }

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { safeErrorResponse } from "@/lib/errors"
 import { queryTKSingle } from "@/lib/tk-api"
 import { getCommissionMap } from "@/lib/tk-commissions"
 import { getCurrentMembers } from "@/lib/tk-members"
@@ -160,9 +161,6 @@ export async function GET(
     })
   } catch (error) {
     console.error("[smoelenboek/id] ERROR:", error)
-    return NextResponse.json(
-      { error: String(error instanceof Error ? error.message : error) },
-      { status: 500 }
-    )
+    return safeErrorResponse(error)
   }
 }

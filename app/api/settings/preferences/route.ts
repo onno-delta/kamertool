@@ -3,6 +3,25 @@ import { db } from "@/lib/db"
 import { users, userDossiers, userKamerleden, userMeetingSkills, userSources, userHiddenSources } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 import { NextResponse } from "next/server"
+import { safeErrorResponse } from "@/lib/errors"
+import { z } from "zod"
+
+const preferencesSchema = z.object({
+  defaultPartyId: z.string().uuid().nullable().optional(),
+  searchBeyondSources: z.boolean().optional(),
+  dossiers: z.array(z.string().max(500)).max(50).optional(),
+  kamerleden: z.array(z.object({
+    id: z.string().max(200),
+    naam: z.string().max(200),
+    fractie: z.string().max(100).optional(),
+  })).max(50).optional(),
+  meetingSkills: z.record(z.string().max(100), z.string().max(10_000)).optional(),
+  sources: z.array(z.object({
+    url: z.string().url().max(2000),
+    title: z.string().max(500).optional(),
+  })).max(50).optional(),
+  hiddenSources: z.array(z.string().max(200)).max(50).optional(),
+})
 
 export async function GET() {
   try {
@@ -54,10 +73,7 @@ export async function GET() {
     })
   } catch (error) {
     console.error("[settings/preferences] GET ERROR:", error)
-    return NextResponse.json(
-      { error: String(error instanceof Error ? error.message : error) },
-      { status: 500 }
-    )
+    return safeErrorResponse(error)
   }
 }
 
@@ -68,8 +84,12 @@ export async function PUT(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { defaultPartyId, dossiers, kamerleden, meetingSkills, sources, searchBeyondSources, hiddenSources } = await req.json()
-
+    const body = await req.json()
+    const parsed = preferencesSchema.safeParse(body)
+    if (!parsed.success) {
+      return safeErrorResponse(parsed.error)
+    }
+    const { defaultPartyId, dossiers, kamerleden, meetingSkills, sources, searchBeyondSources, hiddenSources } = parsed.data
 
     // Update default party + search beyond sources
     await db
@@ -166,9 +186,6 @@ export async function PUT(req: Request) {
     return NextResponse.json({ ok: true })
   } catch (error) {
     console.error("[settings/preferences] PUT ERROR:", error)
-    return NextResponse.json(
-      { error: String(error instanceof Error ? error.message : error) },
-      { status: 500 }
-    )
+    return safeErrorResponse(error)
   }
 }

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { getCurrentMembers } from "@/lib/tk-members"
 import { KABINET } from "@/data/kabinet"
+import { safeErrorResponse } from "@/lib/errors"
 
 function tkFotoUrl(personId: string, size: "thumbnail" | "medium" = "thumbnail"): string {
   return `https://www.tweedekamer.nl/sites/default/files/styles/${size}/public/tk_external_data_ggm_sync/photos/${personId}.jpg`
@@ -48,9 +49,6 @@ export async function GET() {
     return NextResponse.json(all)
   } catch (error) {
     console.error("[smoelenboek] ERROR:", error)
-    return NextResponse.json(
-      { error: String(error instanceof Error ? error.message : error) },
-      { status: 500 }
-    )
+    return safeErrorResponse(error)
   }
 }

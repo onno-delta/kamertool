@@ -3,6 +3,7 @@ import { db } from "@/lib/db"
 import { smoelenboekMedewerkers } from "@/lib/db/schema"
 import { eq, and } from "drizzle-orm"
 import { NextResponse } from "next/server"
+import { safeErrorResponse } from "@/lib/errors"
 
 export async function DELETE(
   _req: Request,
@@ -42,9 +43,6 @@ export async function DELETE(
     return NextResponse.json({ ok: true })
   } catch (error) {
     console.error("[smoelenboek/medewerker/delete] ERROR:", error)
-    return NextResponse.json(
-      { error: String(error instanceof Error ? error.message : error) },
-      { status: 500 }
-    )
+    return safeErrorResponse(error)
   }
 }

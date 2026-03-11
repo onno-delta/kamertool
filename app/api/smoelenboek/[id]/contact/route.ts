@@ -3,6 +3,7 @@ import { db } from "@/lib/db"
 import { smoelenboekContacts } from "@/lib/db/schema"
 import { smoelenboekContactSchema } from "@/lib/validation"
 import { NextResponse } from "next/server"
+import { safeErrorResponse } from "@/lib/errors"
 
 export async function POST(
   req: Request,
@@ -36,9 +37,6 @@ export async function POST(
     return NextResponse.json(result)
   } catch (error) {
     console.error("[smoelenboek/contact] ERROR:", error)
-    return NextResponse.json(
-      { error: String(error instanceof Error ? error.message : error) },
-      { status: 500 }
-    )
+    return safeErrorResponse(error)
   }
 }
