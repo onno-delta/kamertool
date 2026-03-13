@@ -214,6 +214,8 @@ export const smoelenboekProfiles = pgTable("smoelenboek_profile", {
   email: text("email"),
   bio: text("bio"),
   tweedekamerUrl: text("tweedekamerUrl"),
+  partyWebsiteUrl: text("partyWebsiteUrl"),
+  tags: text("tags"), // JSON-encoded string[]
   scrapedAt: timestamp("scrapedAt", { mode: "date" }).notNull().defaultNow(),
 })
 

@@ -46,6 +46,8 @@ async function getOrScrapeProfile(personId: string, naam: string) {
       email,
       bio,
       tweedekamerUrl: profileUrl,
+      partyWebsiteUrl: cached?.partyWebsiteUrl ?? null,
+      tags: cached?.tags ?? null,
       scrapedAt: new Date(),
     }
 
@@ -142,6 +144,10 @@ export async function GET(
     const fractie = member?.fractie ?? undefined
     const commissies = commissionMap.get(id) ?? []
 
+    const parsedTags = profile?.tags
+      ? (JSON.parse(profile.tags) as string[])
+      : null
+
     return NextResponse.json({
       id: persoon.Id,
       naam,
@@ -156,6 +162,8 @@ export async function GET(
       email: profile?.email ?? null,
       bio: profile?.bio ?? null,
       tweedekamerUrl: profile?.tweedekamerUrl ?? null,
+      partyWebsiteUrl: profile?.partyWebsiteUrl ?? null,
+      tags: parsedTags,
       contacten,
       medewerkers,
     })

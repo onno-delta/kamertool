@@ -15,6 +15,7 @@ type Entry = {
   portefeuille?: string
   fotoUrl?: string
   commissies?: string[]
+  tags?: string[]
 }
 
 const ROLE_OPTIONS = [
@@ -30,6 +31,7 @@ export default function ColofonPage() {
   const [selectedParties, setSelectedParties] = useState<Set<string>>(new Set())
   const [selectedRoles, setSelectedRoles] = useState<Set<string>>(new Set())
   const [selectedDossiers, setSelectedDossiers] = useState<Set<string>>(new Set())
+  const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     fetch("/api/colofon")
@@ -73,13 +75,26 @@ export default function ColofonPage() {
       .map((d) => ({ value: d.id, label: d.label, count: counts[d.id] }))
   }, [entries])
 
+  const tagOptions = useMemo(() => {
+    const counts: Record<string, number> = {}
+    for (const e of entries) {
+      if (!e.tags) continue
+      for (const t of e.tags) {
+        counts[t] = (counts[t] ?? 0) + 1
+      }
+    }
+    return Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
+      .map(([tag, count]) => ({ value: tag, label: tag, count }))
+  }, [entries])
+
   const filtered = useMemo(() => {
     let items = entries
     if (search) {
       const q = search.toLowerCase()
       items = items.filter((e) => {
         if (e.naam.toLowerCase().includes(q)) return true
-        // Also search on commission/dossier names
+        // Search on commission/dossier names
         if (e.commissies) {
           for (const c of e.commissies) {
             if (c.toLowerCase().includes(q)) return true
@@ -88,6 +103,12 @@ export default function ColofonPage() {
               const label = DOSSIERS.find((ds) => ds.id === d)?.label
               if (label?.toLowerCase().includes(q)) return true
             }
+          }
+        }
+        // Search on tags
+        if (e.tags) {
+          for (const t of e.tags) {
+            if (t.toLowerCase().includes(q)) return true
           }
         }
         return false
@@ -108,8 +129,14 @@ export default function ColofonPage() {
         })
       })
     }
+    if (selectedTags.size > 0) {
+      items = items.filter((e) => {
+        if (!e.tags) return false
+        return e.tags.some((t) => selectedTags.has(t))
+      })
+    }
     return items
-  }, [entries, search, selectedParties, selectedRoles, selectedDossiers])
+  }, [entries, search, selectedParties, selectedRoles, selectedDossiers, selectedTags])
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -149,6 +176,15 @@ export default function ColofonPage() {
             selected={selectedDossiers}
             onChange={setSelectedDossiers}
           />
+          {tagOptions.length > 0 && (
+            <MultiSelect
+              label="Thema"
+              options={tagOptions}
+              selected={selectedTags}
+              onChange={setSelectedTags}
+              searchable
+            />
+          )}
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-text-muted" />
             <input

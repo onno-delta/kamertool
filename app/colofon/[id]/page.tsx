@@ -35,6 +35,8 @@ type PersonDetail = {
   email?: string | null
   bio?: string | null
   tweedekamerUrl?: string | null
+  partyWebsiteUrl?: string | null
+  tags?: string[] | null
   contacten?: ContactItem[]
   medewerkers?: MedewerkerItem[]
 }
@@ -857,6 +859,19 @@ export default function PersonDetailPage({
               </div>
             )}
 
+            {person.tags && person.tags.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-1">
+                {person.tags.map((t) => (
+                  <span
+                    key={t}
+                    className="rounded-full bg-teal-50 px-2 py-0.5 text-[10px] font-medium text-teal-700"
+                  >
+                    {t}
+                  </span>
+                ))}
+              </div>
+            )}
+
             {person.bio && (
               <p className="mt-3 text-sm leading-relaxed text-text-secondary">
                 {person.bio}
@@ -864,18 +879,31 @@ export default function PersonDetailPage({
             )}
 
             {!person.isKabinet && (
-              <a
-                href={
-                  person.tweedekamerUrl ??
-                  `https://www.tweedekamer.nl/kamerleden_en_commissies/alle_kamerleden/${person.naam.toLowerCase().replace(/\s+/g, "-")}`
-                }
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-2 inline-flex items-center gap-1 text-xs text-primary hover:underline"
-              >
-                Profiel op tweedekamer.nl
-                <ExternalLink className="h-3 w-3" />
-              </a>
+              <div className="mt-2 flex flex-wrap items-center gap-3">
+                <a
+                  href={
+                    person.tweedekamerUrl ??
+                    `https://www.tweedekamer.nl/kamerleden_en_commissies/alle_kamerleden/${person.naam.toLowerCase().replace(/\s+/g, "-")}`
+                  }
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                >
+                  Profiel op tweedekamer.nl
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+                {person.partyWebsiteUrl && (
+                  <a
+                    href={person.partyWebsiteUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                  >
+                    Profiel op {new URL(person.partyWebsiteUrl).hostname.replace("www.", "")}
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                )}
+              </div>
             )}
             {person.isKabinet && (
               <a

@@ -13,10 +13,12 @@ type Props = {
   options: Option[]
   selected: Set<string>
   onChange: (selected: Set<string>) => void
+  searchable?: boolean
 }
 
-export function MultiSelect({ label, options, selected, onChange }: Props) {
+export function MultiSelect({ label, options, selected, onChange, searchable }: Props) {
   const [open, setOpen] = useState(false)
+  const [query, setQuery] = useState("")
   const ref = useRef<HTMLDivElement>(null)
 
   // Close on outside click
@@ -76,8 +78,25 @@ export function MultiSelect({ label, options, selected, onChange }: Props) {
 
       {open && (
         <div className="absolute left-0 top-full z-50 mt-1 w-72 rounded-lg border border-border bg-white shadow-lg">
+          {searchable && (
+            <div className="border-b border-border-light px-3 py-2">
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Zoeken..."
+                autoFocus
+                className="w-full rounded border border-border bg-white px-2 py-1 text-sm text-primary placeholder:text-text-muted focus:border-primary focus:outline-none"
+              />
+            </div>
+          )}
           <div className="max-h-64 overflow-y-auto py-1">
-            {options.map((opt) => {
+            {(searchable && query
+              ? options.filter((o) =>
+                  o.label.toLowerCase().includes(query.toLowerCase())
+                )
+              : options
+            ).map((opt) => {
               const isSelected = selected.has(opt.value)
               return (
                 <button
