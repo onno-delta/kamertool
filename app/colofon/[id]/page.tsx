@@ -910,7 +910,7 @@ export default function PersonDetailPage({
       </div>
 
       {/* Activity feed */}
-      <div className="mb-8 grid gap-4 lg:grid-cols-2">
+      <div className="pb-12 grid gap-4 lg:grid-cols-2">
         {!person.isKabinet && (
           <ActivitySection
             title="Documenten"
