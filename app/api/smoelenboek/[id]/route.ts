@@ -126,7 +126,7 @@ export async function GET(
     const [members, commissionMap, profile, contacten, medewerkers] =
       await Promise.all([
         getCurrentMembers(),
-        getCommissionMap(),
+        getCommissionMap({ vastOnly: true }),
         getOrScrapeProfile(id, naam),
         db
           .select()

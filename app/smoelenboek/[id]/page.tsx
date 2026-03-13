@@ -347,11 +347,13 @@ function ContactenSection({
   personId,
   userId,
   onUpdate,
+  email,
 }: {
   contacten: ContactItem[]
   personId: string
   userId?: string
   onUpdate: () => void
+  email?: string | null
 }) {
   const [showForm, setShowForm] = useState(false)
   const [type, setType] = useState("email")
@@ -388,7 +390,7 @@ function ContactenSection({
     if (res.ok) onUpdate()
   }
 
-  if (!userId && contacten.length === 0) return null
+  if (!userId && contacten.length === 0 && !email) return null
 
   return (
     <div className="rounded-xl border border-border-light bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.02)]">
@@ -397,7 +399,18 @@ function ContactenSection({
         <h2 className="text-sm font-semibold text-primary">Contactgegevens</h2>
       </div>
       <div className="px-4 py-3">
-        {contacten.length === 0 && !showForm && (
+        {email && (
+          <div className="mb-2 flex items-center gap-3 rounded-lg border border-border-light px-3 py-2">
+            <Mail className="h-4 w-4 shrink-0 text-text-muted" />
+            <a
+              href={`mailto:${email}`}
+              className="min-w-0 flex-1 text-sm text-primary hover:underline"
+            >
+              {email}
+            </a>
+          </div>
+        )}
+        {contacten.length === 0 && !email && !showForm && (
           <p className="text-sm text-text-muted">
             Nog geen contactgegevens toegevoegd.
           </p>
@@ -803,16 +816,6 @@ export default function PersonDetailPage({
               </span>
             </div>
 
-            {person.email && (
-              <a
-                href={`mailto:${person.email}`}
-                className="mt-2 inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
-              >
-                <Mail className="h-3.5 w-3.5" />
-                {person.email}
-              </a>
-            )}
-
             {person.portefeuille && (
               <p className="mt-2 text-sm text-text-secondary">
                 {person.portefeuille}
@@ -862,6 +865,7 @@ export default function PersonDetailPage({
           personId={id}
           userId={userId}
           onUpdate={fetchPerson}
+          email={person.email}
         />
         <MedewerkersSection
           medewerkers={person.medewerkers ?? []}
