@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { getCurrentMembers } from "@/lib/tk-members"
+import { getCommissionMap } from "@/lib/tk-commissions"
 import { KABINET } from "@/data/kabinet"
 import { safeErrorResponse } from "@/lib/errors"
 
@@ -14,11 +15,15 @@ export type ColofonEntry = {
   rol: "Kamerlid" | "Minister" | "Staatssecretaris"
   portefeuille?: string
   fotoUrl?: string
+  commissies?: string[]
 }
 
 export async function GET() {
   try {
-    const members = await getCurrentMembers()
+    const [members, commissionMap] = await Promise.all([
+      getCurrentMembers(),
+      getCommissionMap({ vastOnly: true }),
+    ])
 
     // Build set of cabinet member names for deduplication
     const kabinetNamen = new Set(KABINET.map((k) => k.naam))
@@ -31,6 +36,7 @@ export async function GET() {
         fractie: m.fractie,
         rol: "Kamerlid" as const,
         fotoUrl: tkFotoUrl(m.id),
+        commissies: commissionMap.get(m.id) ?? [],
       }))
 
     const kabinet: ColofonEntry[] = KABINET.map((k) => ({

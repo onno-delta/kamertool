@@ -5,6 +5,7 @@ import Link from "next/link"
 import { Users, Search } from "lucide-react"
 import { MultiSelect } from "@/components/multi-select"
 import { PARTIES, PARTY_COLORS } from "@/lib/parties"
+import { DOSSIERS, COMMISSIE_DOSSIER_MAP } from "@/lib/dossiers"
 
 type Entry = {
   id: string
@@ -13,6 +14,7 @@ type Entry = {
   rol: "Kamerlid" | "Minister" | "Staatssecretaris"
   portefeuille?: string
   fotoUrl?: string
+  commissies?: string[]
 }
 
 const ROLE_OPTIONS = [
@@ -27,6 +29,7 @@ export default function ColofonPage() {
   const [search, setSearch] = useState("")
   const [selectedParties, setSelectedParties] = useState<Set<string>>(new Set())
   const [selectedRoles, setSelectedRoles] = useState<Set<string>>(new Set())
+  const [selectedDossiers, setSelectedDossiers] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     fetch("/api/colofon")
@@ -52,11 +55,43 @@ export default function ColofonPage() {
       }))
   }, [entries])
 
+  const dossierOptions = useMemo(() => {
+    const counts: Record<string, number> = {}
+    for (const e of entries) {
+      if (!e.commissies) continue
+      const seen = new Set<string>()
+      for (const c of e.commissies) {
+        const d = COMMISSIE_DOSSIER_MAP[c]
+        if (d && !seen.has(d)) {
+          seen.add(d)
+          counts[d] = (counts[d] ?? 0) + 1
+        }
+      }
+    }
+    return DOSSIERS
+      .filter((d) => counts[d.id])
+      .map((d) => ({ value: d.id, label: d.label, count: counts[d.id] }))
+  }, [entries])
+
   const filtered = useMemo(() => {
     let items = entries
     if (search) {
       const q = search.toLowerCase()
-      items = items.filter((e) => e.naam.toLowerCase().includes(q))
+      items = items.filter((e) => {
+        if (e.naam.toLowerCase().includes(q)) return true
+        // Also search on commission/dossier names
+        if (e.commissies) {
+          for (const c of e.commissies) {
+            if (c.toLowerCase().includes(q)) return true
+            const d = COMMISSIE_DOSSIER_MAP[c]
+            if (d) {
+              const label = DOSSIERS.find((ds) => ds.id === d)?.label
+              if (label?.toLowerCase().includes(q)) return true
+            }
+          }
+        }
+        return false
+      })
     }
     if (selectedParties.size > 0) {
       items = items.filter((e) => selectedParties.has(e.fractie))
@@ -64,8 +99,17 @@ export default function ColofonPage() {
     if (selectedRoles.size > 0) {
       items = items.filter((e) => selectedRoles.has(e.rol))
     }
+    if (selectedDossiers.size > 0) {
+      items = items.filter((e) => {
+        if (!e.commissies) return false
+        return e.commissies.some((c) => {
+          const d = COMMISSIE_DOSSIER_MAP[c]
+          return d && selectedDossiers.has(d)
+        })
+      })
+    }
     return items
-  }, [entries, search, selectedParties, selectedRoles])
+  }, [entries, search, selectedParties, selectedRoles, selectedDossiers])
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -99,13 +143,19 @@ export default function ColofonPage() {
             selected={selectedRoles}
             onChange={setSelectedRoles}
           />
+          <MultiSelect
+            label="Dossier"
+            options={dossierOptions}
+            selected={selectedDossiers}
+            onChange={setSelectedDossiers}
+          />
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-text-muted" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Zoek op naam"
+              placeholder="Zoek op naam of dossier"
               className="w-48 rounded border border-border bg-white py-1.5 pl-8 pr-3 text-sm text-primary placeholder:text-text-muted focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20"
             />
           </div>
