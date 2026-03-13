@@ -49,7 +49,12 @@ export async function GET(
         const parts = naam.split(" ")
         const achternaam = parts[parts.length - 1]
         const handelingen = await getPersonHandelingen(achternaam)
-        return NextResponse.json(handelingen)
+        // Filter out presentie/opening entries — not useful for users
+        const filtered = handelingen.filter((h: { onderwerp?: string }) => {
+          const o = h.onderwerp?.toLowerCase() ?? ""
+          return !o.includes("presentie") && !o.includes("opening")
+        })
+        return NextResponse.json(filtered)
       }
       default:
         return NextResponse.json(
