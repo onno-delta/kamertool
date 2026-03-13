@@ -156,7 +156,7 @@ export default function ColofonPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Zoek op naam of dossier"
-              className="w-48 rounded border border-border bg-white py-1.5 pl-8 pr-3 text-sm text-primary placeholder:text-text-muted focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20"
+              className="w-56 rounded border border-border bg-white py-1.5 pl-8 pr-3 text-sm text-primary placeholder:text-text-muted focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20"
             />
           </div>
           {!loading && (

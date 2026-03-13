@@ -877,6 +877,17 @@ export default function PersonDetailPage({
                 <ExternalLink className="h-3 w-3" />
               </a>
             )}
+            {person.isKabinet && (
+              <a
+                href={`https://www.rijksoverheid.nl/regering/bewindspersonen/${person.naam.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "")}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 inline-flex items-center gap-1 text-xs text-primary hover:underline"
+              >
+                Profiel op rijksoverheid.nl
+                <ExternalLink className="h-3 w-3" />
+              </a>
+            )}
           </div>
         </div>
       </div>
