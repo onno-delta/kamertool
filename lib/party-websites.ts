@@ -4,142 +4,57 @@
  */
 
 export type PartyWebsiteConfig = {
-  baseUrl: string
+  /** Generates candidate profile URLs to try in order */
+  candidateUrls: (slug: string) => string[]
+  /** URL of the member list page for fallback scraping */
   memberListUrl: string
-  slugPattern: "firstname-lastname" | "lastname-firstname" | "full-name"
-  tagKeywords: string[]
+  /** Skip scraping entirely (party has no member pages) */
   skipScraping?: boolean
 }
 
-/**
- * Zoekwoorden die dossier-secties identificeren op partijwebsites.
- */
-const DEFAULT_TAG_KEYWORDS = [
-  "portefeuille",
-  "woordvoerder",
-  "focust op",
-  "specialisme",
-  "dossiers",
-  "onderwerpen",
-  "thema",
-  "beleidsterreinen",
-]
+function simpleConfig(baseUrl: string): PartyWebsiteConfig {
+  return {
+    candidateUrls: (slug) => [`${baseUrl}/${slug}`],
+    memberListUrl: baseUrl,
+  }
+}
+
+const SKIP: PartyWebsiteConfig = {
+  candidateUrls: () => [],
+  memberListUrl: "",
+  skipScraping: true,
+}
 
 export const PARTY_WEBSITE_CONFIG: Record<string, PartyWebsiteConfig> = {
+  // VVD: /profielen/{slug}/ is canonical, /personen/{slug} redirects
   VVD: {
-    baseUrl: "https://www.vvd.nl/personen",
-    memberListUrl: "https://www.vvd.nl/personen",
-    slugPattern: "full-name",
-    tagKeywords: DEFAULT_TAG_KEYWORDS,
+    candidateUrls: (slug) => [
+      `https://www.vvd.nl/profielen/${slug}/`,
+      `https://www.vvd.nl/personen/${slug}`,
+    ],
+    memberListUrl: "https://www.vvd.nl/profielen/",
   },
-  D66: {
-    baseUrl: "https://d66.nl/mensen",
-    memberListUrl: "https://d66.nl/mensen",
-    slugPattern: "full-name",
-    tagKeywords: DEFAULT_TAG_KEYWORDS,
-  },
-  CDA: {
-    baseUrl: "https://www.cda.nl/mensen",
-    memberListUrl: "https://www.cda.nl/mensen",
-    slugPattern: "full-name",
-    tagKeywords: DEFAULT_TAG_KEYWORDS,
-  },
-  "GL-PvdA": {
-    baseUrl: "https://groenlinks-pvda.nl/mensen",
-    memberListUrl: "https://groenlinks-pvda.nl/mensen",
-    slugPattern: "full-name",
-    tagKeywords: DEFAULT_TAG_KEYWORDS,
-  },
-  SP: {
-    baseUrl: "https://www.sp.nl/mensen",
-    memberListUrl: "https://www.sp.nl/mensen",
-    slugPattern: "full-name",
-    tagKeywords: DEFAULT_TAG_KEYWORDS,
-  },
-  CU: {
-    baseUrl: "https://www.christenunie.nl/mensen",
-    memberListUrl: "https://www.christenunie.nl/mensen",
-    slugPattern: "full-name",
-    tagKeywords: DEFAULT_TAG_KEYWORDS,
-  },
-  SGP: {
-    baseUrl: "https://www.sgp.nl/mensen",
-    memberListUrl: "https://www.sgp.nl/mensen",
-    slugPattern: "full-name",
-    tagKeywords: DEFAULT_TAG_KEYWORDS,
-  },
-  Volt: {
-    baseUrl: "https://voltnederland.org/mensen",
-    memberListUrl: "https://voltnederland.org/mensen",
-    slugPattern: "full-name",
-    tagKeywords: DEFAULT_TAG_KEYWORDS,
-  },
-  DENK: {
-    baseUrl: "https://www.bewegingdenk.nl/mensen",
-    memberListUrl: "https://www.bewegingdenk.nl/mensen",
-    slugPattern: "full-name",
-    tagKeywords: DEFAULT_TAG_KEYWORDS,
-  },
-  BBB: {
-    baseUrl: "https://www.boerburgerbeweging.nl/mensen",
-    memberListUrl: "https://www.boerburgerbeweging.nl/mensen",
-    slugPattern: "full-name",
-    tagKeywords: DEFAULT_TAG_KEYWORDS,
-  },
-  PvdD: {
-    baseUrl: "https://www.partijvoordedieren.nl/mensen",
-    memberListUrl: "https://www.partijvoordedieren.nl/mensen",
-    slugPattern: "full-name",
-    tagKeywords: DEFAULT_TAG_KEYWORDS,
-  },
-  PVV: {
-    baseUrl: "",
-    memberListUrl: "",
-    slugPattern: "full-name",
-    tagKeywords: [],
-    skipScraping: true,
-  },
-  FVD: {
-    baseUrl: "",
-    memberListUrl: "",
-    slugPattern: "full-name",
-    tagKeywords: [],
-    skipScraping: true,
-  },
-  JA21: {
-    baseUrl: "",
-    memberListUrl: "",
-    slugPattern: "full-name",
-    tagKeywords: [],
-    skipScraping: true,
-  },
-  "Groep Markuszower": {
-    baseUrl: "",
-    memberListUrl: "",
-    slugPattern: "full-name",
-    tagKeywords: [],
-    skipScraping: true,
-  },
-  "50PLUS": {
-    baseUrl: "",
-    memberListUrl: "",
-    slugPattern: "full-name",
-    tagKeywords: [],
-    skipScraping: true,
-  },
-  "Lid Keijzer": {
-    baseUrl: "",
-    memberListUrl: "",
-    slugPattern: "full-name",
-    tagKeywords: [],
-    skipScraping: true,
-  },
+  D66: simpleConfig("https://d66.nl/mensen"),
+  CDA: simpleConfig("https://www.cda.nl/mensen"),
+  "GL-PvdA": simpleConfig("https://groenlinks-pvda.nl/mensen"),
+  SP: simpleConfig("https://www.sp.nl/mensen"),
+  CU: simpleConfig("https://www.christenunie.nl/mensen"),
+  SGP: simpleConfig("https://www.sgp.nl/mensen"),
+  Volt: simpleConfig("https://voltnederland.org/mensen"),
+  DENK: simpleConfig("https://www.bewegingdenk.nl/mensen"),
+  BBB: simpleConfig("https://www.boerburgerbeweging.nl/mensen"),
+  PvdD: simpleConfig("https://www.partijvoordedieren.nl/mensen"),
+  PVV: SKIP,
+  FVD: SKIP,
+  JA21: SKIP,
+  "Groep Markuszower": SKIP,
+  "50PLUS": SKIP,
+  "Lid Keijzer": SKIP,
 }
 
 /**
  * Maakt een URL-slug van een naam.
  * "Ulas Kose" → "ulas-kose"
- * "Sjoerd Sjoerdsma" → "sjoerd-sjoerdsma"
  */
 export function slugifyName(naam: string): string {
   return naam
