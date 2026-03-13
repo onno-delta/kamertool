@@ -82,25 +82,33 @@ export function Nav() {
     )
   }
 
-  const allLinks = session
+  const mainLinks = session
     ? [
         { href: "/", label: "Chat" },
         { href: "/agenda", label: "Agenda" },
-        { href: "/briefings", label: "Briefings" },
         { href: "/instructies", label: "Instructies" },
         ...(session.user.organisationId
           ? [{ href: "/dashboard", label: "Organisatie" }]
           : []),
         { href: "/smoelenboek", label: "Smoelenboek" },
-        { href: "/handleiding", label: "Handleiding" },
         { href: "/settings", label: "Instellingen" },
       ]
     : [
         { href: "/", label: "Chat" },
         { href: "/agenda", label: "Agenda" },
         { href: "/smoelenboek", label: "Smoelenboek" },
+      ]
+
+  const rightLinks = session
+    ? [
+        { href: "/briefings", label: "Geschiedenis" },
         { href: "/handleiding", label: "Handleiding" },
       ]
+    : [
+        { href: "/handleiding", label: "Handleiding" },
+      ]
+
+  const allLinks = [...mainLinks, ...rightLinks]
 
   function isActive(href: string) {
     return href === "/" ? pathname === "/" : pathname.startsWith(href)
@@ -174,8 +182,8 @@ export function Nav() {
           </Link>
 
           {/* Desktop nav links */}
-          <nav className="hidden items-center gap-0.5 md:flex">
-            {allLinks.map((link) => (
+          <nav className="hidden w-full items-center gap-0.5 md:flex">
+            {mainLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
@@ -189,6 +197,22 @@ export function Nav() {
                 {link.label}
               </Link>
             ))}
+            <div className="ml-auto flex items-center gap-0.5">
+              {rightLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`-my-2 inline-flex items-center gap-1.5 px-4 py-2 text-[0.8125rem] font-medium ${
+                    isActive(link.href)
+                      ? "bg-white/15 text-white"
+                      : "text-white/80 hover:bg-white/10 hover:text-white"
+                  }`}
+                >
+                  {NAV_ICONS[link.href]}
+                  {link.label}
+                </Link>
+              ))}
+            </div>
           </nav>
 
           {/* Mobile: right side */}
