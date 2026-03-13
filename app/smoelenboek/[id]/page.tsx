@@ -149,9 +149,11 @@ function ActivitySection({
   naam?: string
   commissies?: string[]
 }) {
+  const PAGE_SIZE = 5
   const [data, setData] = useState<unknown[] | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
+  const [page, setPage] = useState(0)
 
   useEffect(() => {
     const params = new URLSearchParams({ type })
@@ -197,10 +199,13 @@ function ActivitySection({
           <p className="text-sm text-text-muted">Geen resultaten gevonden.</p>
         )}
 
-        {!loading && !error && data && data.length > 0 && (
+        {!loading && !error && data && data.length > 0 && (() => {
+          const totalPages = Math.ceil(data.length / PAGE_SIZE)
+          const paged = data.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
+          return (<>
           <div className="space-y-2">
             {type === "documenten" &&
-              (data as DocItem[]).map((doc) => (
+              (paged as DocItem[]).map((doc) => (
                 <a
                   key={doc.id}
                   href={doc.url || `https://www.tweedekamer.nl/zoeken?qry=${encodeURIComponent(doc.nummer)}`}
@@ -227,7 +232,7 @@ function ActivitySection({
               ))}
 
             {type === "stemmingen" &&
-              (data as StemItem[]).map((s, i) => (
+              (paged as StemItem[]).map((s, i) => (
                 <a
                   key={i}
                   href={s.url || `https://www.tweedekamer.nl/zoeken?qry=${encodeURIComponent(s.besluit)}`}
@@ -254,7 +259,7 @@ function ActivitySection({
               ))}
 
             {type === "toezeggingen" &&
-              (data as ToezeggingItem[]).map((t, i) => (
+              (paged as ToezeggingItem[]).map((t, i) => (
                 <div
                   key={i}
                   className="rounded-lg border border-border-light px-3 py-2"
@@ -284,7 +289,7 @@ function ActivitySection({
               ))}
 
             {type === "agenda" &&
-              (data as AgendaItem[]).map((a) => (
+              (paged as AgendaItem[]).map((a) => (
                 <a
                   key={a.id}
                   href={a.nummer
@@ -311,7 +316,7 @@ function ActivitySection({
               ))}
 
             {type === "handelingen" &&
-              (data as HandelingItem[]).map((h) => (
+              (paged as HandelingItem[]).map((h) => (
                 <a
                   key={h.nummer}
                   href={h.url}
@@ -336,7 +341,25 @@ function ActivitySection({
                 </a>
               ))}
           </div>
-        )}
+          {totalPages > 1 && (
+            <div className="mt-3 flex items-center justify-center gap-1">
+              {Array.from({ length: totalPages }, (_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setPage(i)}
+                  className={`min-w-[28px] rounded px-2 py-1 text-xs font-medium ${
+                    i === page
+                      ? "bg-primary text-white"
+                      : "text-text-secondary hover:bg-surface-muted"
+                  }`}
+                >
+                  {i + 1}
+                </button>
+              ))}
+            </div>
+          )}
+          </>)
+        })()}
       </div>
     </div>
   )
