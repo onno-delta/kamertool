@@ -343,7 +343,7 @@ export function Chat() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className={`grid min-h-0 w-full gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] ${messages.length > 0 ? "flex-1" : ""}`}>
+      <div className="grid min-h-0 w-full flex-1 gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
         {/* Main chat card */}
         <section className="flex min-h-0 min-w-0 flex-col overflow-hidden rounded-xl border border-border-light bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.02)]">
           {/* Toolbar */}
@@ -532,7 +532,7 @@ export function Chat() {
         </section>
 
         {/* Right sidebar: briefing progress, tool progress, or agenda links */}
-        <aside className="hidden min-h-0 lg:block">
+        <aside className="hidden min-h-0 flex-col lg:flex">
           {briefingPhases ? (
             <ProgressSidebar
               phases={briefingPhases}

@@ -162,8 +162,8 @@ export function AgendaSidebar({ onPrepare }: { onPrepare?: (text: string) => voi
   useEffect(() => { setPage(0) }, [commissies])
 
   return (
-    <div className="sticky top-4">
-      <div className="rounded-xl border border-border-light bg-white p-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="flex min-h-0 flex-1 flex-col rounded-xl border border-border-light bg-white p-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
         <h3 className="mb-3 flex items-center gap-1.5 text-[0.6875rem] font-semibold uppercase tracking-[0.075em] text-text-muted">
           <Calendar className="h-[13px] w-[13px]" />
           Komende vergaderingen
