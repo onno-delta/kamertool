@@ -26,7 +26,7 @@ const NAV_ICONS: Record<string, React.ReactNode> = {
   "/briefings": <FileText className="h-[15px] w-[15px] opacity-80" />,
   "/instructies": <PenLine className="h-[15px] w-[15px] opacity-80" />,
   "/dashboard": <Building2 className="h-[15px] w-[15px] opacity-80" />,
-  "/smoelenboek": <Users className="h-[15px] w-[15px] opacity-80" />,
+  "/colofon": <Users className="h-[15px] w-[15px] opacity-80" />,
   "/handleiding": <BookOpen className="h-[15px] w-[15px] opacity-80" />,
   "/settings": <Settings className="h-[15px] w-[15px] opacity-80" />,
 }
@@ -90,7 +90,7 @@ export function Nav() {
         ...(session.user.organisationId
           ? [{ href: "/dashboard", label: "Organisatie" }]
           : []),
-        { href: "/smoelenboek", label: "Smoelenboek" },
+        { href: "/colofon", label: "Colofon" },
         { href: "/settings", label: "Instellingen" },
         { href: "/briefings", label: "Geschiedenis" },
         { href: "/handleiding", label: "Handleiding" },
@@ -98,7 +98,7 @@ export function Nav() {
     : [
         { href: "/", label: "Chat" },
         { href: "/agenda", label: "Agenda" },
-        { href: "/smoelenboek", label: "Smoelenboek" },
+        { href: "/colofon", label: "Colofon" },
         { href: "/handleiding", label: "Handleiding" },
       ]
 

@@ -161,7 +161,7 @@ function ActivitySection({
     if (naam) params.set("naam", naam)
     if (commissies?.length) params.set("commissies", commissies.join(","))
 
-    fetch(`/api/smoelenboek/${personId}/activiteiten?${params}`)
+    fetch(`/api/colofon/${personId}/activiteiten?${params}`)
       .then((r) => {
         if (!r.ok) throw new Error()
         return r.json()
@@ -389,7 +389,7 @@ function ContactenSection({
     if (!value.trim()) return
     setSubmitting(true)
     try {
-      const res = await fetch(`/api/smoelenboek/${personId}/contact`, {
+      const res = await fetch(`/api/colofon/${personId}/contact`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ type, value: value.trim(), label: label.trim() || undefined }),
@@ -407,7 +407,7 @@ function ContactenSection({
 
   async function handleDelete(contactId: string) {
     const res = await fetch(
-      `/api/smoelenboek/${personId}/contact/${contactId}`,
+      `/api/colofon/${personId}/contact/${contactId}`,
       { method: "DELETE" }
     )
     if (res.ok) onUpdate()
@@ -574,7 +574,7 @@ function MedewerkersSection({
     if (!naam.trim()) return
     setSubmitting(true)
     try {
-      const res = await fetch(`/api/smoelenboek/${personId}/medewerker`, {
+      const res = await fetch(`/api/colofon/${personId}/medewerker`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -596,7 +596,7 @@ function MedewerkersSection({
 
   async function handleDelete(mwId: string) {
     const res = await fetch(
-      `/api/smoelenboek/${personId}/medewerker/${mwId}`,
+      `/api/colofon/${personId}/medewerker/${mwId}`,
       { method: "DELETE" }
     )
     if (res.ok) onUpdate()
@@ -733,7 +733,7 @@ export default function PersonDetailPage({
   const [error, setError] = useState(false)
 
   const fetchPerson = useCallback(() => {
-    fetch(`/api/smoelenboek/${id}`)
+    fetch(`/api/colofon/${id}`)
       .then((r) => {
         if (!r.ok) throw new Error()
         return r.json()
@@ -770,7 +770,7 @@ export default function PersonDetailPage({
       <div className="py-16 text-center">
         <p className="text-lg font-medium text-primary">Persoon niet gevonden</p>
         <Link
-          href="/smoelenboek"
+          href="/colofon"
           className="mt-4 inline-flex items-center gap-1 text-sm text-primary hover:underline"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
@@ -787,11 +787,11 @@ export default function PersonDetailPage({
     <div className="flex min-h-0 flex-1 flex-col">
       {/* Back link */}
       <Link
-        href="/smoelenboek"
+        href="/colofon"
         className="mb-4 inline-flex w-fit items-center gap-1 text-sm text-text-secondary hover:text-primary"
       >
         <ArrowLeft className="h-3.5 w-3.5" />
-        Smoelenboek
+        Colofon
       </Link>
 
       {/* Header card */}

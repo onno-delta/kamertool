@@ -21,7 +21,7 @@ const ROLE_OPTIONS = [
   { value: "Staatssecretaris", label: "Staatssecretaris" },
 ]
 
-export default function SmoelenboekPage() {
+export default function ColofonPage() {
   const [entries, setEntries] = useState<Entry[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
@@ -29,7 +29,7 @@ export default function SmoelenboekPage() {
   const [selectedRoles, setSelectedRoles] = useState<Set<string>>(new Set())
 
   useEffect(() => {
-    fetch("/api/smoelenboek")
+    fetch("/api/colofon")
       .then((r) => r.json())
       .then((data) => {
         setEntries(Array.isArray(data) ? data : [])
@@ -76,7 +76,7 @@ export default function SmoelenboekPage() {
             <Users className="h-5 w-5 text-white" />
           </div>
           <div>
-            <h1 className="text-4xl font-bold tracking-tight text-primary">Smoelenboek</h1>
+            <h1 className="text-4xl font-bold tracking-tight text-primary">Colofon</h1>
             <p className="mt-1 text-sm text-text-secondary">
               Alle Kamerleden, ministers en staatssecretarissen op een rij.
             </p>
@@ -147,7 +147,7 @@ export default function SmoelenboekPage() {
             {filtered.map((entry) => (
               <Link
                 key={entry.id}
-                href={`/smoelenboek/${entry.id}`}
+                href={`/colofon/${entry.id}`}
                 className="flex items-start gap-3 rounded-xl border border-border-light bg-white px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.02)] transition-[border-color,box-shadow] hover:border-primary/30 hover:shadow-[0_2px_8px_rgba(0,0,0,0.06),0_1px_3px_rgba(0,0,0,0.04)]"
               >
                 {entry.fotoUrl ? (

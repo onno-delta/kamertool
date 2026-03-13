@@ -7,7 +7,7 @@ function tkFotoUrl(personId: string, size: "thumbnail" | "medium" = "thumbnail")
   return `https://www.tweedekamer.nl/sites/default/files/styles/${size}/public/tk_external_data_ggm_sync/photos/${personId}.jpg`
 }
 
-export type SmoelenboekEntry = {
+export type ColofonEntry = {
   id: string
   naam: string
   fractie: string
@@ -23,7 +23,7 @@ export async function GET() {
     // Build set of cabinet member names for deduplication
     const kabinetNamen = new Set(KABINET.map((k) => k.naam))
 
-    const kamerleden: SmoelenboekEntry[] = members
+    const kamerleden: ColofonEntry[] = members
       .filter((m) => !kabinetNamen.has(m.naam))
       .map((m) => ({
         id: m.id,
@@ -33,7 +33,7 @@ export async function GET() {
         fotoUrl: tkFotoUrl(m.id),
       }))
 
-    const kabinet: SmoelenboekEntry[] = KABINET.map((k) => ({
+    const kabinet: ColofonEntry[] = KABINET.map((k) => ({
       id: `kabinet-${k.naam.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "")}`,
       naam: k.naam,
       fractie: k.partij,
