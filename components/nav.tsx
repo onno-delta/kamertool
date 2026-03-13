@@ -92,17 +92,21 @@ export function Nav() {
           : []),
         { href: "/smoelenboek", label: "Smoelenboek" },
         { href: "/settings", label: "Instellingen" },
-        { href: "/briefings", label: "Geschiedenis" },
-        { href: "/handleiding", label: "Handleiding" },
       ]
     : [
         { href: "/", label: "Chat" },
         { href: "/agenda", label: "Agenda" },
         { href: "/smoelenboek", label: "Smoelenboek" },
-        { href: "/handleiding", label: "Handleiding" },
       ]
 
-  const rightLinks: { href: string; label: string }[] = []
+  const rightLinks = session
+    ? [
+        { href: "/briefings", label: "Geschiedenis" },
+        { href: "/handleiding", label: "Handleiding" },
+      ]
+    : [
+        { href: "/handleiding", label: "Handleiding" },
+      ]
 
   const allLinks = [...mainLinks, ...rightLinks]
 
