@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import { safeErrorResponse } from "@/lib/errors"
 import {
   getPersonDocuments,
-  getFractieStemmingen,
+  getPersonStemmingen,
   getPersonToezeggingen,
   getPersonAgenda,
   getPersonHandelingen,
@@ -29,8 +29,8 @@ export async function GET(
         return NextResponse.json(docs)
       }
       case "stemmingen": {
-        if (!fractie) return NextResponse.json([])
-        const stemmingen = await getFractieStemmingen(fractie)
+        if (id.startsWith("kabinet-")) return NextResponse.json([])
+        const stemmingen = await getPersonStemmingen(id)
         return NextResponse.json(stemmingen)
       }
       case "toezeggingen": {

@@ -899,7 +899,7 @@ export default function PersonDetailPage({
       </div>
 
       {/* Activity feed */}
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="mb-8 grid gap-4 lg:grid-cols-2">
         {!person.isKabinet && (
           <ActivitySection
             title="Documenten"
@@ -918,11 +918,10 @@ export default function PersonDetailPage({
         />
 
         <ActivitySection
-          title={`Stemgedrag ${person.fractie ?? ""}`}
+          title="Stemgedrag"
           icon={<Vote className="h-4 w-4 text-primary" />}
           personId={id}
           type="stemmingen"
-          fractie={person.fractie}
         />
 
         {person.commissies && person.commissies.length > 0 && (

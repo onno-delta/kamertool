@@ -73,6 +73,40 @@ export async function getFractieStemmingen(fractie: string, top = 10) {
 }
 
 /**
+ * Get recent stemmingen (votes) for a specific person.
+ * Queries Stemming by Persoon_Id, expands Besluit → Zaak for subject.
+ */
+export async function getPersonStemmingen(personId: string, top = 10) {
+  const stemmingen = await queryTK("Stemming", {
+    $filter: `Persoon_Id eq ${personId} and Verwijderd eq false`,
+    $select: "Id,Soort,ActorFractie,FractieGrootte",
+    $expand: "Besluit($select=Id,BesluitSoort,BesluitTekst;$expand=Zaak($select=Onderwerp,Titel,Nummer),Agendapunt($select=Nummer))",
+    $orderby: "GewijzigdOp desc",
+    $top: String(top),
+  })
+
+  return stemmingen
+    .filter((s: Record<string, unknown>) => s.Besluit)
+    .map((s: Record<string, unknown>) => {
+      const besluit = s.Besluit as Record<string, unknown>
+      const zaken = besluit.Zaak as Array<Record<string, unknown>> | undefined
+      const zaak = zaken?.[0]
+      const agendapunt = besluit.Agendapunt as Record<string, unknown> | undefined
+      const pNummer = agendapunt?.Nummer as string | undefined
+      return {
+        fractie: s.ActorFractie,
+        stem: s.Soort,
+        zetels: s.FractieGrootte,
+        besluit: (zaak?.Onderwerp || zaak?.Titel || besluit.BesluitTekst) as string,
+        besluitSoort: besluit.BesluitSoort,
+        url: pNummer
+          ? `https://www.tweedekamer.nl/kamerstukken/stemmingsuitslagen/detail?id=${pNummer}&did=${pNummer}`
+          : undefined,
+      }
+    })
+}
+
+/**
  * Get toezeggingen (promises) made by a minister.
  * Searches by name in the Naam field.
  */
