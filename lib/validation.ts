@@ -2,11 +2,11 @@ import { z } from "zod"
 import { ALLOWED_MODEL_KEYS } from "@/lib/ai"
 
 const messageSchema = z.object({
-  role: z.enum(["user", "assistant"]),
+  role: z.enum(["user", "assistant", "system", "tool"]),
   content: z.union([
     z.string().max(100_000),
-    z.array(z.object({ type: z.string(), text: z.string().max(100_000) }).passthrough()).max(100),
-  ]),
+    z.array(z.record(z.string(), z.unknown())).max(100),
+  ]).nullable().optional(),
   id: z.string().max(100).optional(),
   parts: z.array(z.record(z.string(), z.unknown())).optional(),
 }).passthrough()
