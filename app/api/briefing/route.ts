@@ -243,6 +243,19 @@ Bronvermelding: gebruik doorlopend genummerde voetnoten [1], [2], [3] etc. in de
             .map((s) => s.text)
             .join("\n\n")
 
+          if (!fullText.trim()) {
+            controller.enqueue(
+              encoder.encode(
+                JSON.stringify({
+                  type: "error",
+                  message: "Het AI-model kon geen briefing genereren. Probeer het opnieuw.",
+                }) + "\n"
+              )
+            )
+            controller.close()
+            return
+          }
+
           // Save to DB (cap at 500K to prevent oversized rows)
           const trimmedContent = fullText.slice(0, 500_000)
           if (userId && trimmedContent) {
