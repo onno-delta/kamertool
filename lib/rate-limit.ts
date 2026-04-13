@@ -8,6 +8,7 @@ const UNLIMITED_DOMAINS = [
   "herprogrammeerdeoverheid.nl",
   "deltainstituut.nl",
   "tweedekamer.nl",
+  "joinseven.nl",
 ]
 
 export function isUnlimitedEmail(email: string | null | undefined): boolean {
