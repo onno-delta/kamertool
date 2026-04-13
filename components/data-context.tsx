@@ -86,8 +86,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const timeout = AbortSignal.timeout(5000)
     fetch("/api/parties", { signal: timeout })
-      .then((r) => r.json())
-      .then(setParties)
+      .then((r) => r.ok ? r.json() : [])
+      .then((data) => setParties(Array.isArray(data) ? data : []))
       .catch(() => {})
     fetchPreferences(timeout)
   }, [fetchPreferences])
